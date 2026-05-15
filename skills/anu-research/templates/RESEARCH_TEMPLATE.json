@@ -1,0 +1,35 @@
+{
+  "series_id": "S###",
+  "series_name": "[SERIES NAME]",
+  "chapter": 0,
+  "figures": [],
+  "research_date": "YYYY-MM-DD",
+  "researcher": "agent",
+  "kb_sources_searched": [],
+  "entries": [
+    {
+      "entry_type": "methodology_description",
+      "content": "[Description of how the series was constructed]",
+      "source_ref": "[Book/Appendix location]"
+    },
+    {
+      "entry_type": "source_citation",
+      "content": "[Citation of original data source]",
+      "source_ref": "[Source name]"
+    },
+    {
+      "entry_type": "figure_context",
+      "content": "[How the series appears in a figure or narrative]",
+      "source_ref": "[Chapter and figure reference]"
+    }
+  ],
+  "citations": [
+    {
+      "id": "[CITATION_ID]",
+      "full": "[Full bibliographic citation]"
+    }
+  ],
+  "methodology_summary": "[Concise description of how the series is constructed]",
+  "known_issues": [],
+  "cross_references": []
+}

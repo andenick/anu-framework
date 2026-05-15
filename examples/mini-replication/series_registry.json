@@ -1,0 +1,54 @@
+{
+  "version": "2.0",
+  "project": "mini-replication",
+  "prefix_scheme": {
+    "primary": "S",
+    "external": "ES",
+    "analytical": "AS"
+  },
+  "series": {
+    "S001": {
+      "name": "Industrial Production Index",
+      "content_type": "time_series",
+      "construction": "direct",
+      "source": "FRED INDPRO",
+      "source_url": "https://fred.stlouisfed.org/series/INDPRO",
+      "units": "index_2017=100",
+      "frequency": "annual",
+      "period_start": 1919,
+      "period_end": 2024,
+      "loading_script": "L01",
+      "processing_script": "P01",
+      "validation_script": "V01",
+      "status": "validated_book_and_extension",
+      "extension": null,
+      "reference_values": {
+        "1929": 7.6,
+        "1950": 15.8,
+        "2017": 100.0,
+        "2023": 100.8
+      }
+    },
+    "S002": {
+      "name": "INDPRO annual growth rate",
+      "content_type": "time_series",
+      "construction": "formula",
+      "formula": "S002[t] = (S001[t] - S001[t-1]) / S001[t-1]",
+      "components": ["S001"],
+      "units": "percent",
+      "frequency": "annual",
+      "period_start": 1920,
+      "period_end": 2024,
+      "loading_script": null,
+      "processing_script": "P02",
+      "validation_script": "V02",
+      "status": "validated_book_and_extension",
+      "extension": null,
+      "reference_values": {
+        "2009": -11.43,
+        "2010": 5.57,
+        "2020": -7.09
+      }
+    }
+  }
+}
