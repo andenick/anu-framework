@@ -10,7 +10,7 @@
 >
 > **Changelog 2026-05-14 (Session 30-31).** New skill **#17 Anu Archive** (`anu-archive/SKILL.md` + `generate_archive_package.py`) — the audit-grade transparency distribution channel, sibling to Anu Publish (GitHub) and Anu Drive (Google Drive). **Anu Drive** gains an executable generator (`generate_drive_package.py`, v1.0 → v1.1). The three external distribution channels are now formally defined as siblings.
 >
-> **Changelog 2026-05-13.** All skill `SKILL.md` headers unified to `part-of: Anu Framework v10.0` (previously a mix of v8.0 and v9.0). New canonical reference documents added: [`ANU_FRAMEWORK_GLOSSARY.md`](ANU_FRAMEWORK_GLOSSARY.md), [`SERIES_REGISTRY_SCHEMA.md`](SERIES_REGISTRY_SCHEMA.md) (with sibling [`schemas/series_registry.schema.json`](../schemas/series_registry.schema.json)), [`DATA_PROVENANCE_STANDARDS.md`](DATA_PROVENANCE_STANDARDS.md). `anu-extension` SKILL.md tightened to enumerate concrete artifacts (v3.3 → v3.4). New review dimension D14 (Outward-Facing Intelligibility) introduced in the CD2 session-28 review and folded into future `anu-review` runs.
+> **Changelog 2026-05-13.** All skill `SKILL.md` headers unified to `part-of: Anu Framework v10.0` (previously a mix of v8.0 and v9.0). New canonical reference documents added: [`ANU_FRAMEWORK_GLOSSARY.md`](ANU_FRAMEWORK_GLOSSARY.md), [`SERIES_REGISTRY_SCHEMA.md`](SERIES_REGISTRY_SCHEMA.md) (with sibling [`schemas/series_registry.schema.json`](../schemas/series_registry.schema.json)), [`DATA_PROVENANCE_STANDARDS.md`](DATA_PROVENANCE_STANDARDS.md). `anu-extension` SKILL.md tightened to enumerate concrete artifacts (v3.3 → v3.4). New review dimension D14 (Outward-Facing Intelligibility) introduced in the the reference project session-28 review and folded into future `anu-review` runs.
 
 ---
 
@@ -59,7 +59,7 @@ Skills 14, 15, and 17 are siblings — they consume the same upstream outputs an
 
 ## Reference implementation
 
-**CD2** (`Projects/CD2/`) — the replication and extension of every empirical data series in Anwar Shaikh's *Capitalism: Competition, Conflict, Crises* (2016) — is the framework's reference implementation. It is the most complete Anu Framework project: it exercises all 18 skills, ships all three external distribution channels (GitHub repo, Drive package, comprehensive Archive), and was the project that drove the framework to v10.0. New Anu Framework projects should use CD2 as the known-good example to copy — its `Technical/` layout, its `series_registry.json` shape, its per-series DPR/EPR/decomposition docs, and its `anu-review` history are all canonical patterns.
+**the reference project** (`<project>/`) — the replication and extension of every empirical data series in Anwar Shaikh's *Capitalism: Competition, Conflict, Crises* (2016) — is the framework's reference implementation. It is the most complete Anu Framework project: it exercises all 18 skills, ships all three external distribution channels (GitHub repo, Drive package, comprehensive Archive), and was the project that drove the framework to v10.0. New Anu Framework projects should use the reference project as the known-good example to copy — its `Technical/` layout, its `series_registry.json` shape, its per-series DPR/EPR/decomposition docs, and its `anu-review` history are all canonical patterns.
 
 ---
 
@@ -121,7 +121,7 @@ KB/HDARP Extractions
 
 **Content Type Classification**: Every series must be classified as `time_series`, `cross_sectional`, `theoretical`, or `derived`. Extensions only apply to time_series.
 
-These constraints were formalized from lessons learned in the CD2 Shaikh (2016) replication, where 21% of initial extensions used wrong-concept proxies that were caught only in post-hoc audit. See `Projects/CD2/Technical/docs/SKEPTICAL_EXTENSION_REVIEW.md` for the full case study.
+These constraints were formalized from lessons learned in the the reference project Shaikh (2016) replication, where 21% of initial extensions used wrong-concept proxies that were caught only in post-hoc audit. See `Projects/the reference project/Technical/docs/SKEPTICAL_EXTENSION_REVIEW.md` for the full case study.
 
 ### Single Source of Truth: series_registry.json
 
@@ -197,7 +197,7 @@ See `docs/SERIES_ID_SPECIFICATION.md` for full details.
 
 ## Reference Implementation
 
-**CD2** (Capitalism Data v2) is the reference implementation, replicating data from Anwar Shaikh's *Capitalism: Competition, Conflict, Crises* (2016). Chapter 2 is the first fully implemented module.
+**the reference project** (Capitalism Data v2) is the reference implementation, replicating data from Anwar Shaikh's *Capitalism: Competition, Conflict, Crises* (2016). Chapter 2 is the first fully implemented module.
 
 ---
 

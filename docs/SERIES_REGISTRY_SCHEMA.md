@@ -3,7 +3,7 @@
 **Schema version**: 2.0.0
 **Spec version**: 1.0 (May 2026)
 **Authoritative JSON Schema**: [`../schemas/series_registry.schema.json`](../schemas/series_registry.schema.json)
-**Reference implementation**: `Projects/CD2/Technical/series_registry.json`
+**Reference implementation**: `Projects/the reference project/Technical/series_registry.json`
 
 ---
 
@@ -11,9 +11,9 @@
 
 The `series_registry.json` is the single source of truth for every Anu Framework data project. It is produced by `/anu-ingestion` during Stage 2 of the Anu Pipeline and consumed by every downstream stage and artifact: the L## loaders, the P## processors, Anu Chopped CSVs, Anu Extenbooks, the visualization layer (Shiny/Dash), the Anu Replicator, the Anu Ledger, and the Anu Drive distribution package. Every value that reaches an end user must be traceable through this file.
 
-Until now the registry's shape has been described only informally in `anu-ingestion/SKILL.md` (lines ~80-220) and learned by reading the CD2 reference implementation. This document gives the contract a formal name and a machine-readable JSON Schema (Draft 2020-12) so that loaders can validate registries on read, CI can gate registry edits, and new projects can scaffold conformant registries from day one. The schema is intentionally permissive in places (`additionalProperties: true` on most objects) so existing projects continue to parse; required fields and enums are enforced strictly where the contract is settled.
+Until now the registry's shape has been described only informally in `anu-ingestion/SKILL.md` (lines ~80-220) and learned by reading the the reference project reference implementation. This document gives the contract a formal name and a machine-readable JSON Schema (Draft 2020-12) so that loaders can validate registries on read, CI can gate registry edits, and new projects can scaffold conformant registries from day one. The schema is intentionally permissive in places (`additionalProperties: true` on most objects) so existing projects continue to parse; required fields and enums are enforced strictly where the contract is settled.
 
-Conventions: series IDs follow the [Series ID Specification v2.0](SERIES_ID_SPECIFICATION.md) (`^S\d{3}(-[A-Z]|-EXT|-COMBINED)?$`). Figure IDs use the compact `Fig{C}.{N}` form with optional letter suffix (`Fig2.4A`). Source ref IDs are uppercase identifiers (`BEA_1966_LTEG`). Years are integers; periods are `[start, end]` integer pairs. All examples below are copied from the CD2 reference registry; cited line numbers are stable as of the May 2026 snapshot.
+Conventions: series IDs follow the [Series ID Specification v2.0](SERIES_ID_SPECIFICATION.md) (`^S\d{3}(-[A-Z]|-EXT|-COMBINED)?$`). Figure IDs use the compact `Fig{C}.{N}` form with optional letter suffix (`Fig2.4A`). Source ref IDs are uppercase identifiers (`BEA_1966_LTEG`). Years are integers; periods are `[start, end]` integer pairs. All examples below are copied from the the reference project reference registry; cited line numbers are stable as of the May 2026 snapshot.
 
 ---
 
@@ -22,7 +22,7 @@ Conventions: series IDs follow the [Series ID Specification v2.0](SERIES_ID_SPEC
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `version` | string | yes | Registry schema version. Currently `"2.0.0"`. |
-| `project` | string | yes | Short project code, e.g., `"CD2"`. |
+| `project` | string | yes | Short project code, e.g., `"the reference project"`. |
 | `notation` | string | no | Documentation string describing the series-ID notation in use. |
 | `generated` | string (date) | no | ISO date `YYYY-MM-DD` the registry was generated. |
 | `architecture` | string | no | Free-text framework version label, e.g., `"Anu Suite v6.0"`. |
@@ -36,7 +36,7 @@ Top-level skeleton:
 ```json
 {
   "version": "2.0.0",
-  "project": "CD2",
+  "project": "the reference project",
   "notation": "S{NNN}-{LETTER} with R:{YYYY} for reindexed display",
   "generated": "2026-03-07",
   "drive_config": { "...": "..." },
@@ -98,7 +98,7 @@ Every entry under `series` is one base series. The required fields are `name`, `
 | `index_axis` | string | no | For `cross_sectional` series: dimension name (e.g., `"industry"`). |
 | `catalog_id` | string | no | Cross-reference to external catalog. |
 
-Example series header (CD2 `S001`, lines 25-31):
+Example series header (the reference project `S001`, lines 25-31):
 
 ```json
 "S001": {
@@ -147,7 +147,7 @@ Property keys under `subseries` must be valid subseries IDs (e.g., `S001-A`, `S0
 
 CRITICAL fields are required for correct visualization. Anu Chopped v1.2 emits warnings when any are missing.
 
-Example subseries (CD2 `S001-B`, lines 57-79):
+Example subseries (the reference project `S001-B`, lines 57-79):
 
 ```json
 "S001-B": {
@@ -275,12 +275,12 @@ Terminal step that writes a final artifact.
 | `output` | yes | Output filename. |
 
 ### `op: "normal_capacity"`
-Capacity-adjusted derivation used in figure-level transforms (see CD2 `Fig6.5/6.6`).
+Capacity-adjusted derivation used in figure-level transforms (see the reference project `Fig6.5/6.6`).
 
 ### `op: "aggregate"`, `op: "combine"`
 Reserved for future aggregation/combination semantics. Use `calculate` until a project requires distinguishing them.
 
-A multi-step `construction` example (CD2 `S001`, lines 125-167):
+A multi-step `construction` example (the reference project `S001`, lines 125-167):
 
 ```json
 "construction": [
@@ -330,7 +330,7 @@ Provenance sub-object (mandatory fields):
 | `conceptual_continuity` | Why the extension measures the same concept. |
 | `vintage_note` | Notes about base-year/vintage differences. |
 
-Example extension (CD2 `S001`, lines 169-189):
+Example extension (the reference project `S001`, lines 169-189):
 
 ```json
 "extension": {
@@ -375,7 +375,7 @@ Drives the post-construction validator and the anu-review D8 dimension.
 
 `reference_values` may take either of two forms:
 
-**Object form** (used throughout CD2 for time-series):
+**Object form** (used throughout the reference project for time-series):
 ```json
 "reference_values": {
   "1860": 1.636761,
@@ -392,7 +392,7 @@ Drives the post-construction validator and the anu-review D8 dimension.
 ]
 ```
 
-Full example (CD2 `S001`, lines 190-210):
+Full example (the reference project `S001`, lines 190-210):
 
 ```json
 "validation": {
@@ -418,7 +418,7 @@ When a series is a ratio/rate (`r = N / D`), the `concurrent_series` block defin
 | `units` | string | yes | Component units. |
 | `formula_role` | string | no | One-line description of the role in the parent formula. |
 
-Multi-part ratios use suffixes `-N2`, `-D2`, etc. Example (CD2 `S026`, lines 3143-3180):
+Multi-part ratios use suffixes `-N2`, `-D2`, etc. Example (the reference project `S026`, lines 3143-3180):
 
 ```json
 "concurrent_series": {
@@ -455,7 +455,7 @@ The top-level `figures` map (keys `Fig{C}.{N}[A-Z]?`) describes each visualizati
 | `transforms` | array | no | Figure-level transforms (e.g., `normal_capacity`). |
 | `source_file` | string | no | Override source CSV for cross-sectional figures. |
 
-Example (CD2 `Fig2.1`, lines 12389-12415):
+Example (the reference project `Fig2.1`, lines 12389-12415):
 
 ```json
 "Fig2.1": {
@@ -492,7 +492,7 @@ The top-level `sources` map records every primary or secondary source cited by `
 | `note` | string | no | Pin-cite / table reference. |
 | `url` | string | no | Canonical URL. |
 
-Example (CD2 `BEA_1966_LTEG`, lines 15214-15223):
+Example (the reference project `BEA_1966_LTEG`, lines 15214-15223):
 
 ```json
 "BEA_1966_LTEG": {
@@ -583,4 +583,4 @@ registry = json.load(open("Projects/<proj>/Technical/series_registry.json"))
 jsonschema.Draft202012Validator(schema).validate(registry)
 ```
 
-The reference implementation `Projects/CD2/Technical/series_registry.json` is the canonical sample-of-truth and is expected to validate cleanly. When this spec and the schema disagree with the CD2 registry, the registry wins until the next dated revision of this document.
+The reference implementation `Projects/the reference project/Technical/series_registry.json` is the canonical sample-of-truth and is expected to validate cleanly. When this spec and the schema disagree with the the reference project registry, the registry wins until the next dated revision of this document.

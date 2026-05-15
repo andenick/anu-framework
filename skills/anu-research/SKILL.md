@@ -187,7 +187,7 @@ The v2.0 schema adds `entry_id`, `subseries_affected`, `confidence`, `source_ref
 
 ### Compact Format (acceptable for batch creation)
 
-When creating research files for many series in a chapter simultaneously, a streamlined entry format is acceptable. **Example (CD2, S034):**
+When creating research files for many series in a chapter simultaneously, a streamlined entry format is acceptable. **Example (the reference project, S034):**
 
 ```json
 {
@@ -335,9 +335,10 @@ Template file: `templates/RESEARCH_TEMPLATE.json`
 
 - **v1.0** (March 2026) - Initial release
 - **v1.1** (March 2026) - Added compact entry format as valid alternative; updated quality checklist for both formats; updated template to use compact format
-- **v1.2** (March 2026) - Generalized: replaced project-specific methodology text with generic terms; labeled CD2 examples
+- **v1.2** (March 2026) - Generalized: replaced project-specific methodology text with generic terms; labeled the reference project examples
 - **v1.3** (March 2026) - Added adequacy_refs field for traceability to adequacy-verified sources
 - **v2.0** (April 2026) - research.json v2.0 schema: added entry_id, subseries_affected, confidence as required fields in full format; added source_refs (links to SourceReference system in series_registry.json) and kb_reference fields; v2.0 entry fields table
+- **v2.1** (May 2026) - Added `port` sub-command for migrating research JSONs from a predecessor project under an ID mapping table. Used by `anu-rebuild` to salvage prior research effort instead of re-mining the KB.
 
 ---
 

@@ -168,7 +168,7 @@ Steps 1-5 can often be parallelized across multiple subagents. Steps 6-7 are seq
 
 ## Skill-Stage Mapping
 
-The Anu Framework consists of 17 skills mapped to pipeline stages:
+The Anu Framework consists of 19 skills mapped to pipeline stages (plus `anu-pipeline` itself as the orchestrator, for 20 total):
 
 | Stage | Skill | Creates | Feeds Into |
 |-------|-------|---------|-----------|
@@ -187,6 +187,9 @@ The Anu Framework consists of 17 skills mapped to pipeline stages:
 | Float | anu-variant | Variant documentation (VPRs) | Review |
 | Infra | anu-ledger | ANU_LEDGER.json | Review (regenerated after every stage) |
 | Infra | anu-architecture | Anu Architecture format standard | All packages follow this |
+| Infra | anu-doctor | Framework + project self-audit reports | All skills (CI gate) |
+| Infra | anu-scaffold | L01/P02/V03 stub scripts from registry entries | Replicator (during construction) |
+| Meta | anu-rebuild | 6-wave salvage-and-port workflow for predecessor projects | Orchestrates the other 19 skills |
 
 The three Stage-8 channels (anu-publish, anu-drive, anu-archive) are **siblings** — they consume the same upstream outputs and serve three distinct audiences. A project may ship any subset; anu-archive is typically cut after 8a and 8b so it can mirror them.
 
@@ -252,6 +255,10 @@ The Pipeline skill references all other 19 skills and enforces their ordering. I
   - Added `anu-docs` as a FLOATING skill (per-series documentation, T1/T2/T3 tiers)
   - Updated to 17 skills (added anu-archive, anu-docs; anu-drive promoted to a named stage)
   - anu-review referenced as 14 dimensions (D14 Outward-Facing Intelligibility added)
+- **v3.2** (May 2026) — Anu Framework v11.0 integration:
+  - Updated to 19 skills (added `anu-scaffold` for L01/P02/V03 stub generation from registry entries; added `anu-rebuild` as the 6-wave salvage-and-port meta-workflow for predecessor projects)
+  - Ships `templates/run.py.j2` — a project-level `run.py` orchestrator template with `--validate-only`, `--from <stage>`, `--series <sid>`, and `--health` modes. Replaces the ad-hoc per-project orchestrator scripts.
+  - `anu-architecture` renamed from the legacy "anu&#8209;data" skill (folder renamed; project-level default `Technical/AnuData/` → `Technical/AnuArchitecture/`; legacy folders remain recognized)
 
 ---
 
