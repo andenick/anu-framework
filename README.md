@@ -48,7 +48,7 @@ for the full architecture write-up.
 | Float | [`anu-variant`](skills/anu-variant/) | Methodology variant tracking |
 | Orch | [`anu-pipeline`](skills/anu-pipeline/) | Master orchestrator |
 | Infra | [`anu-ledger`](skills/anu-ledger/) | Artifact inventory |
-| Infra | [`anu-architecture`](skills/anu-architecture/) | 8-phase econometric research scaffold (also available [standalone](https://github.com/andenick/anu-architecture)) |
+| Infra | [`anu-architecture`](skills/anu-architecture/) | 8-phase econometric research scaffold (also available [standalone on GitHub](https://github.com/andenick/anu-architecture)) |
 | Infra | [`anu-doctor`](skills/anu-doctor/) | Framework + project self-audit |
 | Infra | [`anu-scaffold`](skills/anu-scaffold/) | Generate L01/P02/V03 stubs from registry |
 | Meta | [`anu-rebuild`](skills/anu-rebuild/) | 6-wave salvage-and-port workflow for predecessor projects |
@@ -128,10 +128,10 @@ detection. CI runs this on every PR.
 
 ## Standalone components
 
-- **`anu-architecture`** is also published as a standalone Python package:
-  [`pip install anu-architecture`](https://github.com/andenick/anu-architecture).
-  Use it if you want the 8-phase scaffold for an original-research project
-  without adopting the full framework.
+- **`anu-architecture`** is also available as a standalone repo:
+  [github.com/andenick/anu-architecture](https://github.com/andenick/anu-architecture).
+  `git clone` it and `pip install -e .` to get the `anu-architecture` CLI
+  without adopting the full framework. (Not currently on PyPI.)
 
 ---
 
