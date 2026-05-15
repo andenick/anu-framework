@@ -1,0 +1,15 @@
+# Files that legitimately describe the scrub policy.
+# These are exempt from the publish audit (they reference the
+# very patterns audit.py scans for).
+skills/anu-publish/audit.py
+skills/anu-publish/SKILL.md
+skills/anu-doctor/check_framework.py
+skills/anu-doctor/check_project.py
+skills/anu-doctor/SKILL.md
+skills/anu-docs/SKILL.md
+docs/ANU_FRAMEWORK_IMPROVEMENTS_RFC.md
+docs/ANU_FRAMEWORK_OPEN_SOURCE_SPEC.md
+docs/ANU_FRAMEWORK_GLOSSARY.md
+CHANGELOG.md
+docs/ANU_FRAMEWORK_CHANGELOG.md
+docs/LESSONS_LEARNED_RMWND_2026.md

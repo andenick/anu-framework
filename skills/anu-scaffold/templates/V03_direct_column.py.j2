@@ -1,0 +1,30 @@
+"""V03_{{sid}} — Validate {{name}} against published benchmarks."""
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from utils.paths import DATA_FINAL             # noqa: E402
+from utils.series import BenchmarkValidator    # noqa: E402  from anu-replicator lib/ template
+
+
+VALIDATOR = BenchmarkValidator(
+    series_id        = "{{sid}}",
+    tolerance_class  = "{{tolerance_class}}",
+    benchmarks       = {{benchmarks_dict}},
+    subseries_filter = "{{first_subseries}}",
+)
+
+
+def run():
+    result = VALIDATOR.run(DATA_FINAL / "{{sid}}.csv")
+    n_total = result['n_pass'] + result['n_fail'] + result['n_missing']
+    print(f"    [V03_{{sid}}] status={result['status']} bench_pass={result['n_pass']}/{n_total}")
+    return result
+
+
+if __name__ == "__main__":
+    result = run()
+    sys.exit(0 if result["status"] == "PASS" else 1)

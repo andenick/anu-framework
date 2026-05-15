@@ -1,0 +1,334 @@
+% ================================================================
+% Anu Drive Methodology Template v1.0
+% Auto-generated from series_registry.json
+%
+% Compile with: tectonic methodology.tex
+% ================================================================
+\documentclass[11pt,letterpaper]{article}
+
+% --- Page layout ---
+\usepackage[margin=1in]{geometry}
+
+% --- Typography ---
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% --- Math (for formulas in construction steps) ---
+\usepackage{amsmath,amssymb}
+
+% --- Tables ---
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{tabularx}
+
+% --- Colors ---
+\usepackage[table]{xcolor}
+\definecolor{headerblue}{HTML}{4472C4}
+\definecolor{lightblue}{HTML}{D9E2F3}
+\definecolor{lightgray}{HTML}{F2F2F2}
+
+% --- Hyperlinks and PDF navigation ---
+\usepackage[
+    colorlinks=true,
+    linkcolor=headerblue,
+    urlcolor=headerblue,
+    bookmarks=true,
+    bookmarksnumbered=true,
+    bookmarksopen=true,
+    bookmarksopenlevel=2,
+    pdfstartview=FitH
+]{hyperref}
+\usepackage{bookmark}
+
+% --- Headers and footers ---
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small\textbf{<<PROJECT_NAME>>} --- Methodology}
+\rhead{\small v<<VERSION>>}
+\cfoot{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Section formatting ---
+\usepackage{titlesec}
+\titleformat{\section}{\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries}{\thesubsubsection}{1em}{}
+
+% --- Lists ---
+\usepackage{enumitem}
+\setlist[itemize]{nosep,left=0pt}
+\setlist[enumerate]{nosep,left=0pt}
+\setlist[description]{style=nextline,nosep}
+
+% --- Paragraph spacing ---
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+% ================================================================
+% DOCUMENT METADATA — Replace <<PLACEHOLDERS>> during generation
+% ================================================================
+\title{%
+    \vspace{-1cm}
+    {\Huge\bfseries <<PROJECT_TITLE>> \\[0.5cm]}
+    {\Large Data Documentation \& Methodology \\[0.8cm]}
+    {\large Version <<VERSION>> \\[0.3cm]}
+    {\large <<DATE>>}
+}
+\author{%
+    <<AUTHOR_NAME>> \\
+    {\normalsize <<INSTITUTION>>} \\
+    {\normalsize\texttt{<<EMAIL>>}}
+}
+\date{}
+
+\begin{document}
+
+% ================================================================
+% TITLE PAGE
+% ================================================================
+\begin{titlepage}
+\centering
+\vspace*{3cm}
+
+{\Huge\bfseries <<PROJECT_TITLE>> \\[0.8cm]}
+{\Large Data Documentation \& Methodology \\[1.5cm]}
+{\large Version <<VERSION>> \\[0.3cm]}
+{\large <<DATE>> \\[3cm]}
+
+{\Large <<AUTHOR_NAME>> \\[0.3cm]}
+{\large <<INSTITUTION>> \\[0.5cm]}
+{\normalsize \texttt{<<EMAIL>>} \\[4cm]}
+
+\rule{0.6\textwidth}{0.4pt} \\[0.5cm]
+{\normalsize Based on the empirical work in: \\[0.3cm]}
+{\normalsize\itshape <<ORIGINAL_TITLE>> \\[0.2cm]}
+{\normalsize by <<ORIGINAL_AUTHOR>> (<<ORIGINAL_YEAR>>) \\[0.2cm]}
+{\normalsize <<PUBLISHER>>}
+
+\vfill
+\end{titlepage}
+
+% ================================================================
+% ABSTRACT
+% ================================================================
+\section*{Abstract}
+\addcontentsline{toc}{section}{Abstract}
+
+<<ABSTRACT_TEXT>>
+
+% Pointer to package contents
+\bigskip
+\textbf{This package contains:}
+\begin{itemize}
+    \item \texttt{<<MASTER_XLSX>>} --- All <<N_SERIES>> final series in one spreadsheet
+    \item \texttt{<<MASTER_CSV>>} --- Machine-readable CSV (for R, Python, Stata)
+    \item \texttt{<<CODEBOOK_CSV>>} --- Formal data dictionary (one row per series)
+    \item \texttt{Series/} --- Individual series workbooks with full construction detail
+    \item \texttt{CITATION.txt} --- How to cite this data (formatted + BibTeX)
+    \item This document --- Complete methodology for every series
+\end{itemize}
+
+\newpage
+
+% ================================================================
+% TABLE OF CONTENTS
+% ================================================================
+\tableofcontents
+\newpage
+
+% ================================================================
+% CHAPTER 1: DATA OVERVIEW
+% ================================================================
+\section{Data Overview}
+\label{sec:overview}
+
+\subsection{Project Description}
+
+<<PROJECT_DESCRIPTION>>
+
+\subsection{Source Work}
+
+This data package replicates and extends the empirical content of:
+
+\begin{quote}
+<<ORIGINAL_AUTHOR>>, \textit{<<ORIGINAL_TITLE>>} (<<ORIGINAL_YEAR>>). <<PUBLISHER>>.
+\end{quote}
+
+<<SOURCE_WORK_DESCRIPTION>>
+
+\subsection{Coverage Summary}
+
+\begin{tabular}{@{} l l @{}}
+\toprule
+\textbf{Dimension} & \textbf{Value} \\
+\midrule
+Time Coverage        & <<YEAR_START>> -- <<YEAR_END>> \\
+Geographic Scope     & <<GEOGRAPHIC_SCOPE>> \\
+Total Series         & <<N_SERIES>> \\
+Extended to Present  & <<N_EXTENDED>> of <<N_SERIES>> \\
+Unique Data Sources  & <<N_SOURCES>> \\
+API Extensions       & <<API_LIST>> \\
+\bottomrule
+\end{tabular}
+
+\subsection{Series Summary}
+\label{sec:summary-table}
+
+The following table lists all series in this package. Click any series ID to jump to its detailed documentation.
+
+\begin{longtable}{@{} l p{4.5cm} c l l c l @{}}
+\toprule
+\textbf{ID} & \textbf{Name} & \textbf{Ch.} & \textbf{Period} & \textbf{Units} & \textbf{Ext.} & \textbf{Source} \\
+\midrule
+\endhead
+<<SERIES_SUMMARY_ROWS>>
+\bottomrule
+\end{longtable}
+
+\newpage
+
+% ================================================================
+% CHAPTER 2: SERIES DOCUMENTATION
+% ================================================================
+\section{Series Documentation}
+\label{sec:series}
+
+% --- BEGIN AUTO-GENERATED SERIES SECTIONS ---
+% Each series gets one \subsection with standardized content.
+% The generator produces one block per series from series_registry.json.
+
+<<SERIES_SECTIONS>>
+
+% --- END AUTO-GENERATED SERIES SECTIONS ---
+
+\newpage
+
+% ================================================================
+% APPENDIX A: DATA SOURCES
+% ================================================================
+\appendix
+\section{Data Sources}
+\label{sec:sources}
+
+Complete bibliography of all data sources used in this package, sorted alphabetically by institution.
+
+<<DATA_SOURCES_BIBLIOGRAPHY>>
+
+\newpage
+
+% ================================================================
+% APPENDIX B: FILE MANIFEST
+% ================================================================
+\section{File Manifest}
+\label{sec:manifest}
+
+\begin{longtable}{@{} p{6cm} p{8cm} @{}}
+\toprule
+\textbf{File} & \textbf{Description} \\
+\midrule
+\endhead
+<<FILE_MANIFEST_ROWS>>
+\bottomrule
+\end{longtable}
+
+\newpage
+
+% ================================================================
+% APPENDIX C: USING THIS DATA
+% ================================================================
+\section{Using This Data}
+\label{sec:usage}
+
+\subsection{Excel / Google Sheets}
+
+Open \texttt{<<MASTER_XLSX>>} directly. The workbook is formatted for immediate use:
+
+\begin{itemize}
+    \item \textbf{Row 1}: Human-readable series names
+    \item \textbf{Row 2}: Series identifiers (S001, S002, \ldots)
+    \item \textbf{Row 3}: Units of measurement
+    \item \textbf{Row 4+}: Data values (Year in Column A)
+\end{itemize}
+
+Headers are frozen so they remain visible while scrolling.
+
+\subsection{R}
+
+\begin{verbatim}
+library(readr)
+
+# Load all series (skip name and unit rows)
+data <- read_csv("<<MASTER_CSV>>", skip = 2)
+
+# Column names are series IDs: S001, S002, ...
+# First column is Year
+head(data)
+\end{verbatim}
+
+\subsection{Python}
+
+\begin{verbatim}
+import pandas as pd
+
+# Load with series IDs as column names
+data = pd.read_csv("<<MASTER_CSV>>", header=1, skiprows=[2])
+
+# data.columns: ['Year', 'S001', 'S002', ...]
+print(data.head())
+\end{verbatim}
+
+\subsection{Stata}
+
+\begin{verbatim}
+import delimited "<<MASTER_CSV>>", ///
+    rowrange(4:) varnames(2) clear
+
+describe
+\end{verbatim}
+
+\subsection{Understanding the Extenbooks}
+
+Each file in the \texttt{Series/} folder is an Excel workbook with four sheets:
+
+\begin{description}
+    \item[Data] All raw data inputs (subsources) laid out as columns alongside every transformation and the final constructed series. This is full transparency: you see every number that went into the result.
+    \item[Provenance] Where each data point came from: the source institution, the specific table or API, the time period covered, and quality classification.
+    \item[Research] Quotes and methodology notes from the original author's text that guided the construction decisions.
+    \item[Construction] A step-by-step log of operations: load, rebase, splice, extend. Each step shows its inputs and outputs.
+\end{description}
+
+\subsection{Codebook (Variable Reference)}
+
+The file \texttt{<<CODEBOOK_CSV>>} is a formal data dictionary in CSV format with one row per series. It documents every variable in the master data file: series ID, name, definition, units, frequency, temporal coverage, observation count, data sources, and extension status. Import it alongside the master data file to programmatically look up variable metadata:
+
+\begin{verbatim}
+# Python
+codebook = pd.read_csv("<<CODEBOOK_CSV>>")
+codebook.set_index("series_id", inplace=True)
+print(codebook.loc["S013", "definition"])
+\end{verbatim}
+
+\subsection{Citing This Data}
+
+See \texttt{CITATION.txt} in the package root for a formatted citation (ready to paste into a manuscript) and a BibTeX entry (for \LaTeX\ users). Please also cite the original work.
+
+\newpage
+
+% ================================================================
+% APPENDIX D: VERSION HISTORY
+% ================================================================
+\section{Version History}
+\label{sec:versions}
+
+\begin{tabular}{@{} l l p{10cm} @{}}
+\toprule
+\textbf{Version} & \textbf{Date} & \textbf{Changes} \\
+\midrule
+<<VERSION_HISTORY_ROWS>>
+\bottomrule
+\end{tabular}
+
+\end{document}

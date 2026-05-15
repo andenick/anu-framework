@@ -1,0 +1,17 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+# API keys must be provided at runtime via environment variables or mounted .env
+# DO NOT bake API keys into the image
+
+# Verify the pipeline runs
+RUN python replicate.py --dry-run
+
+# Default: run the full pipeline
+CMD ["python", "replicate.py"]

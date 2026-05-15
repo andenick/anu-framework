@@ -1,0 +1,637 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arcanum/druck/schemas/series_registry.schema.json",
+  "title": "Anu Framework Series Registry",
+  "description": "Formal schema for series_registry.json, the single source of truth for every Anu Framework data project. Validates the shape produced by /anu-ingestion and consumed by every downstream output (Chopped, Extenbook, Visualize, Replicator, Drive, Ledger).",
+  "type": "object",
+  "required": ["version", "project", "series"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Schema version. Current registry schema is 2.0.0. Earlier projects may have 1.x; see migration notes in SERIES_REGISTRY_SCHEMA.md.",
+      "pattern": "^[0-9]+\\.[0-9]+(\\.[0-9]+)?$"
+    },
+    "project": {
+      "type": "string",
+      "description": "Short project identifier (e.g., 'CD2', 'NickyData', 'starcruiser'). Used in artifact filenames and Replicator banners."
+    },
+    "notation": {
+      "type": "string",
+      "description": "Human-readable summary of the series-ID notation in use. Documentation only; not parsed."
+    },
+    "generated": {
+      "type": "string",
+      "description": "ISO date (YYYY-MM-DD) the registry was generated or last regenerated.",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "architecture": {
+      "type": "string",
+      "description": "Free-text label for the broader framework version (e.g., 'Anu Suite v6.0'). Documentation only."
+    },
+    "drive_config": { "$ref": "#/$defs/drive_config" },
+    "series": {
+      "type": "object",
+      "description": "Map of series ID to series object. Series IDs MUST match the Anu Series ID Specification v2.0.",
+      "propertyNames": { "pattern": "^S[0-9]{3}$" },
+      "additionalProperties": { "$ref": "#/$defs/series" },
+      "minProperties": 1
+    },
+    "figures": {
+      "type": "object",
+      "description": "Map of figure ID to figure-spec object. Figure IDs are 'Fig{C}.{N}' with optional letter suffix (e.g., Fig2.1, Fig2.4A).",
+      "propertyNames": { "pattern": "^Fig[0-9]+\\.[0-9]+[A-Z]?$" },
+      "additionalProperties": { "$ref": "#/$defs/figure" }
+    },
+    "sources": {
+      "type": "object",
+      "description": "Map of source ref_id (uppercase identifier, e.g., 'BEA_1966_LTEG') to source descriptor. Referenced by per-subseries and per-series `source_refs` arrays.",
+      "propertyNames": { "pattern": "^[A-Z][A-Z0-9_]+$" },
+      "additionalProperties": { "$ref": "#/$defs/source" }
+    }
+  },
+  "additionalProperties": true,
+
+  "$defs": {
+    "drive_config": {
+      "type": "object",
+      "description": "Top-level project-distribution metadata used by /anu-drive when publishing a consumer-facing Google Drive package.",
+      "required": ["project_title", "author"],
+      "properties": {
+        "project_title": { "type": "string" },
+        "drive_version": { "type": "string" },
+        "author": {
+          "type": "object",
+          "required": ["first_name", "last_name"],
+          "properties": {
+            "first_name": { "type": "string" },
+            "last_name": { "type": "string" }
+          },
+          "additionalProperties": true
+        },
+        "institution": { "type": "string" },
+        "email": { "type": "string" },
+        "original_work": {
+          "type": "object",
+          "properties": {
+            "author": { "type": "string" },
+            "title": { "type": "string" },
+            "year": { "type": "integer" },
+            "publisher": { "type": "string" }
+          },
+          "additionalProperties": true
+        },
+        "repo_url": { "type": "string" },
+        "license": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+
+    "series": {
+      "type": "object",
+      "description": "A single data series. Must include at least one of `source_file` (single-source pattern) or `source_series`/`source_columns` (composite pattern).",
+      "required": ["name", "chapter", "figures", "subseries", "validation"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable series name."
+        },
+        "chapter": {
+          "type": "integer",
+          "description": "Chapter number in the underlying work.",
+          "minimum": 0
+        },
+        "figures": {
+          "type": "array",
+          "description": "Figure IDs that depend on this series (e.g., ['Fig2.1', 'Fig6.6']).",
+          "items": { "type": "string", "pattern": "^Fig[0-9]+\\.[0-9]+[A-Z]?$" }
+        },
+        "tier": {
+          "type": "integer",
+          "description": "Two-tier architecture: 1 = composite analytical series (full pipeline), 2 = raw input table (loader-only).",
+          "enum": [1, 2]
+        },
+        "source_file": {
+          "type": "string",
+          "description": "Path (relative to Chopped root) of the source CSV for input-table or single-source-analytical series."
+        },
+        "source_series": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "array", "items": { "type": "string", "pattern": "^S[0-9]{3}$" } }
+          ],
+          "description": "For composite series: parent series ID(s) supplying input data."
+        },
+        "source_columns": {
+          "type": "object",
+          "description": "For composite series: map of logical role to parent subseries column ID.",
+          "additionalProperties": { "type": "string" }
+        },
+        "year_range": {
+          "type": "array",
+          "description": "[start_year, end_year] integer pair covering the series' lifetime.",
+          "items": { "type": "integer" },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "data_type": {
+          "type": "string",
+          "description": "Content classification used by the pipeline to gate which downstream stages apply (extension applies only to time_series).",
+          "enum": [
+            "time_series",
+            "cross_sectional",
+            "cross_sectional_panel",
+            "panel",
+            "quarterly",
+            "quarterly_annualised",
+            "mixed",
+            "placeholder",
+            "theoretical",
+            "derived"
+          ]
+        },
+        "content_type": {
+          "type": "string",
+          "description": "Alias for data_type when used by anu-framework rules. Same enum.",
+          "enum": [
+            "time_series",
+            "cross_sectional",
+            "theoretical",
+            "derived"
+          ]
+        },
+        "units": { "type": "string" },
+        "description": { "type": "string" },
+        "subseries_note": {
+          "type": "string",
+          "description": "Free-text summary used when `subseries` is intentionally empty or partially populated (common for tier-2 wide tables)."
+        },
+        "subseries": {
+          "type": "object",
+          "description": "Map of subseries ID (e.g., S001-A) to subseries object. May be empty for tier-2 wide tables documented via subseries_note.",
+          "propertyNames": { "pattern": "^S[0-9]{3}(-[A-Z]|-EXT|-COMBINED|[A-Z]{1,3})?$" },
+          "additionalProperties": { "$ref": "#/$defs/subseries" }
+        },
+        "construction": {
+          "type": "array",
+          "description": "Ordered list of construction steps producing the series from its subseries inputs.",
+          "items": { "$ref": "#/$defs/construction_step" }
+        },
+        "construction_steps": {
+          "type": "array",
+          "description": "Legacy/free-text variant of `construction`. Strings or step objects.",
+          "items": {
+            "oneOf": [
+              { "type": "string" },
+              { "$ref": "#/$defs/construction_step" }
+            ]
+          }
+        },
+        "extension": {
+          "anyOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/extension" }
+          ],
+          "description": "Modern-API extension config, or null if no extension."
+        },
+        "validation": { "$ref": "#/$defs/validation_block" },
+        "concurrent_series": {
+          "type": "object",
+          "description": "For ratio/rate series: numerator/denominator level-data components.",
+          "propertyNames": { "pattern": "^CS[0-9]{3}(-[A-Z][0-9]?)?$" },
+          "additionalProperties": { "$ref": "#/$defs/concurrent_series_component" }
+        },
+        "proxy": {
+          "type": "boolean",
+          "description": "True if the modern extension uses a proxy series rather than the exact original. Mandates proxy_justification."
+        },
+        "proxy_justification": {
+          "type": "string",
+          "description": "Required when proxy=true. Concept-match justification for the substitution."
+        },
+        "shiny_column": {
+          "type": "string",
+          "description": "Legacy alias of viz_column."
+        },
+        "viz_column": {
+          "type": "string",
+          "description": "Semantic column name for visualization export."
+        },
+        "source_refs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "References to entries in the top-level `sources` block."
+        },
+        "kb_references": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "References to Knowledge Base anchors (KB markdown sections)."
+        },
+        "decision_refs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "assumption_refs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "index_axis": {
+          "type": "string",
+          "description": "For cross_sectional series: name of the index dimension (e.g., 'industry', 'income_midpoint')."
+        },
+        "catalog_id": {
+          "type": "string",
+          "description": "Optional cross-reference to an external catalog entry.",
+          "pattern": "^S[0-9]{3}$"
+        }
+      },
+      "anyOf": [
+        { "required": ["source_file"] },
+        { "required": ["source_series"] },
+        { "required": ["source_columns"] }
+      ],
+      "if": { "properties": { "proxy": { "const": true } }, "required": ["proxy"] },
+      "then": { "required": ["proxy_justification"] },
+      "additionalProperties": true
+    },
+
+    "subseries": {
+      "type": "object",
+      "description": "A single subseries component of a parent series. Critical fields (name, period, units) MUST be non-null for visualization correctness.",
+      "required": ["name", "period", "units"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "source": { "type": ["string", "null"] },
+        "source_url": { "type": ["string", "null"] },
+        "period": {
+          "type": "array",
+          "description": "[start_year, end_year]. Both integers; equal years allowed for cross-sectional data.",
+          "items": { "type": "integer" },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "units": { "type": "string", "minLength": 1 },
+        "api": { "type": ["string", "null"] },
+        "is_reindexed": { "type": "boolean" },
+        "reindex_base_year": { "type": ["integer", "null"] },
+        "derived_from": {
+          "type": ["string", "null"],
+          "description": "Parent subseries ID (e.g., 'S001-A') or 'A+B' notation for composite derivations."
+        },
+        "transform": {
+          "anyOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/transform" }
+          ]
+        },
+        "color": {
+          "type": ["string", "null"],
+          "description": "Hex color for visualization (e.g., '#1f77b4')."
+        },
+        "loading_script": {
+          "type": "string",
+          "description": "L## script ID (e.g., 'L01').",
+          "pattern": "^L[0-9]{2,3}$"
+        },
+        "processing_script": {
+          "type": "string",
+          "pattern": "^P[0-9]{2,3}$"
+        },
+        "is_extension": {
+          "type": "boolean",
+          "description": "True if this subseries is the modern-API extension component."
+        },
+        "shiny_column": { "type": ["string", "null"] },
+        "viz_column": { "type": ["string", "null"] },
+        "source_refs": { "type": "array", "items": { "type": "string" } },
+        "confidence": {
+          "type": "string",
+          "enum": ["high", "medium", "low"]
+        },
+        "note": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+
+    "transform": {
+      "type": "object",
+      "description": "Specification of the transform that produced a derived subseries.",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "reindex",
+            "reindex_to_match",
+            "splice",
+            "calculated",
+            "ratio",
+            "complement",
+            "fitted_curve",
+            "annual_average",
+            "deflate"
+          ]
+        },
+        "input": { "type": "string" },
+        "inputs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "match_to": { "type": "string" },
+        "at_year": { "type": "integer" },
+        "base_year": { "type": "integer" },
+        "method": { "type": "string" },
+        "formula": { "type": "string" },
+        "numerator": { "type": "string" },
+        "denominator": { "type": "string" },
+        "frequency": { "type": "string" },
+        "deflator": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+
+    "construction_step": {
+      "type": "object",
+      "description": "One step in the series-construction pipeline. The `step` field is normally an integer ordinal; legacy registries occasionally use a string description in lieu of {step, op, ...}.",
+      "properties": {
+        "step": {
+          "oneOf": [
+            { "type": "integer", "minimum": 1 },
+            { "type": "string" }
+          ]
+        },
+        "op": {
+          "type": "string",
+          "description": "Operation kind.",
+          "enum": [
+            "load",
+            "reindex",
+            "reindex_to_match",
+            "splice",
+            "calculate",
+            "rescale",
+            "extract",
+            "extend",
+            "verify",
+            "transpose",
+            "output",
+            "normal_capacity",
+            "aggregate",
+            "combine"
+          ]
+        },
+        "input": { "type": "string" },
+        "inputs": { "type": "array", "items": { "type": "string" } },
+        "subseries": {
+          "type": "array",
+          "description": "Subseries IDs loaded or referenced by this step.",
+          "items": { "type": "string" }
+        },
+        "columns": { "type": "array", "items": { "type": "string" } },
+        "output": { "type": "string" },
+        "base_year": { "type": "integer" },
+        "at_year": { "type": "integer" },
+        "match_to": { "type": "string" },
+        "method": { "type": "string" },
+        "desc": { "type": "string" },
+        "source": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+
+    "extension": {
+      "type": "object",
+      "description": "Modern-API extension specification. Drives /anu-extension and produces the EPR.",
+      "properties": {
+        "api": {
+          "type": "string",
+          "description": "API or source name (e.g., 'FRED', 'BEA', 'BLS', 'MeasuringWorth', 'OECD', 'IMF')."
+        },
+        "api_series_id": { "type": "string" },
+        "frequency": {
+          "type": "string",
+          "enum": ["annual", "quarterly", "monthly", "daily", "weekly"]
+        },
+        "aggregation": {
+          "anyOf": [
+            { "type": "null" },
+            { "type": "string", "enum": ["annual_average", "annual_sum", "end_of_period", "start_of_period"] }
+          ]
+        },
+        "splice_year": { "type": "integer" },
+        "splice_method": {
+          "type": "string",
+          "enum": ["growth_rate", "direct", "level", "ratio"]
+        },
+        "output_subseries": {
+          "type": "string",
+          "description": "Subseries ID assigned to the extension data (typically ends in -EXT).",
+          "pattern": "^S[0-9]{3}-EXT$"
+        },
+        "combined_subseries": {
+          "type": "string",
+          "description": "Subseries ID assigned to the spliced original+extension series (typically ends in -COMBINED).",
+          "pattern": "^S[0-9]{3}-COMBINED$"
+        },
+        "reindexed_subseries": {
+          "type": "string",
+          "description": "Optional subseries ID for the reindexed-to-match copy of the extension data."
+        },
+        "vintage_policy": {
+          "type": "string",
+          "enum": ["latest", "specific", "alfred"]
+        },
+        "alfred_date": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "last_pulled": {
+          "type": "string",
+          "description": "ISO date of the most recent API pull."
+        },
+        "manual_download": {
+          "type": "boolean",
+          "description": "True if the extension is pulled by manual download rather than scripted API."
+        },
+        "pre_computed": {
+          "type": "boolean",
+          "description": "True if the extension is computed upstream and merged into the source CSV (no L## script needed)."
+        },
+        "tables": {
+          "type": "array",
+          "description": "BEA/agency table identifiers when api='BEA' and pre_computed=true.",
+          "items": { "type": "string" }
+        },
+        "note": { "type": "string" },
+        "provenance": {
+          "type": "object",
+          "description": "Free-text provenance documenting the original-source -> extension-source mapping. EPR materializes from this block.",
+          "properties": {
+            "shaikh_source": { "type": "string" },
+            "shaikh_appendix_ref": { "type": "string" },
+            "extension_source": { "type": "string" },
+            "extension_url": { "type": "string" },
+            "conceptual_continuity": { "type": "string" },
+            "vintage_note": { "type": "string" }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "validation_block": {
+      "type": "object",
+      "description": "Reference data and expected ranges used by the post-construction validator and the anu-review D8 dimension.",
+      "properties": {
+        "reference_values": {
+          "description": "Either a map year-string -> value, or an array of {year, expected, tolerance} objects.",
+          "oneOf": [
+            {
+              "type": "object",
+              "propertyNames": { "pattern": "^-?[0-9]+$" },
+              "additionalProperties": { "type": "number" }
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["year", "expected"],
+                "properties": {
+                  "year": { "type": "integer" },
+                  "expected": { "type": "number" },
+                  "tolerance": { "type": "number" }
+                },
+                "additionalProperties": true
+              }
+            }
+          ]
+        },
+        "expected_range": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "tolerance": { "type": "number" },
+        "target_end_year": { "type": ["integer", "null"] },
+        "row_count": {
+          "type": "object",
+          "description": "For cross-sectional series: expected row count.",
+          "properties": {
+            "expected": { "type": "integer" },
+            "tolerance": { "type": "integer" }
+          },
+          "additionalProperties": true
+        },
+        "note": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+
+    "concurrent_series_component": {
+      "type": "object",
+      "description": "Level-data component (numerator or denominator) backing a ratio/rate series.",
+      "required": ["name", "component_type"],
+      "properties": {
+        "name": { "type": "string" },
+        "source_table": { "type": "string", "pattern": "^S[0-9]{3}$" },
+        "source_column": { "type": "string" },
+        "combined_column": { "type": "string" },
+        "component_type": {
+          "type": "string",
+          "enum": ["numerator", "denominator"]
+        },
+        "units": { "type": "string" },
+        "formula_role": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+
+    "figure": {
+      "type": "object",
+      "description": "Figure specification linking visualization output to one or more series.",
+      "required": ["chapter", "caption", "columns"],
+      "properties": {
+        "chapter": { "type": "integer" },
+        "page": { "type": "integer" },
+        "caption": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": [
+            "time_series",
+            "cross_sectional",
+            "scatter",
+            "scatter_plot",
+            "bar_chart",
+            "line_chart",
+            "grouped_bar_chart",
+            "distribution",
+            "theoretical"
+          ]
+        },
+        "y_scale": {
+          "type": "string",
+          "enum": ["linear", "log", "logarithmic"]
+        },
+        "columns": {
+          "type": "object",
+          "description": "Map of logical name to {series, subseries, label} entries plotted on the figure.",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "series": { "type": ["string", "null"] },
+              "subseries": { "type": ["string", "null"] },
+              "label": { "type": "string" }
+            },
+            "additionalProperties": true
+          }
+        },
+        "axes": { "type": "object" },
+        "transforms": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "op": { "type": "string" },
+              "input": { "type": "string" },
+              "output": { "type": "string" },
+              "capacity": { "type": "string" }
+            },
+            "additionalProperties": true
+          }
+        },
+        "source_file": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+
+    "source": {
+      "type": "object",
+      "description": "Top-level source descriptor referenced by per-series `source_refs` arrays. ref_id matches the property key.",
+      "required": ["ref_id", "type"],
+      "properties": {
+        "ref_id": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": [
+            "government_publication",
+            "journal_article",
+            "book",
+            "database",
+            "dataset",
+            "working_paper",
+            "press_release",
+            "other"
+          ]
+        },
+        "author": { "type": "string" },
+        "title": { "type": "string" },
+        "year": { "type": ["integer", "null"] },
+        "publisher": { "type": "string" },
+        "note": { "type": "string" },
+        "url": { "type": "string" }
+      },
+      "additionalProperties": true
+    }
+  }
+}

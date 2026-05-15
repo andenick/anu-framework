@@ -1,0 +1,27 @@
+"""P02_{{sid}} — Process matrix-derived summary series (pass-through)."""
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from L01_loaders.L01_{{sid}}_{{slug}} import load as load_series  # noqa: E402
+from utils.io import write_series_csv                              # noqa: E402
+
+
+SERIES_ID = "{{sid}}"
+
+
+def run():
+    df = load_series()
+    df["stage"] = "benchmark_only"
+    df["provenance"] = "BEA Benchmark IO matrices via io_matrix helpers"
+    write_series_csv(df, SERIES_ID, stage="intermediate")
+    final_path = write_series_csv(df, SERIES_ID, stage="final")
+    print(f"    [P02_{SERIES_ID}] {len(df)} benchmark years; wrote {final_path.name}")
+    return df
+
+
+if __name__ == "__main__":
+    run()

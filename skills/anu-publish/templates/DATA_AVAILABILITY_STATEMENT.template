@@ -1,0 +1,38 @@
+# Data Availability Statement
+
+## Data Included in This Repository
+
+The following data is included directly in this repository and requires no external access:
+
+| Data | Location | Format | Source |
+|------|----------|--------|--------|
+| {list included datasets} | `data/user-inputs/` | CSV | {original source} |
+
+## Data Obtained via Free Public APIs
+
+The following data is fetched automatically by the pipeline using free API keys. Users must register for their own keys (free, instant registration):
+
+| API | Registration URL | Data Obtained | Series |
+|-----|-----------------|---------------|--------|
+| {API name} | {registration URL} | {description} | {series IDs} |
+
+API responses are cached locally in `data/raw-data/api/` (gitignored) and regenerated automatically when the pipeline runs.
+
+## Data Not Included (Restricted or Proprietary)
+
+The following data could not be included due to access restrictions:
+
+| Data | Reason | Alternative | Affected Series |
+|------|--------|-------------|-----------------|
+| {data name} | {access restriction} | {what we did instead} | {series IDs} |
+
+## Reproducibility
+
+All computational results can be reproduced by:
+1. Cloning this repository
+2. Installing dependencies: `pip install -r requirements.txt`
+3. Providing API keys: `cp config/api_keys.env.example config/api_keys.env` and editing with your keys
+4. Running: `python replicate.py`
+
+Expected runtime: {estimate} on a standard laptop.
+No special hardware is required.

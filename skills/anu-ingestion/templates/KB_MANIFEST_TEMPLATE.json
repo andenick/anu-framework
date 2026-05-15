@@ -1,0 +1,17 @@
+{
+  "project": "[PROJECT]",
+  "generated": "YYYY-MM-DD",
+  "kb_root": "Inputs/Robert/",
+  "files": [
+    {
+      "filename": "[filename.md]",
+      "type": "body_text",
+      "chapter": 0,
+      "description": "[Description of content]",
+      "extraction_method": "HDARP",
+      "extraction_date": "YYYY-MM-DD",
+      "page_range": "[start]-[end]",
+      "series_referenced": []
+    }
+  ]
+}

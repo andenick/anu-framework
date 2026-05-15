@@ -1,0 +1,44 @@
+{
+  "project": "[PROJECT]",
+  "last_updated": "YYYY-MM-DDTHH:MM:SSZ",
+  "chapters": {
+    "0": {
+      "stage_1_research": {
+        "status": "not_started",
+        "completed_date": null,
+        "series_completed": [],
+        "series_remaining": [],
+        "artifacts": []
+      },
+      "stage_2_ingestion": {
+        "status": "not_started",
+        "completed_date": null,
+        "series_completed": [],
+        "series_remaining": [],
+        "artifacts": []
+      },
+      "stage_3_extension": {
+        "status": "not_started",
+        "completed_date": null,
+        "artifacts": []
+      },
+      "stage_4_replication": {
+        "status": "not_started",
+        "completed_date": null,
+        "artifacts": []
+      },
+      "stage_5_output": {
+        "status": "not_started",
+        "completed_date": null,
+        "artifacts": []
+      },
+      "stage_6_viz_audit": {
+        "status": "not_started",
+        "completed_date": null,
+        "review_score": null,
+        "certification": null,
+        "artifacts": []
+      }
+    }
+  }
+}

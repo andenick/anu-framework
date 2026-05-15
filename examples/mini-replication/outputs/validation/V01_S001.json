@@ -1,0 +1,34 @@
+{
+  "series": "S001",
+  "checks": [
+    {
+      "year": "1929",
+      "expected": 7.6,
+      "actual": 7.6115,
+      "diff_pct": 0.151,
+      "status": "PASS"
+    },
+    {
+      "year": "1950",
+      "expected": 15.8,
+      "actual": 15.8042,
+      "diff_pct": 0.027,
+      "status": "PASS"
+    },
+    {
+      "year": "2017",
+      "expected": 100.0,
+      "actual": 100.0,
+      "diff_pct": 0.0,
+      "status": "PASS"
+    },
+    {
+      "year": "2023",
+      "expected": 100.8,
+      "actual": 100.7643,
+      "diff_pct": 0.035,
+      "status": "PASS"
+    }
+  ],
+  "status": "PASS"
+}
