@@ -1,0 +1,28 @@
+{
+  "version": "2.0",
+  "generated": "YYYY-MM-DD",
+  "notation": "Series ID v2.0 (S###-A dash notation)",
+  "files": [
+    {
+      "filename": "[filename.csv]",
+      "chapter": 0,
+      "series_id": "S###",
+      "subseries_ids": [
+        "S###-A",
+        "S###-B",
+        "S###",
+        "S###-EXT",
+        "S###-COMBINED"
+      ],
+      "year_range": [
+        0,
+        0
+      ],
+      "figures": [],
+      "format": "time_series",
+      "research_entry_count": 0,
+      "extension_source": null,
+      "validation_status": "PASS"
+    }
+  ]
+}

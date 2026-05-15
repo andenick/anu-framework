@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use this data, please cite it as below."
+title: "{project_title}"
+version: "{version}"
+date-released: "{date}"
+authors:
+  - family-names: "{author_last}"
+    given-names: "{author_first}"
+    orcid: "{orcid}"
+    affiliation: "{institution}"
+repository-code: "{repo_url}"
+license: MIT
+keywords:
+  - economics
+  - data-replication
+  - reproducible-research
+  - anu-framework
+references:
+  - type: book
+    authors:
+      - family-names: "{original_author_last}"
+        given-names: "{original_author_first}"
+    title: "{original_title}"
+    year: "{original_year}"
+    publisher:
+      name: "{publisher}"
