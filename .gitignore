@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Audit/Doctor outputs
+FRAMEWORK_AUDIT.json
+PROJECT_AUDIT.json
+tools/_check_framework_shim.py
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db

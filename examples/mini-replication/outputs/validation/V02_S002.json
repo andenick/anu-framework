@@ -1,0 +1,27 @@
+{
+  "series": "S002",
+  "checks": [
+    {
+      "year": "2009",
+      "expected": -11.43,
+      "actual": -11.433,
+      "abs_diff": 0.003,
+      "status": "PASS"
+    },
+    {
+      "year": "2010",
+      "expected": 5.57,
+      "actual": 5.567,
+      "abs_diff": 0.003,
+      "status": "PASS"
+    },
+    {
+      "year": "2020",
+      "expected": -7.09,
+      "actual": -7.091,
+      "abs_diff": 0.001,
+      "status": "PASS"
+    }
+  ],
+  "status": "PASS"
+}

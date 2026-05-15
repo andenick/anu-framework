@@ -1,0 +1,50 @@
+"""V03_{{sid}} — Validate matrix-summary series.
+
+Common checks for matrix-derived series:
+  - Hawkins-Simon: max_eigenvalue < 1 (productive economy)
+  - Sparsity in [0, 1]
+  - Range bounds for derived metrics
+
+TODO: agent customizes the checks for this specific summary statistic.
+"""
+from __future__ import annotations
+
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+import pandas as pd
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from utils.io import write_validation_result   # noqa: E402
+from utils.paths import DATA_FINAL              # noqa: E402
+
+
+def run():
+    df = pd.read_csv(DATA_FINAL / "{{sid}}.csv")
+    df = df[df["series_id"] == "{{first_subseries}}"]
+    # TODO: replace with the appropriate check (Hawkins-Simon, range, identity, etc.)
+    in_range = bool(df["value"].notna().all() and len(df) > 0)
+    status = "PASS" if in_range else "FAIL"
+    result = {
+        "series_id": "{{sid}}",
+        "run_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "tolerance_class": "{{tolerance_class}}",
+        "status": status,
+        "n_pass": 1 if status == "PASS" else 0,
+        "n_fail": 0 if status == "PASS" else 1,
+        "n_missing": 0,
+        "checks": {
+            "n_benchmark_years": len(df),
+            "value_range": [float(df["value"].min()), float(df["value"].max())] if len(df) else None,
+        },
+    }
+    write_validation_result("{{sid}}", result)
+    print(f"    [V03_{{sid}}] status={status} years={len(df)}")
+    return result
+
+
+if __name__ == "__main__":
+    result = run()
+    sys.exit(0 if result["status"] == "PASS" else 1)

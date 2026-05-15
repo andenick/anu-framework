@@ -1,0 +1,123 @@
+% ================================================================
+% Anu Drive — Per-Series Section Template v1.0
+%
+% This template is repeated once per series in Chapter 2.
+% The LaTeX generator replaces <<PLACEHOLDERS>> with values
+% read from series_registry.json and S###_research.json.
+% ================================================================
+
+% --- Section: S{NNN} — {Series Name} ---
+\subsection{<<SERIES_ID>> --- <<SERIES_NAME>>}
+\label{sec:<<SERIES_ID>>}
+
+% --- 1. Definition & Purpose ---
+\subsubsection{Definition \& Purpose}
+
+\textbf{<<SERIES_NAME>>} <<SERIES_DESCRIPTION>>
+
+% If research quotes exist, include 1-2 key quotes:
+<<IF_RESEARCH_QUOTES>>
+\begin{quote}
+\itshape ``<<QUOTE_TEXT>>''
+
+\normalfont\small --- <<QUOTE_SOURCE>>, p.~<<QUOTE_PAGE>>
+\end{quote}
+<<END_IF_RESEARCH_QUOTES>>
+
+% --- 2. Source Data ---
+\subsubsection{Source Data}
+
+<<IF_SINGLE_SUBSOURCE>>
+This series is constructed from a single source:
+
+\begin{tabular}{@{} l l l l l @{}}
+\toprule
+\textbf{ID} & \textbf{Source} & \textbf{Period} & \textbf{Units} & \textbf{Quality} \\
+\midrule
+<<SUBSOURCE_ROW>>
+\bottomrule
+\end{tabular}
+<<END_IF_SINGLE_SUBSOURCE>>
+
+<<IF_MULTIPLE_SUBSOURCES>>
+This series is constructed from <<N_SUBSOURCES>> data inputs:
+
+\begin{tabular}{@{} l p{5cm} l l l @{}}
+\toprule
+\textbf{ID} & \textbf{Source} & \textbf{Period} & \textbf{Units} & \textbf{Quality} \\
+\midrule
+<<SUBSOURCE_ROWS>>
+\bottomrule
+\end{tabular}
+<<END_IF_MULTIPLE_SUBSOURCES>>
+
+% --- 3. Construction Process ---
+\subsubsection{Construction Process}
+
+<<IF_CONSTRUCTION_STEPS>>
+The series is constructed through the following steps:
+
+\begin{enumerate}
+<<CONSTRUCTION_STEPS>>
+% Each step is rendered as:
+%   \item \textbf{Load} S001-A from BEA LTEG Table A15 (1860--1959)
+%   \item \textbf{Reindex} S001-A to base year 1958 = 100, producing S001-A-R
+%   \item \textbf{Splice} S001-A-R and S001-B at 1919 using growth rate method, producing S001-BASE
+\end{enumerate}
+<<END_IF_CONSTRUCTION_STEPS>>
+
+<<IF_FORMULA>>
+\textbf{Formula:}
+\begin{equation}
+<<FORMULA_LATEX>>
+\end{equation}
+<<END_IF_FORMULA>>
+
+% --- 4. Extension (conditional — only if extension exists) ---
+<<IF_EXTENSION>>
+\subsubsection{Extension to Present}
+
+The historical series has been extended to <<CURRENT_YEAR>> using publicly available API data:
+
+\begin{tabular}{@{} l l @{}}
+\toprule
+\textbf{Property} & \textbf{Value} \\
+\midrule
+Extension Source   & <<EXT_API>> --- <<EXT_SERIES_ID>> \\
+Splice Year        & <<EXT_SPLICE_YEAR>> \\
+Splice Method      & <<EXT_METHOD>> \\
+Modern Coverage    & <<EXT_SPLICE_YEAR_PLUS_1>>--<<CURRENT_YEAR>> \\
+API Registration   & Free at \url{<<EXT_API_URL>>} \\
+\bottomrule
+\end{tabular}
+
+<<IF_EXT_NOTES>>
+\smallskip
+\textit{Note: <<EXT_NOTES>>}
+<<END_IF_EXT_NOTES>>
+<<END_IF_EXTENSION>>
+
+<<IF_NO_EXTENSION>>
+\subsubsection{Extension Status}
+
+This series uses only historical data and has not been extended to the present.
+<<END_IF_NO_EXTENSION>>
+
+% --- 5. Output Summary ---
+\subsubsection{Output Summary}
+
+\begin{tabular}{@{} l l @{}}
+\toprule
+\textbf{Property} & \textbf{Value} \\
+\midrule
+Final Series ID     & <<SERIES_ID>> \\
+Period              & <<PERIOD_START>>--<<PERIOD_END>> \\
+Units               & <<UNITS>> \\
+Observations        & <<N_OBS>> \\
+Content Type        & <<CONTENT_TYPE>> \\
+Master File Column  & <<MASTER_COL>> \\
+Extenbook File      & \texttt{Series/<<EXTENBOOK_FILENAME>>} \\
+\bottomrule
+\end{tabular}
+
+\bigskip

@@ -1,0 +1,42 @@
+================================================================
+  HOW TO CITE THIS DATA
+================================================================
+
+If you use this data in your research, please cite:
+
+  <<AUTHOR_LAST>>, <<AUTHOR_FIRST>>. (<<YEAR>>).
+  <<PROJECT_TITLE>> [Data set], Version <<VERSION>>.
+  <<INSTITUTION>>.
+  Based on: <<ORIGINAL_AUTHOR>>, "<<ORIGINAL_TITLE>>"
+  (<<ORIGINAL_YEAR>>). <<PUBLISHER>>.
+
+
+BIBTEX
+------
+@misc{<<CITATION_KEY>>,
+  author       = {<<AUTHOR_LAST>>, <<AUTHOR_FIRST>>},
+  title        = {<<PROJECT_TITLE>>},
+  year         = {<<YEAR>>},
+  version      = {<<VERSION>>},
+  note         = {Data set. Based on <<ORIGINAL_AUTHOR>>,
+                  ``<<ORIGINAL_TITLE>>'' (<<ORIGINAL_YEAR>>)},
+  institution  = {<<INSTITUTION>>},
+  url          = {<<REPO_URL>>}
+}
+
+
+ORIGINAL WORK
+-------------
+This data replicates and extends the empirical content of:
+
+  <<ORIGINAL_AUTHOR>>. (<<ORIGINAL_YEAR>>).
+  <<ORIGINAL_TITLE>>.
+  <<PUBLISHER>>.
+
+Please also cite the original work when using this data.
+
+
+================================================================
+  <<PROJECT_TITLE>> -- Version <<VERSION>>
+  Generated <<DATE>>
+================================================================
