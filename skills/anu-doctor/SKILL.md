@@ -131,6 +131,79 @@ Anu Doctor is **infrastructure**, not a pipeline stage. It does not touch projec
 
 ---
 
+## Examples
+
+### Framework mode — clean run
+
+```
+$ python check_framework.py
+============================================================
+  Anu Doctor - Framework Self-Audit
+============================================================
+  framework version: v11.0
+  active skills:     20
+
+  D01  20/20  [PASS]
+  D02  20/20  [PASS]
+  ...
+  D15  1/1    [PASS]
+
+  Summary: 0 failures, 0 warnings
+============================================================
+```
+
+### Framework mode — drift detected
+
+```
+  D13  19/20  [FAIL]
+        - anu-chopped: headline v1.4 != frontmatter v2.0
+  D04   1/20  [FAIL]
+        - anu-chopped: matrix v2.0 disagrees with frontmatter v1.4
+
+  Summary: 2 failures, 0 warnings
+```
+
+The same drift surfaces in both D04 and D13 because the matrix and frontmatter diverged from the body headline. Fix the source of truth (frontmatter), then re-run.
+
+### Project mode — DPR coverage gap
+
+```
+$ python check_project.py --project /path/to/project
+  P01  62/64  [FAIL]
+        - S063 has no DPR file
+        - S064 has no DPR file
+```
+
+### JSON output for CI
+
+```
+$ python check_framework.py --json
+{
+  "framework_version": "v11.0",
+  "active_skills": 20,
+  "results": [
+    {"check": "D01", "skill": "anu-research", "severity": "FAIL", "ok": true, "detail": "..."},
+    ...
+  ],
+  "summary": {"fails": 0, "warns": 0}
+}
+```
+
+---
+
+## Anti-patterns
+
+| Anti-pattern | Why it's wrong |
+|---|---|
+| Editing a `SKILL.md` and not running anu-doctor before committing | Drift accumulates silently; the next session may rely on a broken cross-reference. CI catches it but local feedback is faster. |
+| Using `--fix` to clear all warnings without investigation | `--fix` only auto-fixes the mechanically-fixable D03 (part-of drift) and D12 (stale version strings) cases. Other failures need human judgment. Running it without reading the report can mask a structural issue. |
+| Bumping a skill's `version:` field without adding a Version History entry | D14 (WARN) catches missing evolution-log sections but not missing entries within them. Always log the change. |
+| Renaming a skill folder without updating `ANU_FRAMEWORK_OVERVIEW.md` and `SKILL_VERSION_MATRIX.md` | D02 and D06 catch it, but only after the fact. Treat the matrix and overview as part of the rename. |
+| Adding a `requires:` entry to introduce a dependency without confirming the dependency isn't cyclic | D15 catches cycles, but a cycle introduced by a long chain (A → B → C → A) is harder to back out of than one caught at edit time. |
+| Skipping anu-doctor in CI on the assumption that local checks are enough | Local checks drift from CI. The framework's invariant only holds if `anu-doctor` runs on every PR. |
+
+---
+
 ## Version History
 
 - **v1.2** (May 2026) — Added three consistency checks: **D13** (body headline `# Anu <Name> ... vN.N` must match frontmatter `version:` — FAIL), **D14** (every `SKILL.md` must ship an evolution-log section — WARN), **D15** (`requires:`-graph across skills must be acyclic — FAIL). Refreshed D12's `STALE_VERSION_RE` to cover v1.0–v10.0 (previously v1.0–v9.0 only — the regex itself had gone stale on the v11.0 bump). Discovered and fixed during the v11.0 framework-consistency audit; eight skill body headlines were stale and 30+ "Anu Framework v10.0" footers had survived the v11.0 sweep because D12 didn't match v10.

@@ -38,7 +38,7 @@ anu-suite/
 │   ├── ANU_EXTENBOOK_STANDARD.md
 │   └── ANU_REVIEW_REFERENCE.md
 ├── examples/
-│   └── cd2_minimal/                 # Sanitized CD2 example (1 chapter)
+│   └── minimal_example/                 # Sanitized the reference project example (1 chapter)
 └── schema/
     ├── series_registry.schema.json
     └── project_registry.schema.json
@@ -71,14 +71,14 @@ The Anu Framework imports Anu Architecture (formerly AnuData Architecture) as on
 
 ## Reference Implementation
 
-CD2 (Capitalism Data v2) is the reference implementation, replicating 113 data series from Shaikh (2016). A sanitized single-chapter example will be included.
+the reference project (Capitalism Data v2) is the reference implementation, replicating 113 data series from Shaikh (2016). A sanitized single-chapter example will be included.
 
 ## Next Steps
 
 1. Create repo after Anu Architecture standalone is published
 2. Sanitize all SKILL.md files
 3. Extract templates and scripts
-4. Create CD2 minimal example
+4. Create the reference project minimal example
 5. Write comprehensive README linking to Anu Architecture
 
 ---

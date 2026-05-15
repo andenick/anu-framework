@@ -17,7 +17,7 @@ part-of: Anu Framework v11.0
 | Property | Value |
 |----------|-------|
 | Skill Name | Anu Extenbook |
-| Version | 2.0 |
+| Version | 3.2 |
 | Part Of | Anu Framework v11.0 |
 | Created | 2026-01-30 |
 | Updated | 2026-03-07 |

@@ -383,7 +383,7 @@ Full pipeline artifacts required:
 
 **Registry pattern**: Uses `source_series` (array of input series IDs) or `source_file` with `construction` steps. No `tier` field or `"tier": 1`.
 
-**Examples (CD2)**: S034 (average ROP from S217 industry data), S001 (spliced industrial production index)
+**Examples (the reference project)**: S034 (average ROP from S217 industry data), S001 (spliced industrial production index)
 
 ### Tier 2: Raw Input Tables
 
@@ -395,7 +395,7 @@ Minimal artifacts — only loading script and registry entry:
 
 **Registry pattern**: Uses `source_file`, has `"tier": 2`, subseries map raw column IDs to names.
 
-**Examples (CD2)**: S217 (ropdataUSind with 64 columns), S013 (BEA NIPA Table 6.8.II-7 with 47 columns)
+**Examples (the reference project)**: S217 (ropdataUSind with 64 columns), S013 (BEA NIPA Table 6.8.II-7 with 47 columns)
 
 ### Ledger Implications
 
@@ -457,10 +457,11 @@ The Anu Ledger (v1.1+) is Tier-aware: Tier 2 series are not penalized for missin
 - **v3.0** (March 2026) - Renamed to Anu Ingestion; expanded to 7 sub-processes
 - **v3.1** (March 2026) - Added Two-Tier Architecture and Series Type Patterns; fixed absorbed database format to 5-column standard; added KB synthesis vs HDARP extraction distinction; standardized Figure ID format (no spaces)
 - **v3.2** (March 2026) - Added CRITICAL criticality level for subseries fields (name, period, units); added Registry Completeness Validation requirements for viz export
-- **v3.3** (March 2026) - Generalized: replaced CD2-specific chapter references (Ch2-style, Ch6/7/10-style) with descriptive type names; labeled series examples; genericized path patterns
+- **v3.3** (March 2026) - Generalized: replaced the reference project-specific chapter references (Ch2-style, Ch6/7/10-style) with descriptive type names; labeled series examples; genericized path patterns
 - **v3.4** (March 2026) - Added Concurrent Series (CS) specification for ratio/rate series: concurrent_series block, CS{NNN}-N/D naming convention, integration with processing scripts
 - **v3.5** (March 2026) - Minor refinements
 - **v4.0** (April 2026) - Registry schema v2.0: added top-level `sources` block with SourceReference entries (SRC-ID format), per-subseries `source_refs` arrays, provenance index support (by_source, by_api, by_series lineage chains)
+- **v4.1** (May 2026) - Added three batch-scale operations: `migrate-scheme` (cross-project ID remapping with CSV mapping table; walks registry + research JSONs + per-series docs + chopped CSVs); `batch-create-dpr --cohort` (cohort-level DPR scaffolding from a template). Codified the series-status taxonomy as a validated enum (`data_unavailable`, `data_available`, `loaded`, `book_period_validated`, `extension_methodology_documented`, `validated_book_and_extension`, `partial:<reason>`, `pending:<dependency>`).
 
 ---
 
