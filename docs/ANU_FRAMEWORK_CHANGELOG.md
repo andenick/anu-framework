@@ -43,9 +43,9 @@ The 21-commit Shaikh-Tonak (RMWND) rebuild — a public-facing replication packa
 
 ---
 
-## 2026-05-14 — v10.0 integration sweep (CD2 Sessions 30–35)
+## 2026-05-14 — v10.0 integration sweep (the reference project Sessions 30–35)
 
-The framework was brought to full internal consistency over six working sessions driven by the CD2 reference project.
+The framework was brought to full internal consistency over six working sessions driven by the the reference project reference project.
 
 ### Skills added
 - **#17 `anu-archive`** (v1.0) — audit-grade transparency distribution channel; ships `generate_archive_package.py`.
@@ -73,7 +73,7 @@ The framework was brought to full internal consistency over six working sessions
 - `anu-ledger` now records distribution events (a `distribution` block tracking which channel shipped which version when).
 
 ### Reference implementation
-- **CD2** (`Projects/CD2/`) is designated the framework's reference implementation — the most complete Anu Framework project and the known-good example for new projects to copy. It exercises all 18 skills and all three distribution channels.
+- **the reference project** (`<project>/`) is designated the framework's reference implementation — the most complete Anu Framework project and the known-good example for new projects to copy. It exercises all 18 skills and all three distribution channels.
 
 ---
 

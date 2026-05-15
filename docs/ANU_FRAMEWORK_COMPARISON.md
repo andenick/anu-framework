@@ -35,7 +35,7 @@ This document maps the Anu Framework's capabilities against the major reproducib
 ## What the Anu Framework Does That Others Don't
 
 ### 1. Anti-Fabrication Absolutism
-No standard explicitly prohibits synthetic data, proxy substitution, or lazy splices the way the Anu Framework does. Most standards focus on documenting what was done; Anu Framework prescribes what may NOT be done. This was formalized after discovering a 21% proxy error rate in CD2.
+No standard explicitly prohibits synthetic data, proxy substitution, or lazy splices the way the Anu Framework does. Most standards focus on documenting what was done; Anu Framework prescribes what may NOT be done. This was formalized after discovering a 21% proxy error rate in a reference project.
 
 ### 2. Extension Methodology
 No standard addresses the problem of extending historical data series with modern API data. The Anu Extension Standard defines faithful extension methodology: exact source matching, formula-level replication for derived quantities, and documented splice quality assessment.

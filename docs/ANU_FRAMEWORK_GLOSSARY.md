@@ -22,12 +22,12 @@ Every term used across the Anu Framework — agent skills, internal artifacts, o
 
 ### Anu Framework
 **Definition:** A 20-skill, multi-stage data-construction framework for replicating published economic series and extending them with public-API data under strict faithfulness rules.
-**Example:** CD2 (replicating Shaikh, *Capitalism* 2016) is the reference project for Anu Framework v11.
+**Example:** a reference Shaikh-replication project is the reference project for Anu Framework v11.
 **Related:** [[Anu Architecture]] [[Anu Replicator]] [[Anu Pipeline]]
 
 ### Anu Pipeline
 **Definition:** The master orchestrator that sequences 19 Anu skills through 8 stages (Adequacy through Publish) with quality review gates between stages.
-**Example:** Running `/anu-pipeline status` on CD2 reports which series are at which stage.
+**Example:** Running `/anu-pipeline status` on the reference project reports which series are at which stage.
 **Related:** [[Anu Framework]] [[Quality Gate]] [[Anu Ledger]]
 
 ### Anu Architecture
@@ -37,7 +37,7 @@ Every term used across the Anu Framework — agent skills, internal artifacts, o
 
 ### Anu Replicator
 **Definition:** A versioned, self-contained Python replication package with four phases (L## / P## / V## / M##) reproducible without agent intervention via a single `replicate.py` orchestrator.
-**Example:** `Projects/CD2/Technical/cd2-replicator/` reproduces all 40+ CD2 series end-to-end.
+**Example:** `<project>/Technical/replicator/` reproduces all 40+ the reference project series end-to-end.
 **Related:** [[Anu Architecture]] [[L## Loading]] [[P## Processing]]
 
 ### Council
@@ -52,13 +52,13 @@ Every term used across the Anu Framework — agent skills, internal artifacts, o
 
 ### Pipeline Stage
 **Definition:** One of eight ordered Anu Pipeline phases — Adequacy, Research, Ingestion, Extension, Replicator, Output, Distribution, Review — with prerequisites enforced between adjacent stages.
-**Example:** CD2 Chapter 2 passed Adequacy (D0) before any `S###_research.json` was written.
+**Example:** a project chapter 2 passed Adequacy (D0) before any `S###_research.json` was written.
 **Related:** [[Quality Gate]] [[Anu Pipeline]]
 
 ### Series Registry
 **Full name:** `series_registry.json`
 **Definition:** The single machine-readable source of truth for every series, subseries, transform, extension, and unit in an Anu project; all output formats read from it.
-**Example:** CD2's registry at `Technical/series_registry.json` registers S001 with four subseries and a FRED INDPRO extension.
+**Example:** a reference project's registry at `Technical/series_registry.json` registers S001 with four subseries and a FRED INDPRO extension.
 **Related:** [[Series ID]] [[Subseries]] [[DPR]]
 
 ---
@@ -145,7 +145,7 @@ Every term used across the Anu Framework — agent skills, internal artifacts, o
 ### FPR
 **Full name:** Figure Provenance Record
 **Definition:** Per-figure provenance document mapping a published book figure to the constructed series, subseries, and replication script that reproduce it.
-**Example:** A CD2 FPR links Shaikh's Figure 2.1 to S001 plotted from `cd2-replicator/data/chopped/S001.csv`.
+**Example:** A the reference project FPR links Shaikh's Figure 2.1 to S001 plotted from `reference-replicator/data/chopped/S001.csv`.
 **Related:** [[DPR]] [[Anu Ingestion]]
 
 ### VPR
@@ -185,7 +185,7 @@ Every term used across the Anu Framework — agent skills, internal artifacts, o
 
 ### Proxy
 **Definition:** A substitute series used when the exact original source is unavailable; must be flagged `"proxy": true` in the registry with a proxy-justification field. Wrong-concept proxies (CPI for PPI) are prohibited.
-**Example:** Twelve of 58 CD2 extensions were retroactively flagged for proxy violations and remediated.
+**Example:** Twelve of 58 the reference project's extensions were retroactively flagged for proxy violations and remediated.
 **Related:** [[Concept Match Justification]] [[Faithfulness]]
 
 ### Decomposition
@@ -252,7 +252,7 @@ Every term used across the Anu Framework — agent skills, internal artifacts, o
 
 ### D0 Adequacy Gate
 **Definition:** Pre-research readiness check (Anu Adequacy) verifying that Knowledge Base, series definitions, data sources, construction logic, and validation data are sufficient to proceed; emits `ADEQUACY_REPORT.json`.
-**Example:** CD2 Chapter 6 passed D0 only after KB pages 220–245 were re-extracted from the source PDF.
+**Example:** a project chapter 6 passed D0 only after KB pages 220–245 were re-extracted from the source PDF.
 **Related:** [[Anu Adequacy]] [[Knowledge Base]]
 
 ### D13 Authenticity Gate
@@ -291,7 +291,7 @@ Every term used across the Anu Framework — agent skills, internal artifacts, o
 
 ### Replicator Package
 **Definition:** The self-contained Anu Replicator deliverable — `loading/`, `processing/`, `validation/`, `data/`, `lib/`, `replicate.py`, `requirements.txt`, README — that reproduces all series from public APIs with no agent assistance.
-**Example:** `Projects/CD2/Technical/cd2-replicator/` is CD2's replicator package.
+**Example:** `<project>/Technical/replicator/` is a reference project's registry.
 **Related:** [[Anu Replicator]] [[L## Loading]] [[P## Processing]]
 
 ---
@@ -300,7 +300,7 @@ Every term used across the Anu Framework — agent skills, internal artifacts, o
 
 ### Knowledge Base
 **Definition:** Searchable, agent-readable extraction of book chapters, appendices, methodology PDFs, and footnotes — the ground truth against which all construction must be verified.
-**Example:** CD2's KB at `Inputs/Robert/KB/` contains chapter pages and historical methodology PDFs from BEA, BLS, and FRB.
+**Example:** the project KB at `Inputs/Robert/KB/` contains chapter pages and historical methodology PDFs from BEA, BLS, and FRB.
 **Related:** [[HDARP]] [[Anu Research]]
 
 ### DARP
@@ -312,7 +312,7 @@ Every term used across the Anu Framework — agent skills, internal artifacts, o
 ### HDARP
 **Full name:** Hybrid Direct Agent Reading Protocol
 **Definition:** Chunked PDF-extraction protocol for files >10 pages or >1MB, combining agent vision with multi-engine OCR; produces body text, tables, equations, and figures per chunk. Acceptable to disclose externally.
-**Example:** Shaikh's full book was extracted via `<KB construction>` to populate the CD2 Knowledge Base.
+**Example:** Shaikh's full book was extracted via `<KB construction>` to populate the the reference project Knowledge Base.
 **Related:** [[Knowledge Base]] [[DARP]] [[Sraffa OCR]]
 
 ### Sraffa OCR
@@ -345,7 +345,7 @@ Every term used across the Anu Framework — agent skills, internal artifacts, o
 ### BLS
 **Full name:** Bureau of Labor Statistics
 **Definition:** U.S. agency publishing employment, earnings, productivity, and consumer/producer price indices.
-**Example:** Wage and CPI series in CD2's Chapter 5 are extended from BLS APIs.
+**Example:** Wage and CPI series in a reference project's registry 5 are extended from BLS APIs.
 **Related:** [[WPI]]
 
 ### OECD
@@ -357,7 +357,7 @@ Every term used across the Anu Framework — agent skills, internal artifacts, o
 ### IRS SOI
 **Full name:** Internal Revenue Service, Statistics of Income
 **Definition:** U.S. tax-return-based statistics on corporate income, individual income, and capital stocks; primary source for several long-run profit-rate measures.
-**Example:** Pre-1929 corporate-profits series in CD2 are reconstructed from IRS SOI annual reports.
+**Example:** Pre-1929 corporate-profits series in a reference project are reconstructed from IRS SOI annual reports.
 **Related:** [[ROP]]
 
 ### PWT
@@ -369,18 +369,18 @@ Every term used across the Anu Framework — agent skills, internal artifacts, o
 ### Maddison Project
 **Full name:** Maddison Project Database
 **Definition:** Long-run cross-country GDP-per-capita database (Bolt & van Zanden) extending Angus Maddison's historical estimates back to 1820 and earlier.
-**Example:** Pre-1929 international GDP-per-capita comparisons in CD2 use Maddison Project 2020.
+**Example:** Pre-1929 international GDP-per-capita comparisons in a reference project use Maddison Project 2020.
 **Related:** [[PWT]] [[MeasuringWorth]]
 
 ### MeasuringWorth
 **Definition:** Public historical-data project (Officer & Williamson) publishing long-run U.S. price indices, exchange rates, GDP, and interest rates back to 1774.
-**Example:** Long-run U.S. WPI series in CD2 Chapter 5 are spliced from MeasuringWorth's "Annual Wholesale Prices in the United States".
+**Example:** Long-run U.S. WPI series in a project chapter 5 are spliced from MeasuringWorth's "Annual Wholesale Prices in the United States".
 **Related:** [[WPI]]
 
 ### IO
 **Full name:** Input-Output
 **Definition:** Cross-sectional accounting framework describing inter-industry flows; classified `content_type: "cross_sectional"` and therefore not extended via API.
-**Example:** BEA's 71-industry IO tables enter CD2 as point-in-time snapshots, never extended.
+**Example:** BEA's 71-industry IO tables enter the reference project as point-in-time snapshots, never extended.
 **Related:** [[Content Type]]
 
 ---
@@ -396,7 +396,7 @@ Every term used across the Anu Framework — agent skills, internal artifacts, o
 ### ROP
 **Full name:** Rate of Profit
 **Definition:** Ratio of a profit measure (Net Operating Surplus, corporate profits) to a capital stock measure; central explanatory variable in Shaikh's framework.
-**Example:** S026 in CD2 is a U.S. rate-of-profit series 1947–2024 with `CS026-N` (NOS) and `CS026-D` (capital stock) as concurrent components.
+**Example:** S026 in a reference project is a U.S. rate-of-profit series 1947–2024 with `CS026-N` (NOS) and `CS026-D` (capital stock) as concurrent components.
 **Related:** [[NOS]] [[CS###-N]] [[CS###-D]] [[IROP]]
 
 ### HP-filter
@@ -407,7 +407,7 @@ Every term used across the Anu Framework — agent skills, internal artifacts, o
 
 ### HP(100)
 **Definition:** Hodrick-Prescott filter applied at λ=100, the convention for annual macroeconomic series.
-**Example:** Trend rate of profit in CD2 is computed as `HP(100)` of S026.
+**Example:** Trend rate of profit in a reference project is computed as `HP(100)` of S026.
 **Related:** [[HP-filter]]
 
 ### NOS

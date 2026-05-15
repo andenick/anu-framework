@@ -533,6 +533,7 @@ Script names include the series name (not just the number) for human readability
 - **v2.5** (March 2026) - Added Concurrent Series (CS) processing pattern: CS_COLUMN_MAP convention, level-data extraction from Tier 2 tables, integration with chopped_writer
 - **v2.6** (March 2026) - Minor refinements
 - **v3.0** (April 2026) - Four-phase architecture (L→P→V→M): added V## validation scripts (V01-V08), M## manual adjustment scripts with ADJUSTMENT_MANIFEST.json, E## exploration scripts, SHA-256 hash audit trail in PROCESS_LOG, new CLI flags (--validate-only, --skip-validation, --full, --manual-only, --skip-manual, --provenance), provenance_index.json, DECISION_LOG.md, ASSUMPTIONS.md
+- **v3.1** (May 2026) - Prescribes a `lib/` shared-helpers layout: `lib/data/` (cached-API readers like BEA NIPA, BLS, FRED schemas), `lib/transforms/` (BookColumnLoader, splicing, reindexing helpers), `lib/validation/` (BenchmarkValidator and dimensional-consistency checks), `lib/io/` (Parquet/CSV writers, hash audit). Cross-series patterns now live in one canonical place instead of being re-implemented per series. Aligns with `anu-architecture` v2.1 cache-schema documentation.
 
 ---
 

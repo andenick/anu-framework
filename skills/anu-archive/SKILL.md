@@ -94,7 +94,7 @@ The generator walks a project's `Technical/` tree and pulls:
 
 | Archive location | Source in the project |
 |---|---|
-| `code/` | `Technical/cd2-replicator/` (the `anu-publish` repo) — excluding `.git/`, `__pycache__/`, `data/cache/` |
+| `code/` | `Technical/reference-replicator/` (the `anu-publish` repo) — excluding `.git/`, `__pycache__/`, `data/cache/` |
 | `data/master/`, `data/series/` | The most recent `Outputs/{Project}_Drive_v*/` package |
 | `data/methodology.pdf` | The methodology PDF from the latest Drive package or `Technical/` |
 | `provenance/series/` | `Technical/docs/series/*_DPR.md`, `*_EPR.md`, `*_DECOMPOSITION.md` |
@@ -114,7 +114,7 @@ The generator walks a project's `Technical/` tree and pulls:
 
 ```json
 {
-  "project": "CD2",
+  "project": "the reference project",
   "archive_version": "1.0",
   "generated": "2026-05-14T00:00:00Z",
   "framework_version": "Anu Framework v11.0",

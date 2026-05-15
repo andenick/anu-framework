@@ -51,7 +51,7 @@ The Ledger answers:
 
 The Ledger JSON has a fixed schema. All counts, series IDs, chapter numbers, and paths are project-specific — the schema defines the *structure*, not the values.
 
-**Example (from CD2 project — adapt values for your project):**
+**Example (from the reference project project — adapt values for your project):**
 
 ```json
 {
@@ -297,7 +297,7 @@ This gives any agent entering the project an immediate view of what has been shi
 
 - **v1.0** (March 2026) - Initial release
 - **v1.1** (March 2026) - Documented tier-aware scoring for Tier 2 series; split artifact types table into Tier 1 and Tier 2; added tier-aware health score adjustment
-- **v2.0** (March 2026) - Generalized: replaced CD2-specific schema example with generic placeholders; removed stale project-specific notes
+- **v2.0** (March 2026) - Generalized: replaced the reference project-specific schema example with generic placeholders; removed stale project-specific notes
 - **v2.1** (March 2026) - Minor refinements
 - **v2.2** (April 2026) - Added tracking for v6.0 artifacts: V## validation scripts, M## manual adjustment scripts, E## exploration scripts, DECISION_LOG.md, ASSUMPTIONS.md, provenance_index.json, VALIDATION_REPORT.json, ADJUSTMENT_MANIFEST.json
 

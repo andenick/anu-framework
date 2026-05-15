@@ -132,7 +132,7 @@ Scrub API keys, remove internal paths, generate README/LICENSE/CITATION.cff, val
 
 ## Reference Implementation
 
-**CD2** (Capitalism Data v2) is the reference implementation — 113 series, 97 scripts, 71 extensions. See `Projects/CD2/` in the Arcanum workspace.
+**the reference project** (Capitalism Data v2) is the reference implementation — 113 series, 97 scripts, 71 extensions. See `<project>/` in the Arcanum workspace.
 
 ---
 

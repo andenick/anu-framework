@@ -107,7 +107,7 @@ def build_archive(project: Path, version: str) -> tuple[Path, dict]:
     print(f"  output: {archive_dir}")
 
     # code/ — mirror of the anu-publish repo
-    code_src = project / "Technical" / "cd2-replicator"
+    code_src = project / "Technical" / "reference-replicator"
     n_code = copy_tree(code_src, archive_dir / "code")
     print(f"  code/        {n_code} files")
 

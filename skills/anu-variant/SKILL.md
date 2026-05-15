@@ -17,7 +17,7 @@ part-of: Anu Framework v11.0
 | Property | Value |
 |----------|-------|
 | Skill Name | Anu Variant |
-| Version | 1.3 |
+| Version | 1.4 |
 | Part Of | Anu Framework v11.0 |
 | Created | 2026-02-26 |
 | Purpose | Track multiple methodological variants with unique IDs and full provenance |

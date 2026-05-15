@@ -117,7 +117,7 @@ Score D14: 100 minus deductions per unexplained internal term weighted by surfac
 
 5. **Check for scale mismatches at splice points**. Compare the last Shaikh value with the first extension value. A relative difference >50% for non-volatile series, or a sign change, requires investigation.
 
-**Why this matters**: In CD2, automated validation (V01: 383/383 PASS) missed an 88x unit mismatch (S069) and a 5340x scale mismatch (S087) that were only caught by reading the actual data against the book. Source material reading is not optional.
+**Why this matters**: In the reference project, automated validation (V01: 383/383 PASS) missed an 88x unit mismatch (S069) and a 5340x scale mismatch (S087) that were only caught by reading the actual data against the book. Source material reading is not optional.
 
 ---
 
@@ -452,9 +452,9 @@ Action Items:
 
 ---
 
-## File Locations (Example: CD2 Project)
+## File Locations (Example: the reference project Project)
 
-> **Note**: The paths below are from the CD2 project. Other projects will have the same structure under their own `Technical/` directory.
+> **Note**: The paths below are from the the reference project project. Other projects will have the same structure under their own `Technical/` directory.
 
 | Content | Location |
 |---------|----------|
@@ -514,11 +514,11 @@ The D12 Documentation dimension should reference the Ledger's `coverage` percent
 - **v3.2** (March 2026) - Expanded D10 into D10a (Data Artifacts) and D10b (Application Quality Checklist) with 10-point viz quality assessment covering chart rendering, error-free operation, metadata exposition, extension visibility, and programmatic validation
 - **v3.3** (March 2026) - Added D10c (Chart-Readiness Validation) with checks for data resolution paths, hdarp_variables matching, figure_column_map coverage, year-range safety, and NA guard requirements
 - **v3.4** (March 2026) - Updated Q5 with extension column verification (both -EXT and -F columns in chopped CSVs); added D10c check for extension columns in figure_column_map.json; documented flat JSON support for figure_column_map
-- **v3.5** (March 2026) - Generalized: labeled CD2 file locations as example; fixed Plotly Dash references to R Shiny + Plotly
+- **v3.5** (March 2026) - Generalized: labeled the reference project file locations as example; fixed Plotly Dash references to R Shiny + Plotly
 - **v3.6** (March 2026) - Added Q5b (Component data visible) for ratio/rate series with Concurrent Series (CS) architecture: checks CS columns in chopped CSV, `is_component` entries in SUBSOURCE_METADATA, and "Show Components" dual-axis rendering
 - **v3.7** (March 2026) - Minor refinements
 - **v4.0** (April 2026) - Added D0 v6.0 gate check: validation phase completeness (V01-V08), decision log presence (<decision-ref>), assumptions documentation (ASM-D/M/R), provenance index quality (by_source/by_api/by_series), manual adjustment manifest verification
-- **v4.1** (May 2026) - Formalized **D14 Outward-Facing Intelligibility** as a gate (introduced ad-hoc in the CD2 Session 28-30 reviews): audits externally-distributed artifacts for undefined internal jargon across the three distribution channels (anu-publish, anu-drive, anu-archive). Clarified that D1–D12 are the weighted dimensions (sum 100%) and D13/D14 are gates scored separately. Refreshed skill cross-references to Anu Framework v10.0.
+- **v4.1** (May 2026) - Formalized **D14 Outward-Facing Intelligibility** as a gate (introduced ad-hoc in the the reference project Session 28-30 reviews): audits externally-distributed artifacts for undefined internal jargon across the three distribution channels (anu-publish, anu-drive, anu-archive). Clarified that D1–D12 are the weighted dimensions (sum 100%) and D13/D14 are gates scored separately. Refreshed skill cross-references to Anu Framework v10.0.
 
 ---
 
