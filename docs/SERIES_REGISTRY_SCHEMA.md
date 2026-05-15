@@ -13,7 +13,7 @@ The `series_registry.json` is the single source of truth for every Anu Framework
 
 Until now the registry's shape has been described only informally in `anu-ingestion/SKILL.md` (lines ~80-220) and learned by reading the the reference project reference implementation. This document gives the contract a formal name and a machine-readable JSON Schema (Draft 2020-12) so that loaders can validate registries on read, CI can gate registry edits, and new projects can scaffold conformant registries from day one. The schema is intentionally permissive in places (`additionalProperties: true` on most objects) so existing projects continue to parse; required fields and enums are enforced strictly where the contract is settled.
 
-Conventions: series IDs follow the [Series ID Specification v2.0](SERIES_ID_SPECIFICATION.md) (`^S\d{3}(-[A-Z]|-EXT|-COMBINED)?$`). Figure IDs use the compact `Fig{C}.{N}` form with optional letter suffix (`Fig2.4A`). Source ref IDs are uppercase identifiers (`BEA_1966_LTEG`). Years are integers; periods are `[start, end]` integer pairs. All examples below are copied from the the reference project reference registry; cited line numbers are stable as of the May 2026 snapshot.
+Conventions: series IDs follow the prefix scheme declared in the registry's `prefix_scheme` block. **Canonical prefixes are `D` (Data Series, primary) and `AD` (Additional Data Series).** The single-letter `D` and two-letter `AD` were chosen to avoid collision with `anu-architecture`'s eight `anu-architecture` phase prefixes (S/L/P/V/M/A/O/E). Project-optional extensions are documented per-project in `MIGRATION/PREFIX_SCHEME.md` if used. Validating regex: `^(D|AD|<project_ext>)\d{3,4}(-[A-Z]|-EXT|-COMBINED)?$`. `anu-doctor` P12 validates conformance. Figure IDs use the compact `Fig{C}.{N}` form with optional letter suffix (`Fig2.4A`). Source ref IDs are uppercase identifiers (`BEA_1966_LTEG`). Years are integers; periods are `[start, end]` integer pairs. Examples below illustrate the schema; substitute your project's prefix scheme as appropriate.
 
 ---
 
@@ -22,12 +22,13 @@ Conventions: series IDs follow the [Series ID Specification v2.0](SERIES_ID_SPEC
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `version` | string | yes | Registry schema version. Currently `"2.0.0"`. |
-| `project` | string | yes | Short project code, e.g., `"the reference project"`. |
+| `project` | string | yes | Short project code (used for internal references; not the public-facing slug). |
+| `prefix_scheme` | object | yes (v11.0+) | Declares which prefixes the project uses. Canonical: `{"primary": "D", "additional": "AD"}`. Projects may add a third prefix documented in `MIGRATION/PREFIX_SCHEME.md` if their data genuinely requires it (should be rare). |
 | `notation` | string | no | Documentation string describing the series-ID notation in use. |
 | `generated` | string (date) | no | ISO date `YYYY-MM-DD` the registry was generated. |
-| `architecture` | string | no | Free-text framework version label, e.g., `"Anu Suite v6.0"`. |
-| `drive_config` | object | no | Distribution metadata consumed by `/anu-drive`. |
-| `series` | object | yes | Map of series ID -> series object. Property names MUST match `^S\d{3}$`. |
+| `architecture` | string | no | Free-text framework version label, e.g., `"Anu Framework v11.0"`. |
+| `drive_config` | object | no (recommended) | Distribution metadata consumed by `/anu-drive`. If absent, `anu-drive` synthesizes from top-level fields; explicit `drive_config` is preferred. |
+| `series` | object | yes | Map of series ID -> series object. Property names MUST match the project's declared `prefix_scheme` (canonical: `^(D\d{3}\|AD\d{3,4})(-[A-Z]\|-EXT\|-COMBINED)?$`). |
 | `figures` | object | no | Map of figure ID -> figure spec. Property names MUST match `^Fig\d+\.\d+[A-Z]?$`. |
 | `sources` | object | no | Map of source ref_id -> source descriptor. Property names MUST be uppercase identifiers. |
 
@@ -36,14 +37,18 @@ Top-level skeleton:
 ```json
 {
   "version": "2.0.0",
-  "project": "the reference project",
-  "notation": "S{NNN}-{LETTER} with R:{YYYY} for reindexed display",
-  "generated": "2026-03-07",
+  "project": "<project-code>",
+  "prefix_scheme": {
+    "primary": "D",
+    "additional": "AD"
+  },
+  "notation": "{PREFIX}{NNN}-{LETTER} with R:{YYYY} for reindexed display",
+  "generated": "2026-MM-DD",
   "drive_config": { "...": "..." },
-  "series":   { "S001": { "...": "..." }, "S002": { "...": "..." } },
+  "series":   { "D001": { "...": "..." }, "AD1001": { "...": "..." } },
   "figures":  { "Fig2.1": { "...": "..." } },
   "sources":  { "BEA_1966_LTEG": { "...": "..." } },
-  "architecture": "Anu Suite v6.0"
+  "architecture": "Anu Framework v11.0"
 }
 ```
 

@@ -43,7 +43,7 @@ The Anu Framework is a **20-skill framework for agent-driven data construction, 
 | 17 | **Anu Archive** | v1.0 | `anu-archive/SKILL.md` | Stage 8c — audit-grade transparency channel: provenance trail + manifest + checksums |
 | 18 | **Anu Doctor** | v1.2 | `anu-doctor/SKILL.md` | Framework + project self-audit; v1.1 ships `check_project.py` (10 P##-checks); v1.2 adds D13/D14/D15 consistency checks |
 | 19 | **Anu Scaffold** | v1.0 | `anu-scaffold/SKILL.md` | NEW — generates L01/P02/V03 stubs from registry entries; eliminates ad-hoc generator scripts |
-| 20 | **Anu Rebuild** | v1.0 | `anu-rebuild/SKILL.md` | NEW — 6-wave salvage-and-port meta-workflow for predecessor projects |
+| 20 | **Anu Rebuild** | v1.1 | `anu-rebuild/SKILL.md` | NEW — 6-wave salvage-and-port runbook for predecessor projects; v1.1 agent-executable (no fictional scripts) |
 
 All skills are located under `skills/`. The authoritative per-skill version, stage, and `requires:` matrix is [`SKILL_VERSION_MATRIX.md`](SKILL_VERSION_MATRIX.md). `anu-doctor` enforces that the matrix, this table, and every skill's frontmatter stay in agreement.
 

@@ -1,0 +1,61 @@
+{
+  "version": "2.0.0",
+  "schema_version": "2.1",
+  "project": "<project-code>",
+  "project_title": "<Full Project Title>",
+  "author": "<Author Name>",
+  "original_work": "<Full citation of the book/study being replicated>",
+  "book": "<Short reference, e.g. 'Shaikh & Tonak (1994)'>",
+  "core_period": [1900, 2000],
+  "extension_period": [2001, 2025],
+  "architecture": "Anu Framework v11.0",
+
+  "prefix_scheme": {
+    "primary": "D",
+    "additional": "AD"
+  },
+
+  "drive_config": {
+    "drive_version": "1.0",
+    "original_work": {
+      "title": "<Full title>",
+      "author": "<Original author(s)>",
+      "year": "<YYYY>",
+      "publisher": "<Publisher>"
+    },
+    "author": {
+      "first_name": "<First>",
+      "last_name": "<Last>"
+    },
+    "institution": "<Institution or 'Independent researcher'>",
+    "email": "",
+    "license": "CC-BY-4.0 (data); MIT (code, see project LICENSE)"
+  },
+
+  "sources": {
+  },
+
+  "series": {
+    "D001": {
+      "name": "<Series name>",
+      "content_type": "time_series",
+      "construction": "direct",
+      "period_start": 1900,
+      "period_end": 2000,
+      "units": "<units>",
+      "status": "data_available"
+    },
+    "AD1001": {
+      "name": "<Additional series name>",
+      "content_type": "time_series",
+      "construction": "direct",
+      "period_start": 1900,
+      "period_end": 2000,
+      "units": "<units>",
+      "status": "data_available"
+    }
+  },
+
+  "figures": {
+  }
+}

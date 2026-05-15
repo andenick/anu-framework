@@ -1,7 +1,7 @@
 ---
 name: anu-extension
 version: "3.5"
-description: Framework for maximally faithful data series extension with live API data. Extension methodology is defined here; implementation lives in Anu Replicator P## processing scripts. v3.5 adds `batch-create-epr` for cohort-level EPR scaffolding and integrates with the central `DIVERGENCE_REGISTER.json` (via `_shared/divergences.py`) so extension-time divergences are visible to anu-review D13 alongside ingestion and manual-adjustment divergences.
+description: Framework for maximally faithful data series extension with live API data. Extension methodology is defined here; implementation lives in Anu Replicator P## processing scripts. v3.5 integrates with the central `DIVERGENCE_REGISTER.json` (via `_shared/divergences.py`) so extension-time divergences are visible to anu-review D13 alongside ingestion and manual-adjustment divergences. EPRs are authored per-series by the agent (no batch automation — each EPR documents a substantive methodology decision).
 when-to-use: User needs to extend historical data series with modern API data from FRED, BEA, BLS, or other sources; scaffold a cohort of EPRs in batch; or log an extension-phase divergence to the project register.
 search-hints: extension extend series api fred bea bls modern data update batch epr cohort divergence splice
 argument-hint: [action] [series_id]
@@ -801,7 +801,7 @@ These requirements are validated by the Anu Review D10b quality checklist item Q
 | 3.2 | 2026-03-16 | External replicability: removed Robin references; API data cached in Inputs/API/FRED/; added source_url requirement for subsource metadata; added API Data Cache Location section |
 | 3.3 | 2026-04-07 | Version bump for Anu Framework v11.0 alignment (format unchanged) |
 | 3.4 | 2026-05-13 | Outputs section tightened to enumerate five concrete artifacts (EPR, EXTENSION_LOG.json, registry block, extended subseries, Divergence Register) |
-| 3.5 | 2026-05-15 | Added `batch-create-epr --cohort` for cohort-level EPR scaffolding from a template. Integrates with the central `DIVERGENCE_REGISTER.json` (via `_shared/divergences.py`) so extension-time divergences are visible to `anu-review` D13 alongside ingestion and manual-adjustment divergences. |
+| 3.5 | 2026-05-15 | Integrated with the central `DIVERGENCE_REGISTER.json` (via `_shared/divergences.py`) so extension-time divergences are visible to `anu-review` D13 alongside ingestion and manual-adjustment divergences. The `batch-create-epr` idea was considered and rejected: EPRs are content-heavy documents (each documents a methodology choice, splice rationale, and concept-match justification) that benefit from per-series authoring; batch templating would produce uniform-looking shells that hide the methodology decisions. |
 
 ---
 

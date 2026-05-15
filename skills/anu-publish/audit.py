@@ -139,6 +139,31 @@ TEXT_EXTENSIONS = {
 }
 
 
+# Codename-shaped folder names. Distribution bundles should use descriptive
+# slugs (e.g. `measuring-wealth-of-nations-replication_Drive_v1.0`), not
+# project codenames (e.g. `CD2_Drive_v2.0`, `AS2_Drive_v1.0`, `RSCD_Drive_v1.0`).
+# WARN-severity — historical bundles get flagged for renaming.
+CODENAME_FOLDER_RE = re.compile(r"(?:^|/)[A-Z]{2,4}\d*_(?:Drive|Publish|Archive)_v")
+
+
+def scan_folder_names(project_root: Path, patterns: list[str]) -> list[tuple[str, str]]:
+    """Return [(rel_path, pattern_name), ...] for codename-shaped folder names.
+
+    Walks directories under the project root; flags ones whose path matches
+    the codename pattern. Each finding is a WARN.
+    """
+    findings = []
+    for path in project_root.rglob("*"):
+        if not path.is_dir():
+            continue
+        rel = path.relative_to(project_root).as_posix()
+        if is_ignored(rel + "/", patterns):
+            continue
+        if CODENAME_FOLDER_RE.search("/" + rel):
+            findings.append((rel, "codename-shaped folder name"))
+    return findings
+
+
 def run(project_root: Path, strict: bool, report_format: str) -> int:
     patterns = load_ignore_patterns(project_root)
     total_scanned = 0
@@ -157,8 +182,12 @@ def run(project_root: Path, strict: bool, report_format: str) -> int:
         if f:
             findings_by_file[rel] = f
 
+    # Folder-name scan (WARN-severity)
+    folder_findings = scan_folder_names(project_root, patterns)
+
     n_fail = sum(1 for hits in findings_by_file.values() for h in hits if h[1] == "FAIL")
     n_warn = sum(1 for hits in findings_by_file.values() for h in hits if h[1] == "WARN")
+    n_warn += len(folder_findings)
 
     if report_format == "json":
         out = {
@@ -170,20 +199,31 @@ def run(project_root: Path, strict: bool, report_format: str) -> int:
                 {"line": ln, "severity": sev, "pattern": pat, "content": c}
                 for (ln, sev, pat, c) in hits
             ] for rel, hits in findings_by_file.items()},
+            "folder_findings": [
+                {"path": rel, "pattern": pat} for rel, pat in folder_findings
+            ],
         }
         print(json.dumps(out, indent=2))
     else:
         print(f"    [anu-publish audit] Scanned {total_scanned} text files (excluding .publish_ignore)")
-        if not findings_by_file:
+        if not findings_by_file and not folder_findings:
             print(f"    [anu-publish audit] CLEAN — zero internal references in public-eligible files.")
         else:
-            print(f"    [anu-publish audit] {n_fail} FAIL + {n_warn} WARN findings in {len(findings_by_file)} files:")
+            total_files = len(findings_by_file) + (1 if folder_findings else 0)
+            print(f"    [anu-publish audit] {n_fail} FAIL + {n_warn} WARN findings across "
+                  f"{total_files} item(s):")
             for rel, hits in findings_by_file.items():
                 print(f"      {rel}:")
                 for lineno, sev, pat, line in hits[:5]:
                     print(f"        L{lineno} [{sev}] [{pat}] {line}")
                 if len(hits) > 5:
                     print(f"        ...({len(hits) - 5} more)")
+            if folder_findings:
+                print(f"      folder-name findings:")
+                for rel, pat in folder_findings[:10]:
+                    print(f"        [WARN] [{pat}] {rel}")
+                if len(folder_findings) > 10:
+                    print(f"        ...({len(folder_findings) - 10} more)")
 
     if n_fail:
         return 1

@@ -94,6 +94,9 @@ Ten P##-checks verify that an individual data project is internally consistent:
 | P08 | Provenance chain is intact (DPR cites a source that L01 actually reads) | WARN |
 | P09 | No synthetic-data heuristics in code (`np.random`, "estimated trend", "linear interpolation placeholder") | FAIL |
 | P10 | Documented divergences are also logged in `DIVERGENCE_REGISTER.json` | WARN |
+| P12 | Every series ID matches the registry's declared `prefix_scheme` (canonical: `D`/`AD`; supports nested-dict prefix declarations) | FAIL |
+| P13 | Declared `status` is consistent with the artifacts that should exist (e.g. `status: loaded` ⇒ L01 exists; `validated_book_and_extension` ⇒ V03 + EPR exist) | FAIL |
+| P14 | In rebuild projects (`MIGRATION/crosswalk.csv` present): every crosswalk row with `status: confirmed` has been acted on | WARN |
 
 Project mode replaces ad-hoc per-project verification scripts (the RMWND build wrote 4 of these by hand; see Friction Point 12 in `ANU_FRAMEWORK_IMPROVEMENTS_RFC.md`).
 
@@ -208,6 +211,7 @@ $ python check_framework.py --json
 
 - **v1.2** (May 2026) — Added three consistency checks: **D13** (body headline `# Anu <Name> ... vN.N` must match frontmatter `version:` — FAIL), **D14** (every `SKILL.md` must ship an evolution-log section — WARN), **D15** (`requires:`-graph across skills must be acyclic — FAIL). Refreshed D12's `STALE_VERSION_RE` to cover v1.0–v10.0 (previously v1.0–v9.0 only — the regex itself had gone stale on the v11.0 bump). Discovered and fixed during the v11.0 framework-consistency audit; eight skill body headlines were stale and 30+ "Anu Framework v10.0" footers had survived the v11.0 sweep because D12 didn't match v10.
 - **v1.1** (May 2026) — Added project mode via `check_project.py`. Ten P##-checks (P01–P10) audit individual data projects for DPR coverage, L01/P02/V03 triad completeness, research-registry alignment, chopped subseries match, status-taxonomy enum compliance, synthetic-data detection, and divergence logging. Addresses Friction Point 12 from the RMWND-build improvements RFC.
+- **v1.2.1** (May 2026, agent-driven model) — Added three project-mode checks: **P12** (prefix-scheme conformance; validates every series ID against the registry's declared `prefix_scheme`; supports nested-dict shape used by RMWND-style registries), **P13** (status-vs-artifacts consistency: declared `status` must match the artifacts present on disk), **P14** (crosswalk completeness for rebuild projects — every row with `status: confirmed` must be acted on). Added codename-folder-name WARN to `audit.py` (catches `CD2_Drive_v2.0`-style codename leaks in distribution-bundle folder names).
 - **v1.0** (May 2026) — Initial release. 12 checks (D01–D12) covering frontmatter validity, version consistency across the matrix/overview/frontmatter triangle, `requires:` integrity, archived-skill references, canonical-doc existence, generator-script existence, stage-map coherence, and stale-version-string detection.
 
 ---
