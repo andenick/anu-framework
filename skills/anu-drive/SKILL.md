@@ -1080,6 +1080,7 @@ Before any Drive package is shared externally, the following must be verified:
 |---------|------|---------|
 | 1.0 | 2026-05-12 | Initial release — folder structure, master file spec, series library, methodology PDF, README template, validation rules, generation process, LaTeX specification |
 | 1.1 | 2026-05-14 | Shipped `generate_drive_package.py` — canonical generator. Master XLSX has a single sheet ("All Time Series") holding time-series and derived series only; cross-sectional / theoretical / panel-indexed series are excluded from the master and ship only as individual per-series workbooks in `Series/`. Master CSV mirrors that sheet. Validation rules are advisory in v1.1; FAIL/WARN enforcement is on the v1.2 roadmap. |
+| 1.1.1 | 2026-05-15 | Generator robustness: (a) falls back to `Technical/chopped/` + `Technical/extenbooks/` if the canonical `Technical/ANU_REPLICATOR/data/final-data/` layout is absent; (b) accepts `{SID}.csv` filenames if `{SID}_final.csv` glob is empty; (c) auto-detects Chopped 3-row CSV format vs standard 1-row header; (d) synthesizes a `drive_config` block from top-level registry fields (`author`, `original_work`, `book`) if absent, with `CC-BY-4.0` license default; (e) `registry["drive_config"]` is updated in-memory so downstream README/CITATION helpers see the synthesized values. Validated against the Shaikh-Tonak (RMWND) project layout. |
 
 ---
 
