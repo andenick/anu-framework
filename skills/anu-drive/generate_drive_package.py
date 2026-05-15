@@ -106,14 +106,38 @@ def extension_source(entry: dict) -> str:
 # --------------------------------------------------------------------------
 
 def collect_final_series(final_series_dir: Path) -> dict[str, pd.Series]:
-    """Read every {SID}_final.csv into a dict of year-indexed Series."""
+    """Read every series CSV into a dict of year-indexed Series.
+
+    Tries glob `*_final.csv` first (the canonical anu-replicator convention);
+    falls back to `*.csv` (Chopped CSVs named directly by SID, e.g. `ES1001.csv`).
+    Skips files whose first column isn't year-like.
+    """
     out: dict[str, pd.Series] = {}
-    for csv_path in sorted(final_series_dir.glob("*_final.csv")):
+    candidates = sorted(final_series_dir.glob("*_final.csv"))
+    if not candidates:
+        # Fall back to raw SID naming (chopped/ layout)
+        candidates = sorted(final_series_dir.glob("*.csv"))
+    for csv_path in candidates:
         sid = csv_path.stem.replace("_final", "")
-        df = pd.read_csv(csv_path)
+        # Chopped CSV files have metadata in rows 1-2; year-data starts row 3.
+        # Standard final CSVs have header in row 1, data from row 2.
+        try:
+            df = pd.read_csv(csv_path)
+        except Exception:
+            continue
         if df.shape[1] < 2:
             continue
         year_col, val_col = df.columns[0], df.columns[1]
+        # Detect Chopped 3-row format: if column 0 isn't year-like, skip header rows.
+        first_val = df.iloc[0, 0] if len(df) else None
+        try:
+            int(first_val)
+        except (TypeError, ValueError):
+            # First row is a header annotation; try skiprows=1 (Chopped Row 2 is IDs)
+            df = pd.read_csv(csv_path, skiprows=1)
+            if df.shape[1] < 2:
+                continue
+            year_col, val_col = df.columns[0], df.columns[1]
         s = pd.Series(
             pd.to_numeric(df[val_col], errors="coerce").values,
             index=pd.to_numeric(df[year_col], errors="coerce").astype("Int64"),
@@ -230,11 +254,16 @@ def write_codebook(registry: dict, series_data: dict[str, pd.Series], path: Path
 
 def copy_extenbooks(registry: dict, extenbook_dir: Path, series_ids: list[str],
                     dest: Path) -> int:
-    """Copy per-series extenbooks, renaming to descriptive snake_case."""
+    """Copy per-series extenbooks, renaming to descriptive snake_case.
+
+    Tries `{sid}_extenbook.xlsx` first (canonical); falls back to `{sid}.xlsx`.
+    """
     dest.mkdir(parents=True, exist_ok=True)
     copied = 0
     for sid in series_ids:
         src = extenbook_dir / f"{sid}_extenbook.xlsx"
+        if not src.exists():
+            src = extenbook_dir / f"{sid}.xlsx"
         if not src.exists():
             continue
         name = registry["series"].get(sid, {}).get("name", sid)
@@ -364,15 +393,48 @@ def main() -> int:
         registry = json.load(f)
 
     cfg = registry.get("drive_config", {})
+    # Synthesize drive_config from top-level fields if absent. Lets older
+    # projects ship without a registry edit at the cost of placeholder values
+    # (institution, license, contact) the user should override.
+    if not cfg:
+        cfg = {
+            "drive_version": "1.0",
+            "original_work": {
+                "title": registry.get("original_work", registry.get("book", "")),
+                "author": "",
+                "year": "",
+                "publisher": "",
+            },
+            "author": {
+                "first_name": registry.get("author", "").split()[0] if registry.get("author") else "",
+                "last_name": " ".join(registry.get("author", "").split()[1:]) if registry.get("author") else "",
+            },
+            "institution": "",
+            "email": "",
+            "license": "CC-BY-4.0",
+        }
+    # write_readme / write_citation read cfg from registry["drive_config"];
+    # propagate any synthesized values so the downstream helpers see them.
+    registry["drive_config"] = cfg
     project_name = registry.get("project", "Project")
     version = args.version or cfg.get("drive_version", "1.0")
 
+    # Canonical anu-replicator layout; falls back to project-root chopped/extenbooks
+    # for older or non-replicator projects.
     final_data = project / "Technical" / "ANU_REPLICATOR" / "data" / "final-data"
     final_series_dir = final_data / "series"
     extenbook_dir = final_data / "extenbooks"
     if not final_series_dir.exists():
-        print(f"ERROR: final series dir not found: {final_series_dir}", file=sys.stderr)
-        return 2
+        alt_series = project / "Technical" / "chopped"
+        alt_extenbooks = project / "Technical" / "extenbooks"
+        if alt_series.exists():
+            final_series_dir = alt_series
+            extenbook_dir = alt_extenbooks
+            print(f"  using fallback paths: chopped={final_series_dir}, extenbooks={extenbook_dir}")
+        else:
+            print(f"ERROR: final series dir not found at {final_data / 'series'} or {alt_series}",
+                  file=sys.stderr)
+            return 2
 
     out_dir = project / "Outputs" / f"{project_name}_Drive_v{version}"
     series_out = out_dir / "Series"

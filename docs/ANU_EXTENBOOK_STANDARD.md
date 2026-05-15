@@ -97,7 +97,7 @@ Anu_Extenbook_S###.xlsx
 | Section | Rows | Content |
 |---------|------|---------|
 | Series Overview | 1-4 | ID, Title, Chapter, Figures, Period, Status |
-| Theoretical Context | 6-12 | Shaikh quotes, relevance, HDARP sources |
+| Theoretical Context | 6-12 | Source quotes, relevance, extracted methodology |
 | Subsources | 14-25 | Table: ID, Source, Period, API, Quality |
 | Transformation Chain | 27-40 | Table: Step, Operation, Formula, Input, Output |
 | Extension Details | 42-55 | Sources, Splice Method, Transition Metrics |
