@@ -1,8 +1,8 @@
 ---
 name: anu-research
 version: "2.1"
-description: Systematically mine every quote, reference, footnote, methodology description, and piece of information relevant to constructing a particular data series. v2.1 adds a `port` sub-command that ingests an existing predecessor project's research JSONs and rewrites IDs against an external mapping table (used by the anu-rebuild meta-skill to salvage prior research effort instead of re-mining the KB).
-when-to-use: User needs to mine a Knowledge Base for quotes, methodology, footnotes, or research context before constructing a data series; OR port research JSONs from a predecessor project under a new ID scheme.
+description: Systematically mine every quote, reference, footnote, methodology description, and piece of information relevant to constructing a particular data series. v2.1 documents a **port procedure** (agent-executed) for migrating a predecessor project's research JSONs under a new ID scheme — used by the anu-rebuild runbook to salvage prior research effort instead of re-mining the KB.
+when-to-use: Agent needs to mine a Knowledge Base for quotes, methodology, footnotes, or research context before constructing a data series; OR port research JSONs from a predecessor project under a new ID scheme.
 search-hints: research mine quotes methodology footnote knowledge base series dossier port predecessor migrate
 argument-hint: [action] [series_id]
 allowed-tools: Read, Write, Bash, Glob, Grep, Edit
@@ -331,6 +331,59 @@ Template file: `templates/RESEARCH_TEMPLATE.json`
 - **Adequacy Relevance**: Research traces findings back to adequacy-verified KB sources via `adequacy_refs` field
 - **Key Handoff**: S###_research.json consumed by Ingestion (decompositions, DPRs), Extension (EPRs), Extenbook (Research sheet)
 
+---
+
+## Port procedure (agent-executed, no script)
+
+When the agent is rebuilding a predecessor project (`anu-rebuild` Wave W.1), the predecessor's per-series research JSONs are often worth salvaging. The framework provides no automated porter — the agent decides per-file what to do.
+
+### Inputs
+
+- `Inputs/Salvaged/<predecessor>/research/*.json` — read-only predecessor research files
+- `MIGRATION/crosswalk.csv` — agent-decided mapping `old_id, new_id, name, status, notes`
+
+### Procedure (one pass per cohort)
+
+For each predecessor research JSON in the cohort's scope:
+
+1. **Look up the new SID** in `MIGRATION/crosswalk.csv`. If `new_id` is blank (`deferred` status) or `dropped`, skip this file and note in `MIGRATION/PORTING_LOG.md`.
+
+2. **Decide the port mode** by reading the predecessor's research content:
+   - **`verbatim`** — content is accurate, just needs SID find-and-replace. Cheapest. Use when the predecessor's research is high-quality and the new project doesn't change construction substantively.
+   - **`rewrite`** — content needs substantive editing (methodology changed, new sources added, errors corrected). Copy the predecessor's JSON as a starting point, then edit.
+   - **`re-mine`** — predecessor's research is too sparse, wrong, or built against a different KB. Discard; follow the normal fresh-mine procedure (see Procedure section above).
+
+3. **For verbatim or rewrite ports**:
+   - Read the predecessor JSON
+   - Find-and-replace `<old_id>` → `<new_id>` inside the JSON (both as keys and inside content strings)
+   - Add to the top-level metadata:
+     ```json
+     "ported_from": "<old_id>",
+     "ported_at": "2026-MM-DD",
+     "port_mode": "verbatim" | "rewrite"
+     ```
+   - Write to `Technical/research/<new_id>_research.json`
+   - If `rewrite`: edit the content as needed before saving
+
+4. **For re-mine**: follow the normal mining procedure. Don't reference the predecessor file.
+
+5. **Log every decision** in `MIGRATION/PORTING_LOG.md` (template: `anu-rebuild/templates/PORTING_LOG_TEMPLATE.md`). One row per series:
+   ```
+   | new_id | old_id | mode | reason |
+   |--------|--------|------|--------|
+   | S001   | T001   | verbatim | book content unchanged; only SID rewritten |
+   | S007   | T007   | rewrite  | predecessor missed Appendix B-3 methodology |
+   | S012   | T012   | re-mine  | predecessor research is 80% empty |
+   | (drop) | T099   | dropped  | predecessor series not carried into rebuild |
+   ```
+
+### Acceptance
+
+- Every confirmed crosswalk row results in either a research JSON at the new SID, or a logged `dropped`/`deferred` decision
+- Ported research JSONs have `ported_from`, `ported_at`, `port_mode` metadata
+- `MIGRATION/PORTING_LOG.md` accounts for every predecessor research file
+- `anu-doctor project` P03 (research-JSON ↔ registry alignment) PASSes after the port + registry update
+
 ## Version History
 
 - **v1.0** (March 2026) - Initial release
@@ -338,7 +391,7 @@ Template file: `templates/RESEARCH_TEMPLATE.json`
 - **v1.2** (March 2026) - Generalized: replaced project-specific methodology text with generic terms; labeled the reference project examples
 - **v1.3** (March 2026) - Added adequacy_refs field for traceability to adequacy-verified sources
 - **v2.0** (April 2026) - research.json v2.0 schema: added entry_id, subseries_affected, confidence as required fields in full format; added source_refs (links to SourceReference system in series_registry.json) and kb_reference fields; v2.0 entry fields table
-- **v2.1** (May 2026) - Added `port` sub-command for migrating research JSONs from a predecessor project under an ID mapping table. Used by `anu-rebuild` to salvage prior research effort instead of re-mining the KB.
+- **v2.1** (May 2026) - Documented the **port procedure** (agent-executed, not a script): given a predecessor project's research JSONs and a crosswalk CSV, the agent copies each predecessor research JSON to its new SID, find-and-replaces old SID references inside, adds `ported_from` + `ported_at` metadata, and logs the decision in `MIGRATION/PORTING_LOG.md`. No script automates this — the agent decides per-file whether the port is verbatim, requires rewriting, or should be re-mined fresh. Used by `anu-rebuild` Wave W.1 to salvage prior research effort.
 
 ---
 

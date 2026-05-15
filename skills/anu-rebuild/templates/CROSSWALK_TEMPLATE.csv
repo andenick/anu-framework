@@ -1,0 +1,6 @@
+old_id,new_id,name,status,notes
+T001,D001,Industrial Production Index,proposed,Direct port from predecessor; book Chapter 3 series 1
+T002,D002,Real GDP,proposed,Direct port
+N1001,AD1001,Labor Share (Tonak 1984),proposed,External study; renumbered under AD scheme
+T099,,Methodological-only marker,dropped,Predecessor had a placeholder; no actual series
+T100,,,deferred,Need to inspect predecessor's S100_research.json to decide

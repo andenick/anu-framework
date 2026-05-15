@@ -1,8 +1,8 @@
 ---
 name: anu-scaffold
 version: "1.0"
-description: "Generate L##/P##/V## script stubs from series_registry.json entries. Reads a registry entry's content_type, construction steps, source files, and benchmarks; emits a thin loader/processor/validator trio matching the project's lib/ helpers. Eliminates per-series boilerplate so per-series scripts focus on construction logic rather than glue."
-when-to-use: "User has a populated registry entry (or a cohort of them) and needs the boilerplate code trio scaffolded; or wants to batch-scaffold a wave/chapter/study group with consistent templates."
+description: "**Template renderer** — not a code generator. Given a populated registry entry, fills L##/P##/V## script templates with the entry's metadata (SID, name, units, source filename, benchmark dict) and writes them to the right location. Every rendered stub has `# TODO:` markers where the agent must fill in the construction logic. The skill chooses ZERO construction logic: template selection is a deterministic lookup from the registry's `content_type` field; the agent does all real work."
+when-to-use: "Agent has a populated registry entry (or a cohort of them) and wants to save keystrokes on the boilerplate header/import/path lines. Invoke from `anu-rebuild` Wave W.7 in the runbook."
 search-hints: "scaffold generate code stub loader processor validator template registry-driven boilerplate"
 allowed-tools: Read, Write, Glob, Bash
 argument-hint: "[generate|list-templates] [--series SID | --cohort NAME] [--template direct_column|derived|matrix_summary]"
@@ -26,7 +26,21 @@ part-of: Anu Framework v11.0
 
 ## Purpose
 
-Every series in an Anu Framework project needs three scripts: a loader (`L01_<sid>_<slug>.py`), a processor (`P02_<sid>_<slug>.py`), and a validator (`V03_<sid>_<slug>.py`). For most series these are 95% boilerplate keyed off the registry entry — only the column name, benchmarks, and any derivation logic differ.
+`anu-scaffold` is a **template renderer**. It fills variables in pre-written template files with values from a registry entry and writes the result to the right location. It is the ONLY mechanical generator the agent invokes during the construction phase of a project — and it deliberately does nothing that requires judgment.
+
+### What it does NOT do
+
+- **Doesn't decide** which scripts to generate. The agent invokes it with explicit `--series` or `--cohort` arguments.
+- **Doesn't decide** the template to use beyond a deterministic lookup: `content_type: "time_series" → direct_column.j2`; `content_type: "derived" → derived.j2`; `content_type: "matrix_summary" → matrix_summary.j2`. Three templates total.
+- **Doesn't fill in construction logic.** Every rendered stub has `# TODO: agent fills in actual construction logic here` markers. The agent writes the real code.
+- **Doesn't choose benchmarks.** Reference values come from the registry entry; the agent put them there.
+- **Doesn't make any decision** about subseries, splicing, extension methodology, or proxy handling. Those are agent decisions, made earlier and reflected in the registry.
+
+### What it does
+
+Every series in an Anu Framework project needs three scripts: a loader (`L01_<sid>_<slug>.py`), a processor (`P02_<sid>_<slug>.py`), and a validator (`V03_<sid>_<slug>.py`). Each has the same header structure (imports, paths, registry-entry lookup) regardless of the series. `anu-scaffold` writes that header. The agent writes the body.
+
+This is the same role `cookiecutter` plays for project layouts — pure templating, no decisions baked in.
 
 `anu-scaffold` eliminates the boilerplate. Given a registry entry, it picks the right template, fills it from registry fields, and writes the three scripts to the project's `code/` tree. The agent's job is then to *fill in construction logic* — not to rewrite the same import block 64 times.
 

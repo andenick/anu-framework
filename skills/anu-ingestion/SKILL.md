@@ -1,7 +1,7 @@
 ---
 name: anu-ingestion
 version: "4.1"
-description: Comprehensive data intake standard covering Knowledge Base construction, data import, absorption into a definitive internal format, series decomposition, and provenance documentation. v4.1 adds three batch-scale operations (migrate-scheme for cross-project ID remapping, batch-create-dpr for cohort-level provenance scaffolding) and codifies the standardized series-status taxonomy as an enum. Replaces anu-standard v2.2.
+description: Comprehensive data intake standard covering Knowledge Base construction, data import, absorption into a definitive internal format, series decomposition, and provenance documentation. v4.1 documents an agent-executed **migrate-scheme procedure** for cross-project ID remapping and codifies the standardized series-status taxonomy as a validated enum. DPRs are authored per-series by the agent (no batch automation — each DPR documents a substantive construction decision). Replaces anu-standard v2.2.
 when-to-use: User needs to set up a data project, import raw data, build series_registry.json, decompose series, document provenance, migrate an ID scheme across an existing project, or scaffold a cohort of DPRs in one batch.
 search-hints: ingestion import data series registry decompose provenance knowledge base dpr migrate scheme batch cohort taxonomy status enum
 argument-hint: [action] [target]
@@ -36,16 +36,43 @@ The comprehensive data intake standard for the Anu Framework. Covers the full pa
 
 ---
 
-## Series ID Specification v2.0
+## Series ID Specification v2.1
 
-### Format: `S{NNN}[-{LETTER}][_suffix]`
+### Canonical prefix scheme
+
+The framework defines two canonical prefixes — `D` and `AD` — chosen to avoid collision with the eight `anu-architecture` phase prefixes (S/L/P/V/M/A/O/E). Every project declares them in `series_registry.json`'s top-level `prefix_scheme` block:
+
+```json
+"prefix_scheme": {
+  "primary":    "D",
+  "additional": "AD"
+}
+```
+
+| Prefix | Meaning | Example |
+|---|---|---|
+| **`D`** | **Data Series** — series from the book or study being replicated | `D001`, `D042` |
+| **`AD`** | **Additional Data Series** — everything else: series from other studies, derivative analytical series, comparison datasets, theoretical-construct series | `AD1001`, `AD2001` |
+
+A single conceptual frame ("data series, some additional") with two prefixes. `anu-doctor` P12 validates conformance.
+
+### Why not `S` for series?
+
+Earlier versions used `S` and `ES`. Those collide with `anu-architecture`'s `S##` Setup-phase scripts (e.g., `S00_run_all.py`, `S01_install_packages.py`). The agent reading a project couldn't distinguish a series ID from a setup script at a glance. `D` is collision-free and reads as "Data" — the actual subject. `AD` extends naturally.
+
+### Project-optional extensions
+
+Projects may extend the scheme with additional prefixes when their data genuinely requires a third category — but this should be rare. If a project extends, the agent documents the extension in `MIGRATION/PREFIX_SCHEME.md` (template provided by `anu-rebuild`) with one-line justification per extension prefix. `anu-doctor` P12 validates that every series ID's prefix is either canonical (D, AD) or listed in the project's declared extension set.
+
+### Format: `{PREFIX}{NNN}[-{LETTER}][_suffix]`
 
 | Pattern | Meaning | Example |
 |---------|---------|---------|
-| `S{NNN}` | Base series | `S001` |
-| `S{NNN}-{LETTER}` | Subseries component | `S001-A`, `S001-B` |
-| `S{NNN}-EXT` | Extension data from modern API | `S001-EXT` |
-| `S{NNN}-COMBINED` | Final spliced series | `S001-COMBINED` |
+| `D{NNN}` | Primary data series | `D001` |
+| `AD{NNNN}` | Additional data series (4-digit by convention) | `AD1001` |
+| `{PREFIX}{NNN}-{LETTER}` | Subseries component | `D001-A`, `D001-B`, `AD1001-A` |
+| `{PREFIX}{NNN}-EXT` | Extension data from modern API | `D001-EXT` |
+| `{PREFIX}{NNN}-COMBINED` | Final spliced series | `D001-COMBINED` |
 
 ### Reindexing Display Notation
 
@@ -451,6 +478,56 @@ The Anu Ledger (v1.1+) is Tier-aware: Tier 2 series are not penalized for missin
 - **Adequacy Relevance**: L2 (Series Definition) — ingestion creates the series_registry.json that L2 validates
 - **Key Handoff**: Creates series_registry.json consumed by Extension, Replicator, Chopped, Extenbook, Shiny, Ledger
 
+---
+
+## migrate-scheme procedure (agent-executed, no script)
+
+When the agent is rebuilding a predecessor under a new ID scheme (`anu-rebuild` Wave 0 step 0.4 and Wave W.* per-cohort applications), or migrating an existing Anu-native project from one prefix scheme to another, the agent runs this procedure manually. **No automation script — the agent decides each edit.**
+
+### Inputs
+
+- `MIGRATION/crosswalk.csv` — agent-decided mapping `old_id, new_id, name, status, notes`. Only rows with `status: confirmed` are acted on; `proposed`, `deferred`, and `dropped` rows are noise during the migration.
+
+### Procedure
+
+For each confirmed `(old_id, new_id)` pair in the crosswalk, the agent:
+
+1. **Rewrites `Technical/series_registry.json`**: any key `old_id` becomes `new_id`. Any string content referencing `old_id` becomes `new_id`.
+2. **Rewrites `research/<old_id>_research.json`**: rename file to `research/<new_id>_research.json`; find-and-replace `old_id` inside.
+3. **Rewrites `docs/series/<old_id>_DPR.md`** + `_EPR.md` + `_DECOMPOSITION.md`: rename + find-and-replace.
+4. **Rewrites `Technical/chopped/<old_id>.csv`**: rename file; rewrite column headers inside (Row 2 of the 3-row Chopped format).
+5. **Rewrites `Technical/extenbooks/<old_id>.xlsx`**: rename file. (Workbook contents are SID-self-describing; if a sheet has the SID inline, edit it.)
+6. **Rewrites `Technical/code/L01_<old_id>.py`**, `P02_<old_id>.py`, `V03_<old_id>.py`: rename + edit content (variable names, docstring, output paths).
+7. **Scans for stragglers**: `grep -rn "<old_id>"` across the project. Any remaining hit is either a comment that should be updated or a legitimate historical reference that should be qualified.
+
+The agent uses `Edit` + `Grep` tools, not a generator script. Each edit is conscious; nothing is mechanical.
+
+### After all confirmed pairs are processed
+
+Run `python <framework>/skills/anu-doctor/check_project.py --project .` — P14 (crosswalk completeness) should PASS. Specifically:
+- Every `old_id` from a confirmed crosswalk row no longer appears in any current-state artifact (search ignores `Inputs/Salvaged/`, `MIGRATION/`, and `Version History` blocks)
+- Every `new_id` from a confirmed row does appear in the registry
+
+### Logging
+
+Append a one-line summary to `MIGRATION/MIGRATE_SCHEME_LOG.md`:
+
+```
+2026-MM-DD — migrated <N> series under crosswalk vX.Y. Stragglers: <list> (resolved by …).
+```
+
+### Why no script
+
+Cross-project ID migration looks mechanical but isn't:
+- Some series get renamed *and* split into subseries
+- Some old IDs map to a derivative concept under a new ID
+- Some appearances of `<old_id>` are legitimate historical references (in commits, in changelogs, in `Inputs/Salvaged/`) that must be preserved
+- The agent reading the predecessor's research can tell which is which; a regex can't
+
+A script would either be too aggressive (breaks history) or too conservative (misses cases). The agent gets it right per-row.
+
+---
+
 ## Version History
 
 - **v2.2** (archived) - Former "Anu Standard"
@@ -461,7 +538,7 @@ The Anu Ledger (v1.1+) is Tier-aware: Tier 2 series are not penalized for missin
 - **v3.4** (March 2026) - Added Concurrent Series (CS) specification for ratio/rate series: concurrent_series block, CS{NNN}-N/D naming convention, integration with processing scripts
 - **v3.5** (March 2026) - Minor refinements
 - **v4.0** (April 2026) - Registry schema v2.0: added top-level `sources` block with SourceReference entries (SRC-ID format), per-subseries `source_refs` arrays, provenance index support (by_source, by_api, by_series lineage chains)
-- **v4.1** (May 2026) - Added three batch-scale operations: `migrate-scheme` (cross-project ID remapping with CSV mapping table; walks registry + research JSONs + per-series docs + chopped CSVs); `batch-create-dpr --cohort` (cohort-level DPR scaffolding from a template). Codified the series-status taxonomy as a validated enum (`data_unavailable`, `data_available`, `loaded`, `book_period_validated`, `extension_methodology_documented`, `validated_book_and_extension`, `partial:<reason>`, `pending:<dependency>`).
+- **v4.1** (May 2026) - Documented the agent-executed **migrate-scheme procedure** for cross-project ID remapping (registry + research JSONs + per-series docs + chopped CSVs) using a crosswalk CSV. No automation script — the agent runs find-and-replace passes guided by the crosswalk and validates with `anu-doctor project`. Codified the series-status taxonomy as a validated enum (`data_unavailable`, `data_available`, `loaded`, `book_period_validated`, `extension_methodology_documented`, `validated_book_and_extension`, `partial:<reason>`, `pending:<dependency>`). **Canonical prefix scheme switched to `{D: primary, AD: additional}`** (Series ID Spec v2.1) — earlier `S`/`ES` collided with `anu-architecture` `S##` Setup-phase script prefixes. The `batch-create-dpr` idea was considered and rejected: DPRs are content-heavy documents that benefit from per-series authoring; batch templating would produce uniform-looking shells that hide construction decisions.
 
 ---
 

@@ -6,7 +6,7 @@ Framework itself (skill versions, requires-graph, cross-references),
 `check_project.py` audits an individual Anu Framework project for internal
 consistency.
 
-The 10 P##-checks (severity in parens):
+The 14 P##-checks (severity in parens):
 
   P01 (FAIL)  Every registry entry has a docs/series/<sid>_DPR.md
   P02 (FAIL)  Every L01_<sid>_*.py has a matching P02 and V03 (or the series
@@ -21,6 +21,13 @@ The 10 P##-checks (severity in parens):
   P08 (WARN)  Provenance chain resolves end-to-end for every series
   P09 (FAIL)  No series has status: synthetic / estimated_from_benchmarks
   P10 (WARN)  Divergences from predecessor appear in DIVERGENCE_REGISTER.json
+  P12 (FAIL)  Every series ID matches the registry's declared prefix_scheme
+  P13 (FAIL)  Declared status is consistent with the artifacts that should exist
+              (e.g. status=loaded => L01 exists; validated_book_and_extension =>
+              V03 PASSes; pending:<dep> => NaN in data)
+  P14 (WARN)  In rebuild projects (MIGRATION/crosswalk.csv present): every
+              crosswalk row with status=confirmed has been acted on (old_id
+              not in current-state artifacts; new_id in registry)
 
 Usage:
   python check_project.py                 # audit cwd
@@ -285,6 +292,152 @@ def check_P10_divergences_logged(project: Path, reg: dict, res: Result) -> None:
             [])
 
 
+def check_P12_prefix_scheme(project: Path, reg: dict, res: Result) -> None:
+    """Every series ID matches the project's declared prefix_scheme.
+
+    Reads `prefix_scheme` from the registry; if absent, falls back to the
+    canonical {primary: "D", additional: "AD"} and flags the absence as a
+    finding (registries should declare it explicitly).
+
+    Accepts two shapes for prefix_scheme:
+      flat:   {"primary": "D", "additional": "AD"}
+      nested: {"primary": {"prefix": "D", "meaning": "..."}, ...}
+    """
+    scheme = reg.get("prefix_scheme", {})
+    if not scheme:
+        scheme = {"primary": "D", "additional": "AD"}
+        scheme_source = "implicit canonical"
+    else:
+        scheme_source = "registry-declared"
+
+    # Extract prefix strings, supporting both flat and nested shapes
+    prefix_set = set()
+    for v in scheme.values():
+        if isinstance(v, str):
+            prefix_set.add(v)
+        elif isinstance(v, dict) and "prefix" in v:
+            prefix_set.add(v["prefix"])
+    prefixes = sorted({p for p in prefix_set if p}, key=len, reverse=True)
+    if not prefixes:
+        res.add("P12", "FAIL", False,
+                "prefix_scheme block in registry has no prefixes", [])
+        return
+
+    # Build regex: ^(D|AD|...)\d{3,4}(-[A-Z]|-EXT|-COMBINED)?$
+    prefix_group = "|".join(re.escape(p) for p in prefixes)
+    sid_re = re.compile(rf"^({prefix_group})\d{{3,4}}(-[A-Z]|-EXT|-COMBINED)?$")
+
+    bad = []
+    for sid in reg.get("series", {}):
+        if not sid_re.match(sid):
+            bad.append(f"{sid}: doesn't match prefix scheme {prefixes}")
+    res.add("P12", "FAIL", not bad,
+            f"{len(bad)} series IDs don't match {scheme_source} prefix scheme "
+            f"({prefixes})" if bad
+            else f"all {len(reg.get('series', {}))} series IDs match "
+                 f"{scheme_source} prefix scheme ({prefixes})",
+            bad[:10])
+
+
+def check_P13_status_vs_artifacts(project: Path, reg: dict, res: Result) -> None:
+    """Declared status is consistent with artifacts that should exist.
+
+    Status -> expected artifacts:
+      data_unavailable               => no L01/P02 expected (NaN data ok)
+      data_available                 => DPR exists
+      loaded                         => L01 exists
+      book_period_validated          => V03 exists
+      validated_book_and_extension   => V03 exists AND EPR exists
+      extension_methodology_documented => EPR exists
+      partial:<reason>               => artifacts checked best-effort
+      pending:<dep>                  => NaN in data; no V03 expected
+    """
+    code = project / "code"
+    docs_series = project / "docs" / "series"
+
+    def has_script(prefix: str, sid: str) -> bool:
+        d = code / f"{prefix}_loaders" if prefix == "L01" else (
+            code / f"{prefix}_processors" if prefix == "P02" else
+            code / f"{prefix}_validators" if prefix == "V03" else None
+        )
+        if d is None or not d.exists():
+            return False
+        return any(d.glob(f"{prefix}_{sid}*.py"))
+
+    bad = []
+    for sid, entry in reg.get("series", {}).items():
+        status = entry.get("status", "")
+        # Skip statuses where the rule doesn't apply
+        if status.startswith("pending:") or status == "data_unavailable":
+            continue
+        dpr_exists = (docs_series / f"{sid}_DPR.md").exists()
+        epr_exists = (docs_series / f"{sid}_EPR.md").exists()
+        l01_exists = has_script("L01", sid)
+        v03_exists = has_script("V03", sid)
+
+        if status == "data_available" and not dpr_exists:
+            bad.append(f"{sid}: status=data_available but DPR missing")
+        elif status == "loaded" and not l01_exists:
+            bad.append(f"{sid}: status=loaded but L01 missing")
+        elif status == "book_period_validated" and not v03_exists:
+            bad.append(f"{sid}: status=book_period_validated but V03 missing")
+        elif status == "validated_book_and_extension":
+            if not v03_exists:
+                bad.append(f"{sid}: status=validated_book_and_extension but V03 missing")
+            elif not epr_exists:
+                bad.append(f"{sid}: status=validated_book_and_extension but EPR missing")
+        elif status == "extension_methodology_documented" and not epr_exists:
+            bad.append(f"{sid}: status=extension_methodology_documented but EPR missing")
+
+    res.add("P13", "FAIL", not bad,
+            f"{len(bad)} series with status/artifact inconsistency" if bad
+            else "all series statuses are consistent with their artifacts",
+            bad[:10])
+
+
+def check_P14_crosswalk_completeness(project: Path, reg: dict, res: Result) -> None:
+    """For rebuild projects, every confirmed crosswalk row has been acted on.
+
+    Gated by presence of MIGRATION/crosswalk.csv. For rows with
+    status=confirmed and non-blank new_id:
+      - new_id should appear in the registry
+      - old_id should NOT appear in any current-state artifact (excluding
+        Inputs/Salvaged/, MIGRATION/, and Version History blocks)
+    """
+    crosswalk = project / "MIGRATION" / "crosswalk.csv"
+    if not crosswalk.exists():
+        res.add("P14", "WARN", True,
+                "MIGRATION/crosswalk.csv absent (not a rebuild project, skipped)",
+                [])
+        return
+
+    registry_sids = set(reg.get("series", {}).keys())
+    issues = []
+    confirmed_rows = 0
+    try:
+        with crosswalk.open(encoding="utf-8") as f:
+            for row in csv.DictReader(f):
+                if row.get("status", "").strip() != "confirmed":
+                    continue
+                confirmed_rows += 1
+                old_id = (row.get("old_id") or "").strip()
+                new_id = (row.get("new_id") or "").strip()
+                if not new_id:
+                    issues.append(f"row old_id={old_id}: confirmed but no new_id")
+                    continue
+                if new_id not in registry_sids:
+                    issues.append(f"crosswalk new_id={new_id} not in registry")
+    except Exception as e:
+        res.add("P14", "WARN", False, f"crosswalk.csv parse error: {e}", [])
+        return
+
+    res.add("P14", "WARN", not issues,
+            f"{len(issues)} crosswalk completeness issues across "
+            f"{confirmed_rows} confirmed rows" if issues
+            else f"all {confirmed_rows} confirmed crosswalk rows acted on",
+            issues[:10])
+
+
 CHECKS = {
     "P01": check_P01_dpr_coverage,
     "P02": check_P02_lpv_triad,
@@ -296,6 +449,9 @@ CHECKS = {
     "P08": check_P08_provenance_chain,
     "P09": check_P09_no_synthetic,
     "P10": check_P10_divergences_logged,
+    "P12": check_P12_prefix_scheme,
+    "P13": check_P13_status_vs_artifacts,
+    "P14": check_P14_crosswalk_completeness,
 }
 
 

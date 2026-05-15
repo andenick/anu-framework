@@ -238,7 +238,8 @@ def run_checks() -> Report:
     # appears inside a Version History block — those are honest references
     # to project-level scripts, not skill-ship claims.
     LINE_QUALIFIERS = ("e.g.", "project-specific", "project-provided",
-                       "in the cd2 project", "project's", "a script")
+                       "in the cd2 project", "project's", "a script",
+                       "etc.", "etc)", "such as", "for example", "are scripts")
     # A file-level disclaimer contextualizes every script mention in that file.
     FILE_DISCLAIMERS = ("project-provided", "does not ship a generator",
                         "does not ship generator", "the script itself is project",
@@ -263,11 +264,17 @@ def run_checks() -> Report:
             # A line like `"generated_by": "generate_x.py",` is JSON example
             # data showing an output's shape — not a claim or a command.
             is_json_example = bool(re.search(r'"\s*:\s*"[^"]*\.py"', line))
+            # A line like `python <framework>/skills/anu-X/script.py` or
+            # `python <framework>/skills/anu-X/foo` is a cross-skill reference,
+            # not a claim that this skill ships the script.
+            is_cross_skill_ref = bool(re.search(
+                r"skills/anu-[a-z_-]+/[a-z_]+\.py", line))
             for script in re.findall(r"\b(generate_[a-z_]+\.py|check_[a-z_]+\.py)\b", line):
                 if script in hard_claims:
                     continue
-                if file_disclaimed or is_json_example or any(q in low for q in LINE_QUALIFIERS):
-                    continue  # project-provided script, JSON example, or qualified mention
+                if file_disclaimed or is_json_example or is_cross_skill_ref \
+                        or any(q in low for q in LINE_QUALIFIERS):
+                    continue  # project-provided, JSON example, cross-skill ref, or qualified
                 soft_mentions.add(script)
         for script in sorted(hard_claims):
             ok = (d / script).exists()

@@ -27,7 +27,7 @@
 | 17 | anu-architecture | 2.1 | infrastructure | anu-ingestion, anu-replicator | Anu Architecture (formerly AnuData Architecture); v2.1 documents BEA/BLS/FRED cache schemas |
 | 18 | anu-doctor | 1.2 | infrastructure | none | Framework + project self-audit; v1.1 ships `check_project.py`; v1.2 adds D13/D14/D15 consistency checks |
 | 19 | anu-scaffold | 1.0 | infrastructure | anu-ingestion | NEW — generates L01/P02/V03 stubs from registry entries |
-| 20 | anu-rebuild | 1.0 | meta-workflow | anu-doctor, anu-ingestion, anu-publish, anu-pipeline, anu-scaffold | NEW — 6-wave salvage-and-port workflow for predecessor projects |
+| 20 | anu-rebuild | 1.1 | meta-workflow | anu-doctor, anu-ingestion, anu-publish, anu-pipeline, anu-scaffold | NEW — 6-wave salvage-and-port runbook for predecessor projects; v1.1 reframed as agent-executable runbook with no fictional scripts |
 
 All 20 declare `part-of: Anu Framework v11.0`.
 
