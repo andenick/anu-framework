@@ -12,7 +12,7 @@
 ## Conventions
 
 - **File location.** Series-level records live under `{Project}/Technical/docs/series/`. Figure records live under `{Project}/Technical/docs/figures/`.
-- **Naming.** `S###_DPR.md`, `S###_EPR.md`, `Fig{N.M}_FPR.md`. Examples (from CD2): `S001_DPR.md`, `S038_EPR.md`, `Fig10.1_FPR.md`.
+- **Naming.** `S###_DPR.md`, `S###_EPR.md`, `Fig{N.M}_FPR.md`. Examples (from the reference project): `S001_DPR.md`, `S038_EPR.md`, `Fig10.1_FPR.md`.
 - **Format.** Markdown with a leading H1 and a Quick Reference table.
 - **Authoring.** DPRs are written by `anu-ingestion`. EPRs are written by `anu-extension`. FPRs are written by `anu-ingestion` or `anu-visualize` when a figure is registered.
 - **Linkage.** Every DPR links to its decomposition and research JSON. Every EPR links back to its DPR. Every FPR links to the DPRs of the series it visualizes.
@@ -52,7 +52,7 @@
 - **Known Issues** — documented divergences, missing years, classification changes.
 - **Verbatim Source Text** — direct quote from the publication's appendix or methodology section.
 
-### Worked example (compressed from `CD2/Technical/docs/series/S001_DPR.md`)
+### Worked example (compressed from `the reference project/Technical/docs/series/S001_DPR.md`)
 
 ```markdown
 # Data Provenance Record: S001 — US Industrial Production Index
@@ -126,7 +126,7 @@ A **No-Extension EPR** documents the deliberate decision to leave a series at it
 
 **Negative example (what NOT to do).** *"BLS earnings used as proxy for compensation because both are wage-related."* — earnings exclude employer-paid benefits and payroll taxes; compensation includes them. The concepts diverge by ~20 % in level. This would be a wrong-concept proxy and must be flagged in the `series_registry.json` with `"proxy": true` and a `"proxy_justification": "..."` field per the Anu Framework rule (no-proxy mandatory).
 
-### No-Extension EPR worked example (compressed from `CD2/Technical/docs/series/S038_EPR.md`)
+### No-Extension EPR worked example (compressed from `the reference project/Technical/docs/series/S038_EPR.md`)
 
 ```markdown
 # Extension Provenance Record: S038
@@ -189,7 +189,7 @@ Per Anu Extension Standard Principle 10 (FAIL ON UNCERTAINTY): when no faithful 
 - **Verbatim Caption Text** — direct quote.
 - **Cross-References** — DPR/EPR paths for constituent series, and any companion figures.
 
-### Worked example (compressed from `CD2/Technical/docs/figures/Fig10.1_FPR.md`)
+### Worked example (compressed from `the reference project/Technical/docs/figures/Fig10.1_FPR.md`)
 
 ```markdown
 # Figure Provenance Record: Fig10.1 — Bank vs Private IROP

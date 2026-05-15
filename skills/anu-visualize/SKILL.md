@@ -22,8 +22,8 @@ Interactive visualization for data construction projects. The app is registry-dr
 
 | Framework | Language | Use Case | Example |
 |-----------|----------|----------|---------|
-| **R Shiny + Plotly** | R | Full-featured data exploration with methodology panels | CD2 ShinyApp |
-| **Plotly Dash** | Python | Lightweight visualization, Python-native projects | CD2 ANU_VIZ |
+| **R Shiny + Plotly** | R | Full-featured data exploration with methodology panels | the reference project ShinyApp |
+| **Plotly Dash** | Python | Lightweight visualization, Python-native projects | the reference project ANU_VIZ |
 
 The standard is framework-agnostic — the same canonical JSON files, data pipeline, and quality checklist apply regardless of framework choice.
 
@@ -265,11 +265,11 @@ Colors are loaded from `config/app_config.json`:
 
 ---
 
-## Example: CD2 Project
+## Example: the reference project Project
 
-| Placeholder | CD2 Value |
+| Placeholder | the reference project Value |
 |-------------|-----------|
-| `[PROJECT]` | `CD2` |
+| `[PROJECT]` | `the reference project` |
 | `[SOURCE]` | `ShaikhAbsorbed` |
 | `SUBSOURCE_METADATA.json` | `SHINY_SUBSOURCES.json` (116 subsources) |
 | `[PROJECT]_QUOTES_MASTER.json` | `SHAIKH_QUOTES_MASTER.json` |

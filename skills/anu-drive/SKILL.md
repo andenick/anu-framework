@@ -113,7 +113,7 @@ Anu Drive is **Stage 8b** — one of three sibling distribution channels. Anu Pu
 
 | Component | Pattern | Example |
 |-----------|---------|---------|
-| Root folder | `{ProjectName}_Drive_v{VERSION}` | `CD2_Drive_v1.0` |
+| Root folder | `{ProjectName}_Drive_v{VERSION}` | `MyProject_Drive_v1.0` |
 | Master workbook | `{ProjectName}_All_Series_v{VERSION}.xlsx` | `CD2_All_Series_v1.0.xlsx` |
 | Master CSV | `{ProjectName}_All_Series_v{VERSION}.csv` | `CD2_All_Series_v1.0.csv` |
 | Codebook | `{ProjectName}_Codebook_v{VERSION}.csv` | `CD2_Codebook_v1.0.csv` |
@@ -1037,7 +1037,7 @@ Before any Drive package is shared externally, the following must be verified:
 
 1. **Path sanitization**: Replace all absolute paths with relative references or remove entirely
 2. **API key removal**: Strip any API keys found in Extenbook Provenance sheets
-3. **Internal reference removal**: Remove references to Robin data platform, Council infrastructure, or Arcanum-specific tooling
+3. **Internal reference removal**: Remove references to internal organizational platforms, infrastructure directories, or project-specific tooling that won't exist for the recipient
 4. **Agent references**: Remove Claude Code / agent workflow references from any metadata
 
 ### Manual Review Checklist
@@ -1079,6 +1079,7 @@ Before any Drive package is shared externally, the following must be verified:
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | 2026-05-12 | Initial release — folder structure, master file spec, series library, methodology PDF, README template, validation rules, generation process, LaTeX specification |
+| 1.1 | 2026-05-14 | Shipped `generate_drive_package.py` — canonical generator. Master XLSX has a single sheet ("All Time Series") holding time-series and derived series only; cross-sectional / theoretical / panel-indexed series are excluded from the master and ship only as individual per-series workbooks in `Series/`. Master CSV mirrors that sheet. Validation rules are advisory in v1.1; FAIL/WARN enforcement is on the v1.2 roadmap. |
 
 ---
 

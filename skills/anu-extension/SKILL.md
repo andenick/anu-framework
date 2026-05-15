@@ -564,7 +564,7 @@ Every data point must be attributed to its source. The Year-Source Matrix is doc
 | `splice_year`-`end` | S{NNN}-EXT | API source (raw) | `API:SERIES_ID` | Raw API data in native units |
 | `splice_year`-`end` | S{NNN}-F | API source (re-indexed) | `API:SERIES_ID` | Re-indexed to overlap previous subsource at splice year |
 
-**Example (CD2, S001 — US Industrial Production Index):**
+**Example (the reference project, S001 — US Industrial Production Index):**
 
 | Year Range | Subsource | Source Name | API Endpoint | Notes |
 |------------|-----------|-------------|--------------|-------|
@@ -796,10 +796,12 @@ These requirements are validated by the Anu Review D10b quality checklist item Q
 | 2.2 | 2026-03-12 | Added Visualization Requirements section: extension subsources must appear as separate chart traces; cross-referenced with Anu Review D10b Q5 and Anu Visualize quality checklist |
 | 2.3 | 2026-03-12 | Added chart-readiness and column map coverage to visualization requirements; cross-referenced with Anu Review D10c |
 | 2.4 | 2026-03-15 | Added dual extension column convention (S###-EXT raw + S###-F re-indexed), re-indexing formula, automatic subsource registration via generate_shiny_subsources.py, updated Year-Source Attribution table |
-| 3.0 | 2026-03-15 | Generalized: replaced project-specific hardcoding with placeholders; added generic Year-Source template; renamed shaikh_original to original; labeled CD2 examples |
+| 3.0 | 2026-03-15 | Generalized: replaced project-specific hardcoding with placeholders; added generic Year-Source template; renamed shaikh_original to original; labeled the reference project examples |
 | 3.1 | 2026-03-15 | Added Concurrent Series (CS) extension rules: CS columns are NOT independently extended; component subsource type; CS/extension interaction documented |
 | 3.2 | 2026-03-16 | External replicability: removed Robin references; API data cached in Inputs/API/FRED/; added source_url requirement for subsource metadata; added API Data Cache Location section |
-| 3.3 | 2026-04-07 | Version bump for Anu Framework v6.0 compatibility (format unchanged) |
+| 3.3 | 2026-04-07 | Version bump for Anu Framework v11.0 alignment (format unchanged) |
+| 3.4 | 2026-05-13 | Outputs section tightened to enumerate five concrete artifacts (EPR, EXTENSION_LOG.json, registry block, extended subseries, Divergence Register) |
+| 3.5 | 2026-05-15 | Added `batch-create-epr --cohort` for cohort-level EPR scaffolding from a template. Integrates with the central `DIVERGENCE_REGISTER.json` (via `_shared/divergences.py`) so extension-time divergences are visible to `anu-review` D13 alongside ingestion and manual-adjustment divergences. |
 
 ---
 

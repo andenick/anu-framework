@@ -90,7 +90,7 @@ anu-rebuild salvage <predecessor_root> --to Inputs/Salvaged/ [--manifest salvage
 anu-rebuild crosswalk --predecessor Inputs/<pred>/series_registry.json \
                       --prefix-scheme '{"primary":"S","external":"ES","analytical":"AS"}' \
                       --output MIGRATION/crosswalk.csv
-anu-rebuild scaffold --target . --crosswalk MIGRATION/crosswalk.csv [--from-template CD2]
+anu-rebuild scaffold --target . --crosswalk MIGRATION/crosswalk.csv [--from-template the reference project]
 anu-doctor                        # framework consistency check (existing skill)
 ```
 

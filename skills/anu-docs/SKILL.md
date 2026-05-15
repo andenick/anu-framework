@@ -229,8 +229,7 @@ For each series with `"researcher": "auto-generated"`:
 ### Step 3: Doc Regeneration
 
 Each project provides its own doc-regeneration script implementing this
-skill's contract (the reference implementation is CD2's
-`Technical/ANU_REPLICATOR/scripts/utils/`). The expected invocation:
+skill's contract (the reference implementation is a reference project's `Technical/ANU_REPLICATOR/scripts/utils/`). The expected invocation:
 
 ```bash
 python generate_series_docs.py --chapter N    # regenerate chapter
@@ -347,7 +346,7 @@ Project Doc Score = mean(all series scores)
 **`/anu-docs audit`** output:
 
 ```
-Anu Docs Audit — CD2
+Anu Docs Audit — the reference project
 ====================
 Total series docs: 114
   T3 (ENRICHED):  50  (44%)

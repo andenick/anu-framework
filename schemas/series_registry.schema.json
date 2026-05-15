@@ -13,7 +13,7 @@
     },
     "project": {
       "type": "string",
-      "description": "Short project identifier (e.g., 'CD2', 'NickyData', 'starcruiser'). Used in artifact filenames and Replicator banners."
+      "description": "Short project identifier (e.g., 'the reference project', 'NickyData', 'starcruiser'). Used in artifact filenames and Replicator banners."
     },
     "notation": {
       "type": "string",

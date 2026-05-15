@@ -491,7 +491,7 @@ def assemble_export(project: Path, registry: dict, version: str,
 
     replicator = first_existing(
         project / "Technical" / f"{project_name.lower()}-replicator",
-        project / "Technical" / "cd2-replicator",
+        project / "Technical" / "reference-replicator",
         project / "Technical" / "ANU_REPLICATOR",
     )
     final_data = project / "Technical" / "ANU_REPLICATOR" / "data" / "final-data"
