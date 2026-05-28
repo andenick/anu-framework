@@ -499,7 +499,7 @@ Template auto-selection from registry entry's `content_type` and `construction`:
 
 ### Evidence
 
-- ST2 has `Inputs/ST2/Technical/NickyData/run.py` (~200 LOC) — discovery + orchestration of S/L/P/V/M/A/O/E phases.
+- ST2 has `Inputs/ST2/Technical/AnuData/run.py` (~200 LOC) — discovery + orchestration of S/L/P/V/M/A/O/E phases.
 - I never wrote one; used ad-hoc PowerShell `foreach` loops the whole rebuild.
 - `anu-pipeline/SKILL.md` describes Stage 0-8 but doesn't ship a `run.py`.
 
