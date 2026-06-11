@@ -1,32 +1,24 @@
 ---
 name: anu-scaffold
-version: "1.0"
-description: "**Template renderer** — not a code generator. Given a populated registry entry, fills L##/P##/V## script templates with the entry's metadata (SID, name, units, source filename, benchmark dict) and writes them to the right location. Every rendered stub has `# TODO:` markers where the agent must fill in the construction logic. The skill chooses ZERO construction logic: template selection is a deterministic lookup from the registry's `content_type` field; the agent does all real work."
-when-to-use: "Agent has a populated registry entry (or a cohort of them) and wants to save keystrokes on the boilerplate header/import/path lines. Invoke from `anu-rebuild` Wave W.7 in the runbook."
+version: "2.1"
+description: "**Template renderer** — not a code generator. Given a populated registry entry, fills L##/P##/V## script templates with the entry's metadata (SID, name, units, source filename, benchmark dict) and writes them to the right location. Every rendered stub has `# TODO:` markers where the agent must fill in the construction logic. The skill chooses ZERO construction logic: template selection is a deterministic lookup from the registry's `content_type` field; the agent does all real work. Stage 5 sub-skill of the Anu Framework pipeline; writes STEP_LOG, NARRATIVE, and LEDGER patches on every action."
+when-to-use: "Agent has a populated registry entry (or a cohort of them) and wants to save keystrokes on the boilerplate header/import/path lines. Invoke from `anu-build` (mode=rebuild) Wave W.7 in the runbook."
 search-hints: "scaffold generate code stub loader processor validator template registry-driven boilerplate"
 allowed-tools: Read, Write, Glob, Bash
 argument-hint: "[generate|list-templates] [--series SID | --cohort NAME] [--template direct_column|derived|matrix_summary]"
 requires: anu-ingestion
-part-of: Anu Framework v11.0
+part-of: Anu Framework v12.2
 ---
 
-# Anu Scaffold Standard v1.0
+# Anu Scaffold v2.1
 
-## Overview
-
-| Property | Value |
-|----------|-------|
-| Skill Name | Anu Scaffold |
-| Version | 1.0 |
-| Part Of | Anu Framework v11.0 |
-| Created | 2026-05-15 |
-| Purpose | Generate L##/P##/V## script stubs from series_registry.json |
-
----
-
-## Purpose
+**Stage 5 — REPLICATION (sub-skill)**
 
 `anu-scaffold` is a **template renderer**. It fills variables in pre-written template files with values from a registry entry and writes the result to the right location. It is the ONLY mechanical generator the agent invokes during the construction phase of a project — and it deliberately does nothing that requires judgment.
+
+Every series in an Anu Framework project needs three scripts: a loader (`L01_<sid>_<slug>.py`), a processor (`P02_<sid>_<slug>.py`), and a validator (`V03_<sid>_<slug>.py`). Each has the same header structure (imports, paths, registry-entry lookup) regardless of the series. `anu-scaffold` writes that header. The agent writes the body.
+
+This is the same role `cookiecutter` plays for project layouts — pure templating, no decisions baked in. Derived from the RMWND build, where 17 hand-rolled generator scripts (`MIGRATION/_gen_*_scripts.py`) did this work informally.
 
 ### What it does NOT do
 
@@ -36,78 +28,48 @@ part-of: Anu Framework v11.0
 - **Doesn't choose benchmarks.** Reference values come from the registry entry; the agent put them there.
 - **Doesn't make any decision** about subseries, splicing, extension methodology, or proxy handling. Those are agent decisions, made earlier and reflected in the registry.
 
-### What it does
+## Stage Position
 
-Every series in an Anu Framework project needs three scripts: a loader (`L01_<sid>_<slug>.py`), a processor (`P02_<sid>_<slug>.py`), and a validator (`V03_<sid>_<slug>.py`). Each has the same header structure (imports, paths, registry-entry lookup) regardless of the series. `anu-scaffold` writes that header. The agent writes the body.
-
-This is the same role `cookiecutter` plays for project layouts — pure templating, no decisions baked in.
-
-`anu-scaffold` eliminates the boilerplate. Given a registry entry, it picks the right template, fills it from registry fields, and writes the three scripts to the project's `code/` tree. The agent's job is then to *fill in construction logic* — not to rewrite the same import block 64 times.
-
-Derived from the RMWND build, where 17 hand-rolled generator scripts (`MIGRATION/_gen_*_scripts.py`) did this work informally. This skill formalizes the pattern.
+Stage 5 — REPLICATION (sub-skill)
 
 ---
 
-## Templates shipped
+## Inputs
 
-`templates/` contains three Jinja-style templates, one per common series shape:
+| Artifact | Path / Pattern | Required |
+|----------|---------------|----------|
+| Series registry | `series_registry.json` (target series populated: name, content_type, construction, validation, source_file or subseries.source) | Yes |
+| Templates (built-in) | `templates/L01_<template>.py.j2`, `templates/P02_<template>.py.j2`, `templates/V03_<template>.py.j2` | Yes |
+| Templates (project override) | `code/_scaffold_templates/<template>.py.j2` | No |
+| Cohort definitions | `series_registry.json` top-level `cohorts:` (optional) | No |
 
-| Template | When to use | Example RMWND series |
-|---|---|---|
-| `direct_column` | Series loaded from a single column of one source CSV; pass-through processor; benchmark-only validator | S501–S506, S511, S512, S601–S606, S609, ES1001-1002, ES1401-1403, ES1701-1704 |
-| `derived` | Series computed from already-built upstream series (no L01); processor reads `data/final/<upstream>.csv`; validator usually identity or round-trip check | S507, S510, S513, S514, S608, S801, S901, AS001-AS004, ES1101-1103, ES1304-1305 |
-| `matrix_summary` | Series derived from benchmark IO matrices (or similar matrix per benchmark year); processor produces per-year summary statistics | S401, S402, S701, S702, S703 |
+## Outputs
 
-Each template lives at `templates/L01_<template>.py.j2`, `templates/P02_<template>.py.j2`, `templates/V03_<template>.py.j2`. The agent can override per-project by dropping a `code/_scaffold_templates/<template>.py.j2` file in the target project.
-
----
-
-## Auto-template selection from registry
-
-When `--template auto` (default), the skill picks a template from the registry entry:
-
-- `content_type: time_series` + `construction[0].op: load` (no derive/splice) → `direct_column`
-- `content_type: derived` OR construction has no `load` op → `derived`
-- `content_type: benchmark_only` OR `matrix` mentioned in registry → `matrix_summary`
-
-Override with `--template <name>` to force a specific template.
-
----
-
-## Commands
-
-| Command | Purpose |
-|---|---|
-| `anu-scaffold generate --series S###` | Scaffold trio for one series |
-| `anu-scaffold generate --cohort <name>` | Scaffold trio for every series in a cohort (chapter, wave, study group) |
-| `anu-scaffold generate --all-pending` | Scaffold for every registry entry with status=`loaded` or `data_available` |
-| `anu-scaffold list-templates` | Print template inventory |
-
-Cohort lookup reads the registry's `wave:` field (or `chapter:` for book series). Custom cohort definitions live in `series_registry.json` under top-level `cohorts:` (optional).
-
----
-
-## Generator script
-
-This skill ships an executable generator at `generate.py` (alongside this SKILL.md). It is the canonical implementation of all `anu-scaffold generate` commands.
-
-```bash
-python generate.py --series S501
-python generate.py --cohort wave_1_ch5 --template auto
-python generate.py --all-pending --dry-run
-```
-
-The generator reads `<project_root>/series_registry.json`, picks the template per series (auto or user-forced), renders it with `registry_entry` as the context, and writes to:
-
-- `<project_root>/code/L01_loaders/L01_<sid>_<slug>.py`
-- `<project_root>/code/P02_processors/P02_<sid>_<slug>.py`
-- `<project_root>/code/V03_validators/V03_<sid>_<slug>.py`
+| Artifact | Path / Pattern | Format |
+|----------|---------------|--------|
+| Loader script | `code/L01_loaders/L01_<sid>_<slug>.py` | Python |
+| Processor script | `code/P02_processors/P02_<sid>_<slug>.py` | Python |
+| Validator script | `code/V03_validators/V03_<sid>_<slug>.py` | Python |
 
 `<slug>` is derived from the registry's `name` field (lowercase, underscores, alphanumeric only).
 
----
+### Canonical Output Locations
 
-## Output contract
+Generated scripts follow the canonical project directory layout defined in `anu-build/SKILL.md`. All paths are relative to the project's `Technical/` root:
+
+- Loaders: `code/L01_loaders/L01_{sid}_{slug}.py`
+- Processors: `code/P02_processors/P02_{sid}_{slug}.py`
+- Validators: `code/V03_validators/V03_{sid}_{slug}.py`
+- Shared loaders (exempt from LPV triad): `code/L01_loaders/shared_{study}_loader.py`
+
+All generated scripts resolve paths relative to the project root using the standard pattern:
+
+```python
+PROJECT_ROOT = Path(__file__).resolve().parents[2]  # code/{stage}/ -> Technical/
+REGISTRY_PATH = PROJECT_ROOT / "series_registry.json"
+```
+
+### Output contract
 
 Each generated script:
 
@@ -119,9 +81,52 @@ Each generated script:
 
 The generator does NOT fill in construction-specific code (e.g., the actual derivation formula for a derived series). It scaffolds the skeleton; the agent reads the registry's `construction` block + DPR and writes the body.
 
----
+## Commands
 
-## When NOT to use
+| Command | Purpose |
+|---------|---------|
+| `anu-scaffold generate --series S###` | Scaffold trio for one series |
+| `anu-scaffold generate --cohort <name>` | Scaffold trio for every series in a cohort (chapter, wave, study group) |
+| `anu-scaffold generate --all-pending` | Scaffold for every registry entry with status=`loaded` or `data_available` |
+| `anu-scaffold list-templates` | Print template inventory |
+
+Cohort lookup reads the registry's `wave:` field (or `chapter:` for book series). Custom cohort definitions live in `series_registry.json` under top-level `cohorts:` (optional).
+
+### Generator script
+
+This skill ships an executable generator at `generate.py` (alongside this SKILL.md). It is the canonical implementation of all `anu-scaffold generate` commands.
+
+```bash
+python generate.py --series S501
+python generate.py --cohort wave_1_ch5 --template auto
+python generate.py --all-pending --dry-run
+```
+
+The generator reads `<project_root>/series_registry.json`, picks the template per series (auto or user-forced), renders it with `registry_entry` as the context, and writes the three scripts.
+
+### Templates shipped
+
+`templates/` contains three Jinja-style templates, one per common series shape:
+
+| Template | When to use | Example series |
+|---|---|---|
+| `direct_column` | Series loaded from a single column of one source CSV; pass-through processor; benchmark-only validator | S501–S506, S511, S512, S601–S606, S609, XS1001-1002, XS1401-1403, XS1701-1704 |
+| `derived` | Series computed from already-built upstream series (no L01); processor reads `data/final/<upstream>.csv`; validator usually identity or round-trip check | S507, S510, S513, S514, S608, S801, S901, XS001-XS004, XS1101-1103, XS1304-1305 |
+| `matrix_summary` | Series derived from benchmark IO matrices (or similar matrix per benchmark year); processor produces per-year summary statistics | S401, S402, S701, S702, S703 |
+
+Each template ships P02/V03 variants (`templates/P02_<template>.py.j2`, `templates/V03_<template>.py.j2`); the `direct_column` and `matrix_summary` templates also ship an L01 loader (`templates/L01_<template>.py.j2`). The `derived` template has **no** L01 — derived series have no loader by design — so there are 8 `.j2` files, not 9. The agent can override per-project by dropping a `code/_scaffold_templates/<template>.py.j2` file in the target project.
+
+### Auto-template selection from registry
+
+When `--template auto` (default), the skill picks a template from the registry entry:
+
+- `content_type: time_series` + `construction[0].op: load` (no derive/splice) → `direct_column`
+- `content_type: derived` OR construction has no `load` op → `derived`
+- `content_type: benchmark_only` OR `matrix` mentioned in registry → `matrix_summary`
+
+Override with `--template <name>` to force a specific template.
+
+### When NOT to use
 
 | Scenario | Use instead |
 |---|---|
@@ -129,42 +134,66 @@ The generator does NOT fill in construction-specific code (e.g., the actual deri
 | Series needs custom L01 logic outside the 3 templates | Hand-write; templates are guidance, not enforcement |
 | Series is purely declarative (no script needed, just registry+validation block) | Don't scaffold; mark `status: declared_only` |
 
----
+## Acceptance Gates
+
+- [ ] Every scaffolded script compiles (`python -c "import <script>"` succeeds)
+- [ ] Each script has a `run()` function and a `__main__` block
+- [ ] All `# TODO:` markers are present (no construction logic pre-filled)
+- [ ] Template selection matches the registry's `content_type` field
+- [ ] `--force` was NOT used if target files already exist (no silent overwrites)
+- [ ] Generated scripts import from `lib/` per anu-replicator v3.1 prescription
+
+## Documentation Cascade Writes
+
+| Cascade File | Trigger | Content Written |
+|-------------|---------|-----------------|
+| `STEP_LOG.jsonl` | Every `generate` action | `{action: "scaffold", series_id, template, timestamp, status, files_written}` |
+| `NARRATIVE.md` | Every `generate` action | Human-readable summary of which scripts were scaffolded and template used |
+| `ANU_LEDGER.json` | Batch scaffold completion | Patch: `scaffold_coverage` updated for processed series/cohort |
 
 ## Integration with Anu Framework
 
-| Skill | Relationship |
-|---|---|
-| `anu-ingestion` (required) | Provides the registry that drives template selection |
-| `anu-replicator` | Generated scripts target the `lib/` structure anu-replicator prescribes |
-| `anu-rebuild` | The 6-wave rebuild workflow invokes `anu-scaffold generate --cohort` per wave |
-| `anu-pipeline` | Generated scripts conform to the S/L/P/V/M/A/O/E phase layout anu-pipeline orchestrates |
+| Skill | Relationship | Artifact Flow |
+|-------|-------------|---------------|
+| **Anu Ingestion** (Stage 3, required) | Upstream — provides the registry that drives template selection | `series_registry.json` → template lookup |
+| **Anu Replicator** (Stage 5) | Consumer — generated scripts target the `lib/` structure anu-replicator prescribes | L##/P##/V## stubs → Replicator's `scripts/` tree |
+| **Anu Build** (mode=rebuild) | Invoker — the rebuild workflow invokes `anu-scaffold generate --cohort` per wave | Wave W.7 triggers scaffold batches |
+| **Anu Build** | Orchestrator — generated scripts conform to the S/L/P/V/M/A/O/E phase layout | L##/P##/V## stubs fit pipeline execution order |
 
----
+### Pipeline Context
 
-## Documentation Contract
+- **Pipeline Stage**: 5 — REPLICATION (sub-skill, invoked by anu-replicator or anu-build mode=rebuild)
+- **Upstream**: Stage 3 Ingestion (registry must be populated)
+- **Downstream**: Agent fills in construction logic; scripts run within anu-replicator
+- **Key Handoff**: Produces boilerplate-free L##/P##/V## stubs; agent writes the construction body
 
-| Aspect | Detail |
-|---|---|
-| **Creates** | `code/L01_loaders/L01_<sid>_<slug>.py`, `code/P02_processors/P02_<sid>_<slug>.py`, `code/V03_validators/V03_<sid>_<slug>.py` |
-| **Expects** | `series_registry.json` with the target series populated (name, content_type, construction, validation, source_file or subseries.source) |
-| **Reads** | Registry, templates in `templates/` (or `code/_scaffold_templates/` override) |
-| **Updates** | Nothing — writes new files only; refuses to overwrite without `--force` |
+## Anti-Patterns
 
----
+| # | DO NOT | Consequence |
+|---|--------|-------------|
+| 1 | Embed construction logic in templates | Templates become project-specific; defeats the purpose of a generic renderer |
+| 2 | Run scaffold without a populated registry entry | Generated scripts reference missing fields; immediate runtime errors |
+| 3 | Overwrite existing scripts without `--force` | Silently destroys agent-written construction logic |
+| 4 | Skip the `# TODO:` markers | Agent has no signal where to add construction logic; stubs look "done" when they aren't |
+| 5 | Create custom templates per series instead of per content_type | Template proliferation; maintain 3 templates, not 64 |
+| 6 | Use scaffold output as-is without filling in construction logic | Produces empty/no-op scripts that pass syntax checks but do nothing |
+
+## Robin Integration
+
+When scaffolding an L## loader template for a Robin source (content_type=`robin`), use the `lib/data/robin_loader.py` import. Registry entries with `source_type: robin` get a robin-loader L## stub; agent fills in the source_id.
 
 ## Version History
 
 - **v1.0** (May 2026) — Initial release. Three templates (direct_column, derived, matrix_summary), auto-template selection from registry, batch `--cohort` mode, ships `generate.py`.
+- **v2.0** (May 2026) — Rewritten to Anu Framework v12.0 common template. Added Stage Position (Stage 5 — REPLICATION sub-skill), machine-listed Inputs/Outputs tables, Acceptance Gates, Documentation Cascade Writes (STEP_LOG + NARRATIVE + LEDGER), Anti-Patterns table. Renumbered pipeline stage references to v12.0 scheme. All substantive content preserved.
+- **v2.1** (May 2026) — Added canonical output locations section with standard relative path resolution pattern. Documented shared loader convention (`shared_{study}_loader.py`). Cross-references anu-build canonical directory layout.
 
 ---
 
-## Canonical references
+## Canonical References
 
-- [`ANU_FRAMEWORK_GLOSSARY.md`](../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary
-- [`SERIES_REGISTRY_SCHEMA.md`](../../docs/SERIES_REGISTRY_SCHEMA.md) — fields read by the generator
-- `anu-replicator` lib/ structure prescription — where generated scripts import from
+- [`ANU_FRAMEWORK_GLOSSARY.md`](../../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary for all framework terms.
 
 ---
 
-*Part of the Anu Framework v11.0 — Registry-driven code scaffolding.*
+*Part of the Anu Framework v12.0 — Comprehensive Data Construction Framework*

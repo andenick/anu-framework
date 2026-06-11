@@ -3,7 +3,7 @@
 
 Transforms an internal Anu Framework project into a clean, publishable
 GitHub export: scrubbed replication code, final data, README, CITATION.cff,
-LICENSE, and a machine-readable MANIFEST.json. Runs the P01-P12
+LICENSE, and a machine-readable MANIFEST.json. Runs the P01-P15
 pre-publication validation gate and writes an optional PUBLISH_AUDIT.json.
 
 This is the canonical implementation of the ``/anu-publish package`` and
@@ -11,15 +11,19 @@ This is the canonical implementation of the ``/anu-publish package`` and
 
 Usage:
     python generate_publish_package.py <project_root>
-        [--profile data-only|data+pipeline|data+pipeline+viz|full]
+        [--profile data-only|data+pipeline|data+pipeline+viz|full|web]
         [--version X.Y.Z] [--json]
 
-Profiles (each is a superset of the one before):
+Profiles (each classic profile is a superset of the one before):
     data-only          final-data CSVs + codebook + README + CITATION.cff + LICENSE
     data+pipeline      + replicator code (loading/, processing/, lib/, config/,
                        replicate.py, requirements.txt)  [default]
     data+pipeline+viz  + visualization app
     full               + per-series docs (DPR/EPR/decomposition)
+    web                NOT a superset — the formal Anu->website export contract:
+                       publish-filtered registry + chopped CSV + parquet +
+                       data_dictionary.csv + explainers + scrubbed DPRs +
+                       WEB_MANIFEST.json (vizsite build_cache.py asserts on it)
 
 Source of truth: {project}/Technical/series_registry.json
 Output:          {project}/Outputs/{Project}_Publish_v{VERSION}/
@@ -54,14 +58,21 @@ SECRET_PATTERNS = [
     re.compile(r"(?i)aws_secret_access_key\s*[:=]\s*['\"]?[A-Za-z0-9/+]{20,}"),
 ]
 ABS_PATH_PATTERN = re.compile(r"(?:[A-Za-z]:[\\/]|/home/|/Users/|\\\\[A-Za-z])")
-ARCANUM_REF_PATTERN = re.compile(r"(?i)\b(arcanum|council/druck|\bfreenic\b|\bRobin\b)")
+ARCANUM_REF_PATTERN = re.compile(
+    r"(?i)\b(arcanum|council/druck|\bfreenic\b|\bRobin\b|andenick)")
+
+# Internal staging/salvage directories that must never ship in any export.
+INTERNAL_DIR_NAMES = {"inputs_bundled", "SalvagedInputs"}
 
 TEXT_SUFFIXES = {
     ".md", ".txt", ".json", ".py", ".csv", ".yml", ".yaml", ".cff",
     ".tex", ".r", ".cfg", ".ini", ".toml", ".rst", ".sh",
 }
 
-PROFILES = ("data-only", "data+pipeline", "data+pipeline+viz", "full")
+# `web` is not a superset profile: it is the formal Anu->website export
+# contract consumed by vizsite-family build_cache.py (chopped CSV + parquet +
+# data dictionary + explainers + scrubbed DPRs + WEB_MANIFEST.json).
+PROFILES = ("data-only", "data+pipeline", "data+pipeline+viz", "full", "web")
 
 
 # --------------------------------------------------------------------------
@@ -491,7 +502,7 @@ def assemble_export(project: Path, registry: dict, version: str,
 
     replicator = first_existing(
         project / "Technical" / f"{project_name.lower()}-replicator",
-        project / "Technical" / "reference-replicator",
+        project / "Technical" / "cd2-replicator",
         project / "Technical" / "ANU_REPLICATOR",
     )
     final_data = project / "Technical" / "ANU_REPLICATOR" / "data" / "final-data"
@@ -580,6 +591,174 @@ def assemble_export(project: Path, registry: dict, version: str,
 
 
 # --------------------------------------------------------------------------
+# Web-profile assembly (the formal Anu -> website export contract)
+# --------------------------------------------------------------------------
+
+def _published_series(registry: dict) -> dict:
+    """Registry series filtered to publish != False."""
+    return {sid: e for sid, e in registry.get("series", {}).items()
+            if e.get("publish") is not False}
+
+
+def write_data_dictionary(export_dir: Path, registry: dict) -> int:
+    """Generate data_dictionary.csv from the registry (ANU_NAMING_STANDARD).
+
+    One row per series and per subseries; the dictionary is generated, never
+    hand-written, so naming is identical across site, downloads, and API.
+    Returns the number of rows written.
+    """
+    import csv
+    cols = ["series_id", "subseries_id", "display_name", "label", "units",
+            "period_start", "period_end", "source", "construction_type",
+            "license", "notes"]
+    rows = []
+    license_str = registry.get("drive_config", {}).get("license", "")
+    for sid, e in sorted(_published_series(registry).items()):
+        period = e.get("year_range") or e.get("period") or ["", ""]
+        if isinstance(period, str):
+            period = (period.split("-", 1) + [""])[:2]
+        base = {
+            "series_id": sid,
+            "display_name": e.get("display_name") or e.get("name", ""),
+            "units": e.get("units", ""),
+            "period_start": period[0], "period_end": period[1],
+            "source": e.get("source_file") or e.get("source", ""),
+            "construction_type": e.get("construction")
+                                  or e.get("content_type", ""),
+            "license": license_str,
+            "notes": e.get("notes", ""),
+        }
+        rows.append({**base, "subseries_id": "", "label": ""})
+        for sub_id, s in (e.get("subseries") or {}).items():
+            if not isinstance(s, dict):
+                continue
+            rows.append({**base,
+                         "subseries_id": sub_id,
+                         "label": s.get("label") or s.get("name", ""),
+                         "units": s.get("units") or base["units"]})
+    path = export_dir / "data_dictionary.csv"
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=cols)
+        w.writeheader()
+        w.writerows(rows)
+    return len(rows)
+
+
+def assemble_web_export(project: Path, registry: dict,
+                        version: str) -> tuple[Path, dict]:
+    """Build the `web` export consumed by vizsite-family build_cache.py.
+
+    Contents: publish-filtered registry, chopped CSVs, per-series parquet,
+    data_dictionary.csv, explainers, scrubbed DPRs, WEB_MANIFEST.json,
+    README/LICENSE/CITATION, and the MIGRATION crosswalk if present.
+    Requires pandas + pyarrow for the parquet conversion.
+    """
+    try:
+        import pandas as pd  # noqa: F401
+    except ImportError:
+        print("ERROR: the web profile requires pandas + pyarrow "
+              "(pip install pandas pyarrow)", file=sys.stderr)
+        sys.exit(2)
+
+    project_name = registry.get("project", "Project")
+    export_dir = project / "Outputs" / f"{project_name}_Web_v{version}"
+    if export_dir.exists():
+        shutil.rmtree(export_dir)
+    export_dir.mkdir(parents=True)
+    stats: dict[str, int] = {}
+    published = _published_series(registry)
+
+    print(f"Anu Publish — generating {project_name} Web export v{version}")
+    print(f"  output: {export_dir}")
+    print(f"  series: {len(published)} published "
+          f"({len(registry.get('series', {})) - len(published)} excluded by triage)")
+
+    # ----- publish-filtered registry -----
+    pub_registry = dict(registry)
+    pub_registry["series"] = published
+    (export_dir / "series_registry.json").write_text(
+        json.dumps(pub_registry, indent=2), encoding="utf-8")
+
+    # ----- chopped CSVs + parquet (published series only) -----
+    chopped_src = first_existing(
+        project / "Technical" / "chopped",
+        project / "Technical" / "ANU_REPLICATOR" / "data" / "final-data" / "chopped",
+    )
+    n_chopped = n_parquet = 0
+    if chopped_src is not None:
+        (export_dir / "chopped").mkdir()
+        (export_dir / "parquet").mkdir()
+        for sid in sorted(published):
+            src = chopped_src / f"{sid}.csv"
+            if not src.exists():
+                continue
+            shutil.copy2(src, export_dir / "chopped" / src.name)
+            n_chopped += 1
+            try:
+                # Chopped format: Row 1 metadata, Row 2 column IDs, Row 3+ data.
+                df = pd.read_csv(src, skiprows=1)
+            except Exception:
+                df = pd.read_csv(src)
+            df.to_parquet(export_dir / "parquet" / f"{sid}.parquet",
+                          index=False)
+            n_parquet += 1
+    stats["chopped"], stats["parquet"] = n_chopped, n_parquet
+    print(f"  chopped/         {n_chopped} files")
+    print(f"  parquet/         {n_parquet} files")
+
+    # ----- data dictionary (generated from the registry) -----
+    stats["dictionary_rows"] = write_data_dictionary(export_dir, registry)
+    print(f"  data_dictionary  {stats['dictionary_rows']} rows")
+
+    # ----- explainers + scrubbed DPRs (published series only) -----
+    docs_src = project / "Technical" / "docs"
+    n_exp = n_dpr = 0
+    for sid in sorted(published):
+        exp = docs_src / "explainers" / f"{sid}_EXPLAINER.md"
+        if exp.exists() and copy_file(exp, export_dir / "docs" / "explainers" / exp.name):
+            n_exp += 1
+        dpr = docs_src / "series" / f"{sid}_DPR.md"
+        if dpr.exists() and copy_file(dpr, export_dir / "docs" / "series" / dpr.name):
+            n_dpr += 1
+    stats["explainers"], stats["dprs"] = n_exp, n_dpr
+    print(f"  docs/explainers/ {n_exp} files")
+    print(f"  docs/series/     {n_dpr} DPRs")
+
+    # ----- crosswalk (public correspondence table for legacy IDs) -----
+    if copy_file(project / "MIGRATION" / "crosswalk.csv",
+                 export_dir / "MIGRATION" / "crosswalk.csv"):
+        print("  MIGRATION/       crosswalk.csv")
+
+    # ----- publication artifacts -----
+    write_readme(export_dir, registry, version, "web", len(published))
+    ensure_license(export_dir, registry, None)
+    write_citation_cff(export_dir, registry, version)
+    print("  artifacts        README.md, LICENSE, CITATION.cff")
+
+    # ----- WEB_MANIFEST.json — build_cache.py asserts against this -----
+    by_prefix: dict[str, int] = {}
+    for sid in published:
+        prefix = re.match(r"^[A-Z]+", sid)
+        key = prefix.group(0) if prefix else "?"
+        by_prefix[key] = by_prefix.get(key, 0) + 1
+    web_manifest = {
+        "project": project_name,
+        "web_export_version": version,
+        "generated": datetime.now(timezone.utc).isoformat(),
+        "series_published": len(published),
+        "series_excluded": len(registry.get("series", {})) - len(published),
+        "series_by_prefix": by_prefix,
+        "files": stats,
+        "downloads_contract": ["csv", "parquet"],
+    }
+    (export_dir / "WEB_MANIFEST.json").write_text(
+        json.dumps(web_manifest, indent=2), encoding="utf-8")
+    print(f"  WEB_MANIFEST     {len(published)} series, prefixes {by_prefix}")
+
+    return export_dir, stats
+
+
+# --------------------------------------------------------------------------
 # MANIFEST
 # --------------------------------------------------------------------------
 
@@ -627,13 +806,14 @@ def write_manifest(export_dir: Path, registry: dict, version: str,
 
 
 # --------------------------------------------------------------------------
-# Pre-publication validation gate (P01-P12)
+# Pre-publication validation gate (P01-P15)
 # --------------------------------------------------------------------------
 
-def validate_export(export_dir: Path, profile: str, scrub_hits: dict) -> Report:
-    """Run the P01-P12 pre-publication gate. Returns a populated Report."""
+def validate_export(export_dir: Path, profile: str, scrub_hits: dict,
+                    registry: dict | None = None) -> Report:
+    """Run the P01-P15 pre-publication gate. Returns a populated Report."""
     report = Report()
-    has_pipeline = profile != "data-only"
+    has_pipeline = profile not in ("data-only", "web")
 
     # P01 — README present
     readme = export_dir / "README.md"
@@ -669,17 +849,28 @@ def validate_export(export_dir: Path, profile: str, scrub_hits: dict) -> Report:
             manifest_detail = f"MANIFEST.json invalid JSON: {exc}"
     report.add("P04_MANIFEST_VALID", "FAIL", manifest_ok, manifest_detail)
 
-    # P05 — data/ contains at least one final CSV
-    data_dir = export_dir / "data"
-    has_data = data_dir.exists() and any(data_dir.rglob("*.csv"))
-    report.add("P05_DATA_PRESENT", "FAIL", has_data,
-               "data/ contains CSV files" if has_data else "data/ has no CSV files")
+    # P05 — data present (data/ for classic profiles; chopped/ + parquet/ for web)
+    if profile == "web":
+        has_data = ((export_dir / "chopped").exists()
+                    and any((export_dir / "chopped").glob("*.csv"))
+                    and (export_dir / "parquet").exists()
+                    and any((export_dir / "parquet").glob("*.parquet")))
+        report.add("P05_DATA_PRESENT", "FAIL", has_data,
+                   "chopped/ CSVs + parquet/ files present" if has_data
+                   else "web export missing chopped/ CSVs or parquet/ files")
+        data_dir = export_dir / "data"
+    else:
+        data_dir = export_dir / "data"
+        has_data = data_dir.exists() and any(data_dir.rglob("*.csv"))
+        report.add("P05_DATA_PRESENT", "FAIL", has_data,
+                   "data/ contains CSV files" if has_data else "data/ has no CSV files")
 
-    # P06 — codebook present
-    codebook = data_dir / "codebook.csv"
-    report.add("P06_CODEBOOK_PRESENT", "WARN", codebook.exists(),
-               "data/codebook.csv present" if codebook.exists()
-               else "data/codebook.csv missing — recommended for data releases")
+    # P06 — codebook present (web profile uses data_dictionary.csv, gated at P13)
+    if profile != "web":
+        codebook = data_dir / "codebook.csv"
+        report.add("P06_CODEBOOK_PRESENT", "WARN", codebook.exists(),
+                   "data/codebook.csv present" if codebook.exists()
+                   else "data/codebook.csv missing — recommended for data releases")
 
     # P07 — runnable entry point (pipeline profiles only)
     if has_pipeline:
@@ -689,7 +880,7 @@ def validate_export(export_dir: Path, profile: str, scrub_hits: dict) -> Report:
                    else "replicate.py missing — no runnable entry point")
     else:
         report.add("P07_ENTRY_POINT", "WARN", True,
-                   "data-only profile — no entry point required")
+                   f"{profile} profile — no entry point required")
 
     # P08 — requirements.txt (pipeline profiles only)
     if has_pipeline:
@@ -699,7 +890,7 @@ def validate_export(export_dir: Path, profile: str, scrub_hits: dict) -> Report:
                    else "requirements.txt missing")
     else:
         report.add("P08_REQUIREMENTS", "WARN", True,
-                   "data-only profile — no requirements.txt required")
+                   f"{profile} profile — no requirements.txt required")
 
     # P09 — NO_SECRETS
     n_secrets = len(scrub_hits["secrets"])
@@ -708,31 +899,88 @@ def validate_export(export_dir: Path, profile: str, scrub_hits: dict) -> Report:
                else f"{n_secrets} possible secret(s): "
                     + ", ".join(h["path"] for h in scrub_hits["secrets"][:5]))
 
-    # P10 — NO_ABSOLUTE_PATHS
+    # P10 — NO_ABSOLUTE_PATHS (FAIL since v2.1 — leaked workspace paths
+    # shipped to the public web while this was WARN-severity)
     n_paths = len(scrub_hits["abs_paths"])
-    report.add("P10_NO_ABSOLUTE_PATHS", "WARN", n_paths == 0,
+    report.add("P10_NO_ABSOLUTE_PATHS", "FAIL", n_paths == 0,
                "no absolute machine paths" if n_paths == 0
                else f"{n_paths} file(s) with absolute paths: "
                     + ", ".join(h["path"] for h in scrub_hits["abs_paths"][:5]))
 
-    # P11 — NO_ARCANUM_REFS
+    # P11 — NO_ARCANUM_REFS (FAIL since v2.1)
     n_arc = len(scrub_hits["arcanum_refs"])
-    report.add("P11_NO_ARCANUM_REFS", "WARN", n_arc == 0,
+    report.add("P11_NO_ARCANUM_REFS", "FAIL", n_arc == 0,
                "no internal Arcanum references" if n_arc == 0
                else f"{n_arc} file(s) with internal references: "
                     + ", ".join(h["path"] for h in scrub_hits["arcanum_refs"][:5]))
 
-    # P12 — NO_PYCACHE / no excluded artifacts leaked into the export
+    # P12 — NO_PYCACHE / no excluded or internal artifacts leaked into export
     pycache = [str(p.relative_to(export_dir)).replace("\\", "/")
                for p in export_dir.rglob("*")
                if p.is_dir() and p.name == "__pycache__"]
+    internal_dirs = [str(p.relative_to(export_dir)).replace("\\", "/")
+                     for p in export_dir.rglob("*")
+                     if p.is_dir() and p.name in INTERNAL_DIR_NAMES]
     leaked = [str(p.relative_to(export_dir)).replace("\\", "/")
               for p in export_dir.rglob("*")
               if p.is_file() and p.name in EXCLUDE_FILE_NAMES]
-    clean = not pycache and not leaked
+    clean = not pycache and not internal_dirs and not leaked
     report.add("P12_NO_BUILD_ARTIFACTS", "FAIL", clean,
-               "no __pycache__ or secret files in export" if clean
-               else f"leaked artifacts: {(pycache + leaked)[:5]}")
+               "no __pycache__/internal-staging dirs or secret files in export"
+               if clean
+               else f"leaked artifacts: {(pycache + internal_dirs + leaked)[:5]}")
+
+    # P13 — DICTIONARY_PRESENT (FAIL for web profile; the data dictionary is
+    # mandatory for every public dataset per ANU_NAMING_STANDARD)
+    if profile == "web":
+        dictionary = export_dir / "data_dictionary.csv"
+        report.add("P13_DICTIONARY_PRESENT", "FAIL", dictionary.exists(),
+                   "data_dictionary.csv present" if dictionary.exists()
+                   else "data_dictionary.csv missing from web export")
+
+    # P14 — UNITS_DECLARED: every published series (and every subseries)
+    # declares units; `mixed_*` unit strings are banned (per-subseries units
+    # are required instead — UNITS_VALIDATION_STANDARD).
+    if registry is not None:
+        bad_units = []
+        for sid, entry in registry.get("series", {}).items():
+            if entry.get("publish") is False:
+                continue
+            units = entry.get("units")
+            subs = entry.get("subseries") or {}
+            sub_units = [s.get("units") for s in subs.values()
+                         if isinstance(s, dict)]
+            if not units and not (subs and all(sub_units)):
+                bad_units.append(f"{sid}: no units declared")
+            if isinstance(units, str) and units.lower().startswith("mixed"):
+                bad_units.append(f"{sid}: banned mixed_* units "
+                                 f"(declare per-subseries units)")
+            for sub_id, s in subs.items():
+                su = s.get("units") if isinstance(s, dict) else None
+                if isinstance(su, str) and su.lower().startswith("mixed"):
+                    bad_units.append(f"{sub_id}: banned mixed_* units")
+        report.add("P14_UNITS_DECLARED", "FAIL", not bad_units,
+                   "all published series declare clean units" if not bad_units
+                   else f"{len(bad_units)} units violations: "
+                        + "; ".join(bad_units[:5]))
+
+    # P15 — NO_UNPUBLISHED_SERIES: the web export must not contain data files
+    # for series triaged publish:false.
+    if profile == "web" and registry is not None:
+        unpublished = {sid for sid, e in registry.get("series", {}).items()
+                       if e.get("publish") is False}
+        leaked_series = []
+        for sub in ("chopped", "parquet"):
+            d = export_dir / sub
+            if not d.exists():
+                continue
+            for f in d.iterdir():
+                if f.stem.split("-")[0] in unpublished:
+                    leaked_series.append(f"{sub}/{f.name}")
+        report.add("P15_NO_UNPUBLISHED_SERIES", "FAIL", not leaked_series,
+                   "no publish:false series in web export" if not leaked_series
+                   else f"{len(leaked_series)} unpublished series files leaked: "
+                        + ", ".join(leaked_series[:5]))
 
     return report
 
@@ -795,7 +1043,11 @@ def main() -> int:
     cfg = registry.get("drive_config", {})
     version = args.version or cfg.get("publish_version") or cfg.get("drive_version", "1.0.0")
 
-    export_dir, stats = assemble_export(project, registry, version, args.profile)
+    if args.profile == "web":
+        export_dir, stats = assemble_web_export(project, registry, version)
+    else:
+        export_dir, stats = assemble_export(project, registry, version,
+                                            args.profile)
 
     # Scrub the assembled tree before manifesting.
     print()
@@ -810,8 +1062,8 @@ def main() -> int:
           f"{manifest['total_bytes'] / 1024 / 1024:.1f} MB")
 
     print()
-    print("-- Pre-publication gate (P01-P12) --")
-    report = validate_export(export_dir, args.profile, scrub_hits)
+    print("-- Pre-publication gate (P01-P15) --")
+    report = validate_export(export_dir, args.profile, scrub_hits, registry)
     report.print_summary()
 
     if args.json:

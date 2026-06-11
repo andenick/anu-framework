@@ -109,7 +109,7 @@ def collect_final_series(final_series_dir: Path) -> dict[str, pd.Series]:
     """Read every series CSV into a dict of year-indexed Series.
 
     Tries glob `*_final.csv` first (the canonical anu-replicator convention);
-    falls back to `*.csv` (Chopped CSVs named directly by SID, e.g. `ES1001.csv`).
+    falls back to `*.csv` (Chopped CSVs named directly by SID, e.g. `XS1001.csv`).
     Skips files whose first column isn't year-like.
     """
     out: dict[str, pd.Series] = {}
