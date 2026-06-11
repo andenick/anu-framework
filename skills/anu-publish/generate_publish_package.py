@@ -57,9 +57,14 @@ SECRET_PATTERNS = [
     re.compile(r"(?i)bearer\s+[A-Za-z0-9_\-\.]{20,}"),
     re.compile(r"(?i)aws_secret_access_key\s*[:=]\s*['\"]?[A-Za-z0-9/+]{20,}"),
 ]
-ABS_PATH_PATTERN = re.compile(r"(?:[A-Za-z]:[\\/]|/home/|/Users/|\\\\[A-Za-z])")
+# Drive-letter paths must not be preceded by an alphanumeric — otherwise the
+# `s:` inside `https://` (any URL scheme) false-positives as a drive letter.
+ABS_PATH_PATTERN = re.compile(
+    r"(?:(?<![A-Za-z0-9])[A-Za-z]:[\\/]|/home/|/Users/|\\\\[A-Za-z])")
+# "Arcanum Research" is the deliberate public brand (site footers, READMEs);
+# every other arcanum/internal-infrastructure reference is a leak.
 ARCANUM_REF_PATTERN = re.compile(
-    r"(?i)\b(arcanum|council/druck|\bfreenic\b|\bRobin\b|andenick)")
+    r"(?i)\b(arcanum(?!\s+research)|council/druck|\bfreenic\b|\bRobin\b|andenick)")
 
 # Internal staging/salvage directories that must never ship in any export.
 INTERNAL_DIR_NAMES = {"inputs_bundled", "SalvagedInputs"}
@@ -385,8 +390,7 @@ def write_readme(export_dir: Path, registry: dict, version: str, profile: str,
             "4. Run: `python replicate.py`",
             "",
             "Re-running the pipeline regenerates every series from its public "
-            "source. No internal tools, private databases, or Arcanum "
-            "infrastructure are required.",
+            "source. No internal tools or private databases are required.",
             "",
         ]
     else:
