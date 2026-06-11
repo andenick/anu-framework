@@ -21,7 +21,7 @@ Arcanum projects:
                           surname). The pattern requires '/' suffix so
                           "Robin Cherry et al." doesn't false-positive.
   DEC-[A-Z0-9]+         — internal decision-log codes inherited from
-                          predecessor projects (e.g. ST2's <decision-ref> marker)
+                          predecessor projects (e.g. ST2's DEC-014 marker)
 
 The `.publish_ignore` file uses fnmatch glob syntax, one pattern per line.
 Trailing '/' marks a directory pattern (and its subtree).
@@ -57,12 +57,15 @@ from pathlib import Path
 # documentation that explicitly explains the framework boundary).
 SCRUB_PATTERNS_FAIL = [
     (re.compile(r"D:[/\\]Arcanum"),         "D:/Arcanum path"),
+    (re.compile(r"C:[/\\]Users"),           "C:/Users path"),
+    (re.compile(r"E:[/\\]Storage"),         "E:/Storage path"),
     (re.compile(r"/Council/|\\Council\\"),   "/Council/ directory"),
     (re.compile(r"\bDruck\b"),               "Druck tool name"),
     (re.compile(r"\bRobin/|\bRobin\\"),     "Robin/ tool directory"),
+    (re.compile(r"\bandenick\b"),            "workstation/GitHub username"),
 ]
 SCRUB_PATTERNS_WARN = [
-    (re.compile(r"DEC-[A-Z0-9]+"),           "<decision-ref> internal decision code"),
+    (re.compile(r"DEC-[A-Z0-9]+"),           "DEC-XXX internal decision code"),
 ]
 
 

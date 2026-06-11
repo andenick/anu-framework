@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Anu Doctor — Anu Framework self-audit checker.
 
-Verifies the framework is internally consistent: see the D01-D12 check
+Verifies the framework is internally consistent: see the D01-D19 check
 table in SKILL.md. Exits non-zero if any FAIL-severity check fails.
 
 Usage:
@@ -9,7 +9,7 @@ Usage:
     python check_framework.py --json   # machine-readable FRAMEWORK_AUDIT.json
     python check_framework.py --fix     # auto-fix the mechanically-fixable checks
 
-Part of the Anu Framework v11.0 — see anu-doctor/SKILL.md.
+Part of the Anu Framework v12.0 — see anu-doctor/SKILL.md.
 """
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ import sys
 from pathlib import Path
 
 SKILLS_DIR = Path(__file__).resolve().parent.parent          # .../.claude/skills
-DRUCK_DIR = SKILLS_DIR.parent.parent                          # project root
+DRUCK_DIR = SKILLS_DIR.parent.parent                          # .../Council/Druck
 DOCS_DIR = DRUCK_DIR / "docs"
 OVERVIEW = DOCS_DIR / "ANU_FRAMEWORK_OVERVIEW.md"
 MATRIX = DOCS_DIR / "SKILL_VERSION_MATRIX.md"
@@ -35,12 +35,18 @@ CANONICAL_DOCS = [
 
 ARCHIVED_MARKERS = ("archived", "removed", "superseded", "deprecated", "legacy",
                     "replaces", "predecessor", "formerly")
-STALE_VERSION_RE = re.compile(r"Anu Framework v(?:[1-9]|10)\.0")  # v1.0-v10.0; current is v11.0
+STALE_VERSION_RE = re.compile(r"Anu Framework v(?:[1-9]|1[01])\.\d+")  # v1.x-v11.x; current is v12.0
 
 
 # --------------------------------------------------------------------------
 # Parsing
 # --------------------------------------------------------------------------
+
+def is_deprecated_stub(skill_md: Path) -> bool:
+    """Check if a SKILL.md is a deprecated redirect stub."""
+    text = skill_md.read_text(encoding="utf-8", errors="ignore")
+    return "DEPRECATED" in text[:500]
+
 
 def active_skill_dirs() -> list[Path]:
     out = []
@@ -106,12 +112,15 @@ def overview_versions() -> dict[str, str]:
     if not OVERVIEW.exists():
         return out
     for line in OVERVIEW.read_text(encoding="utf-8").splitlines():
-        # | 1 | **Anu Research** | v2.0 | `anu-research/SKILL.md` | ... |
         cells = [c.strip() for c in line.split("|")]
-        if len(cells) < 6:
+        if len(cells) < 5:
             continue
         ver = cells[3].strip("v* ")
-        loc_m = re.search(r"(anu-[a-z]+)/SKILL\.md", cells[4])
+        loc_m = None
+        for cell in cells:
+            loc_m = re.search(r"(anu-[a-z]+)/SKILL\.md", cell)
+            if loc_m:
+                break
         if loc_m and re.fullmatch(r"[0-9]+\.[0-9]+", ver):
             out[loc_m.group(1)] = ver
     return out
@@ -173,6 +182,9 @@ def run_checks() -> Report:
 
     # D04 — frontmatter version matches the version matrix
     for d in skills:
+        if is_deprecated_stub(d / "SKILL.md"):
+            rep.add("D04", "FAIL", True, f"{d.name}: deprecated stub (skip D04)")
+            continue
         fm = frontmatters[d.name]
         fmv = fm.get("version", "")
         mxv = mx.get(d.name)
@@ -183,6 +195,9 @@ def run_checks() -> Report:
 
     # D05 — frontmatter version matches the overview table
     for d in skills:
+        if is_deprecated_stub(d / "SKILL.md"):
+            rep.add("D05", "FAIL", True, f"{d.name}: deprecated stub (skip D05)")
+            continue
         fm = frontmatters[d.name]
         fmv = fm.get("version", "")
         ovv = ov.get(d.name)
@@ -323,9 +338,11 @@ def run_checks() -> Report:
                 else f"{d.name}: no stale framework-version strings")
 
     # D13 — body headline version matches frontmatter version
-    # First top-level "# Anu <Name>..." line should contain "vN.N" matching frontmatter.
     headline_re = re.compile(r"^#\s+Anu\s+\S.*?\bv(\d+\.\d+)\b", re.MULTILINE)
     for d in skills:
+        if is_deprecated_stub(d / "SKILL.md"):
+            rep.add("D13", "FAIL", True, f"{d.name}: deprecated stub (skip D13)")
+            continue
         fm = parse_frontmatter(d / "SKILL.md")
         body = (d / "SKILL.md").read_text(encoding="utf-8", errors="ignore")
         # Strip frontmatter so we don't match version: in frontmatter
@@ -407,6 +424,107 @@ def run_checks() -> Report:
     rep.add("D15", "FAIL", cycle is None,
             f"requires-graph has a cycle: {' -> '.join(cycle)}" if cycle
             else "requires-graph is acyclic")
+
+    # D16 — v12.0 common template: every active SKILL.md has the 11 required sections
+    REQUIRED_SECTIONS = [
+        "Stage Position",
+        "Inputs",
+        "Outputs",
+        "Commands",
+        "Acceptance Gates",
+        "Documentation Cascade Writes",
+        "Integration with Anu Framework",
+        "Anti-Patterns",
+        "Robin Integration",
+        "Version History",
+        "Canonical References",
+    ]
+    for d in skills:
+        body = (d / "SKILL.md").read_text(encoding="utf-8", errors="ignore")
+        if "DEPRECATED" in body[:500]:
+            rep.add("D16", "FAIL", True,
+                    f"{d.name}: deprecated stub (skip D16)")
+            continue
+        missing_sections = []
+        for sec in REQUIRED_SECTIONS:
+            pattern = re.compile(r"^##\s+" + re.escape(sec), re.MULTILINE | re.IGNORECASE)
+            if not pattern.search(body):
+                alt = re.compile(r"^#+\s+.*" + re.escape(sec.split()[0]), re.MULTILINE | re.IGNORECASE)
+                if not alt.search(body):
+                    missing_sections.append(sec)
+        rep.add("D16", "FAIL", not missing_sections,
+                f"{d.name}: missing v12.0 template sections: {missing_sections}" if missing_sections
+                else f"{d.name}: v12.0 template OK (all 11 sections)")
+
+    # D17 — skill dependency graph file exists and is valid JSON
+    graph_file = DOCS_DIR / "schemas" / "skill_graph.json"
+    if graph_file.exists():
+        try:
+            sg = json.loads(graph_file.read_text(encoding="utf-8"))
+            sg_skills = set(sg.get("skills", {}).keys())
+            missing_in_graph = skill_names - sg_skills - {"anu-rebuild", "anu-pipeline"}
+            rep.add("D17", "FAIL", not missing_in_graph,
+                    f"skill_graph.json missing skills: {missing_in_graph}" if missing_in_graph
+                    else f"skill_graph.json covers all {len(sg_skills)} active skills")
+        except Exception as e:
+            rep.add("D17", "FAIL", False, f"skill_graph.json parse error: {e}")
+    else:
+        rep.add("D17", "FAIL", False, "skill_graph.json not found")
+
+    # D18 — anu-build manifest schema file exists and is valid JSON
+    manifest_schema = DOCS_DIR / "schemas" / "anu_build_manifest.schema.json"
+    if manifest_schema.exists():
+        try:
+            json.loads(manifest_schema.read_text(encoding="utf-8"))
+            rep.add("D18", "FAIL", True, "anu_build_manifest.schema.json exists and parses")
+        except Exception as e:
+            rep.add("D18", "FAIL", False, f"anu_build_manifest.schema.json parse error: {e}")
+    else:
+        rep.add("D18", "FAIL", False, "anu_build_manifest.schema.json not found")
+
+    # D19 — stage tag in every active SKILL.md agrees with anu-build's canonical stage table
+    CANONICAL_STAGES = {
+        "anu-research": "Stage 1",
+        "anu-adequacy": "Stage 2",
+        "anu-ingestion": "Stage 3",
+        "anu-extension": "Stage 4",
+        "anu-scaffold": "Stage 5",
+        "anu-replicator": "Stage 5",
+        "anu-chopped": "Stage 6",
+        "anu-extenbook": "Stage 6",
+        "anu-visualize": "Stage 7",
+        "anu-publish": "Stage 8",
+        "anu-drive": "Stage 8",
+        "anu-archive": "Stage 8",
+        "anu-review": "Floating",
+        "anu-docs": "Floating",
+        "anu-variant": "Floating",
+        "anu-ledger": "Infrastructure",
+        "anu-architecture": "Infrastructure",
+        "anu-doctor": "Infrastructure",
+        "anu-build": "Orchestrator",
+    }
+    for d in skills:
+        body = (d / "SKILL.md").read_text(encoding="utf-8", errors="ignore")
+        if "DEPRECATED" in body[:500]:
+            rep.add("D19", "WARN", True, f"{d.name}: deprecated stub (skip D19)")
+            continue
+        expected = CANONICAL_STAGES.get(d.name)
+        if expected is None:
+            rep.add("D19", "WARN", True, f"{d.name}: not in canonical stage table (skip)")
+            continue
+        stage_section = re.search(r"(?:Stage Position|stage position)[^\n]*\n+(.+?)(?:\n#|\Z)",
+                                  body, re.IGNORECASE | re.DOTALL)
+        if stage_section:
+            stage_text = stage_section.group(1).strip().split("\n")[0]
+            ok = expected.lower() in stage_text.lower()
+            rep.add("D19", "WARN", ok,
+                    f"{d.name}: stage tag '{stage_text[:40]}' does not match expected '{expected}'"
+                    if not ok
+                    else f"{d.name}: stage tag matches '{expected}'")
+        else:
+            rep.add("D19", "WARN", False,
+                    f"{d.name}: no 'Stage Position' section found")
 
     return rep
 

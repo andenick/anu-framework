@@ -1,34 +1,66 @@
 ---
 name: anu-docs
-version: "1.0"
-description: "Per-series documentation standard for Anu Framework projects. Defines three documentation tiers (Thin/Adequate/Enriched), a quality scoring rubric, an enrichment workflow (KB reading, research JSON upgrade, doc regeneration), and validation rules. Produces scrubbed, publication-ready per-series markdown docs from series_registry.json + research JSONs + KB extractions."
+version: "3.0"
+description: "Per-series documentation standard for Anu Framework projects. Defines three documentation tiers (Thin/Adequate/Enriched), a quality scoring rubric, an enrichment workflow (KB reading, research JSON upgrade, doc regeneration), validation rules, and the Anu Explainer — the web-facing per-series artifact (What it is / Where the data comes from / How it was constructed / Why it matters / From the book) rendered below the chart on series pages. Produces scrubbed, publication-ready per-series markdown docs from series_registry.json + research JSONs + KB extractions."
 when-to-use: "User wants to generate, score, enrich, or validate per-series documentation; audit doc quality across a project; upgrade thin placeholder docs to enriched docs with theoretical context"
 search-hints: "docs documentation series per-series enrich thin placeholder methodology generate score audit quality"
 argument-hint: "[generate|score|enrich|audit|validate] [project_path|chapter|series]"
-allowed-tools: Read, Write, Bash, Glob, Grep, Edit
+allowed-tools: Read, Write, Edit, Grep, Glob, Bash
 requires: anu-research, anu-ingestion
-part-of: Anu Framework v11.0
+part-of: Anu Framework v12.2
 ---
 
-# Anu Docs Standard v1.0
+# Anu Docs v3.0
 
-## Overview
-
-| Property | Value |
-|----------|-------|
-| Skill Name | Anu Docs |
-| Version | 1.0 |
-| Part Of | Anu Framework v11.0 |
-| Created | 2026-05-12 |
-| Purpose | Per-series documentation lifecycle: generation, scoring, enrichment, and validation |
+Per-series documentation lifecycle: generation, scoring, enrichment, and validation. Bridges the gap between machine-readable artifacts (registry, CSVs, extenbooks) and a scholar's understanding of what was built, why, and how. Since v3.0 it also owns the **Anu Explainer** — the web-facing per-series entry rendered on data-site series pages.
 
 ---
 
-## Purpose
+## Stage Position
 
-Per-series documentation is the **human-facing explanation** of every constructed data series. It bridges the gap between machine-readable artifacts (registry, CSVs, extenbooks) and a scholar's understanding of what was built, why, and how.
+**Floating** — can run at any stage; most valuable after Stage 5 (Replication) when all data artifacts exist. Anu Publish and Anu Drive should not run until Anu Docs validation passes.
 
-### The Documentation Gap
+---
+
+## Inputs
+
+| Input | Source | Required |
+|-------|--------|----------|
+| `series_registry.json` | anu-ingestion output | Yes |
+| `S###_research.json` | anu-research output | Yes (even if auto-generated) |
+| `Inputs/Robert/KB/ch##_*.md` | HDARP extractions | Recommended (enables T3) |
+| `S###_DECOMPOSITION.md` | anu-ingestion output | Recommended (enrichment fallback) |
+| `S###_EPR.md` | anu-extension output | Recommended (extension section) |
+| `ANU_LEDGER.json` | anu-ledger output | Recommended (gap analysis) |
+
+---
+
+## Outputs
+
+| Output | Location | Description |
+|--------|----------|-------------|
+| Per-series docs | `docs/series/S###.md` | Publication-ready per-series documentation |
+| **Anu Explainers** | `docs/explainers/{SID}_EXPLAINER.md` | Web-facing per-series entry rendered below the chart on series pages (v3.0) |
+| Master index | `docs/README.md` | Index of all generated docs |
+| Validation report | `DOCS_VALIDATION_REPORT.md` | PASS/WARN/FAIL/INFO per rule |
+| Score report | Console / doc output | Tier breakdown and project score |
+
+---
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `/anu-docs generate [--series S###] [--chapter N]` | Generate per-series docs from registry + research JSONs |
+| `/anu-docs score [--chapter N]` | Score all docs and show tier breakdown |
+| `/anu-docs audit` | Full audit: tier distribution, KB coverage gaps, placeholder count, project score |
+| `/anu-docs enrich [chapter]` | Batch-enrich all T1 docs in a chapter (upgrade research JSONs, regenerate docs) |
+| `/anu-docs validate` | Check scrub compliance, template conformance, broken links |
+| `/anu-docs diff [series]` | Show what changed between current doc and registry/research state |
+
+---
+
+## The Documentation Gap
 
 | Artifact | Audience | What It Explains |
 |----------|----------|-----------------|
@@ -171,6 +203,59 @@ Every per-series doc follows this structure. Sections marked REQUIRED must alway
 
 ---
 
+## The Anu Explainer (v3.0)
+
+The Explainer is the **web-facing** per-series artifact — what a site visitor reads directly below the chart on a series page. It is a standard pipeline output (registered in the anu-build cascade), generated per published series, and shipped by anu-publish's `web` profile under `docs/explainers/`.
+
+**Division of labor**: the Explainer is for humans browsing the website; the classic **DPR remains the full-provenance "agent context" artifact** and is offered as a download link under the Explainer (`Full provenance record (download)`), never rendered inline.
+
+### Explainer Template (fixed five sections)
+
+```markdown
+# {display_name}
+
+**Series**: {SID} | **Period**: {YYYY}-{YYYY} | **Units**: {units}
+
+## What this series is
+{2-4 plain-language sentences. No jargon without definition.}
+
+## Where the data comes from
+{Institutional sources as a definition list — NEVER a wide markdown table:}
+**{Source name}**
+: {What it provides, period, institution, public URL if available.}
+
+## How it was constructed
+{Numbered plain-language steps; formulas stated in words first, notation second.}
+
+## Why it matters
+{Theoretical context: the role this series plays in the source work's argument.}
+
+## From the book                                    [CONDITIONAL: if kb_quote exists]
+> {Verified direct quote.}
+> -- {Author} ({Year}), {exact location} <!-- kb: ch##, section anchor -->
+```
+
+### Web-Format Rules (hard requirements)
+
+1. **No file paths of any kind** — no workspace paths, no relative repo paths; sources are named institutionally (gate: DOC03 + anu-publish P10/P11)
+2. **No tables wider than 2 columns** — narrow panels make wide markdown tables unreadable; use definition lists for sources
+3. **No internal links** — the explainer renders standalone inside a site template
+4. **Every quote carries a KB anchor** — an HTML comment `<!-- kb: ch##, ... -->` verifiable against `Inputs/Robert/KB/` (gate: DOC12)
+5. **Sourced from the research JSON only** — fixing explainer content means fixing `{SID}_research.json` and regenerating, identical to the doc contract
+
+### Generation Contract
+
+The project's `generate_series_docs.py` (the same project-provided generator) emits both artifacts per series:
+
+```bash
+python generate_series_docs.py --explainers            # regenerate all explainers
+python generate_series_docs.py --series S201 --explainers
+```
+
+Section sources: *What this series is* ← `methodology_description` (first sentences, plain-language pass); *Where the data comes from* ← `source_citation` entries; *How it was constructed* ← registry `construction[]` + DECOMPOSITION prose; *Why it matters* ← `theoretical_context`; *From the book* ← `kb_quote` entries with their KB anchors.
+
+---
+
 ## Enrichment Workflow
 
 The enrichment workflow upgrades docs from T1 to T2 or T3. It operates on **research JSONs**, not on docs directly — docs are always regenerated from their sources.
@@ -229,7 +314,8 @@ For each series with `"researcher": "auto-generated"`:
 ### Step 3: Doc Regeneration
 
 Each project provides its own doc-regeneration script implementing this
-skill's contract (the reference implementation is a reference project's `Technical/ANU_REPLICATOR/scripts/utils/`). The expected invocation:
+skill's contract (the reference implementation is CD2's
+`Technical/ANU_REPLICATOR/scripts/utils/`). The expected invocation:
 
 ```bash
 python generate_series_docs.py --chapter N    # regenerate chapter
@@ -330,42 +416,6 @@ Project Doc Score = mean(all series scores)
 
 ---
 
-## Commands
-
-| Command | Purpose |
-|---------|---------|
-| `/anu-docs generate [--series S###] [--chapter N]` | Generate per-series docs from registry + research JSONs |
-| `/anu-docs score [--chapter N]` | Score all docs and show tier breakdown |
-| `/anu-docs audit` | Full audit: tier distribution, KB coverage gaps, placeholder count, project score |
-| `/anu-docs enrich [chapter]` | Batch-enrich all T1 docs in a chapter (upgrade research JSONs, regenerate docs) |
-| `/anu-docs validate` | Check scrub compliance, template conformance, broken links |
-| `/anu-docs diff [series]` | Show what changed between current doc and registry/research state |
-
-### Command Details
-
-**`/anu-docs audit`** output:
-
-```
-Anu Docs Audit — the reference project
-====================
-Total series docs: 114
-  T3 (ENRICHED):  50  (44%)
-  T2 (ADEQUATE):  63  (55%)
-  T1 (THIN):       1  ( 1%)
-
-KB Coverage:
-  Chapters WITH KB:    2, 5, 6, 7, 10  (50 series)
-  Chapters WITHOUT KB: 8, 9, 11, 12, 14, 15, 16, 17  (64 series)
-
-Project Doc Score: 72 / 100 (ADEQUATE)
-
-Recommendations:
-  - 1 series still at T1: [S###] — needs research JSON upgrade
-  - 64 series capped at T2 — HDARP extraction of Ch8-17 would enable T3
-```
-
----
-
 ## Validation Rules
 
 | Rule | ID | Description | Severity |
@@ -380,28 +430,45 @@ Recommendations:
 | Year range accuracy | DOC08 | Period in header matches actual data coverage | WARN |
 | No duplicate docs | DOC09 | No two docs describe the same series ID | FAIL |
 | Index completeness | DOC10 | Master index lists every generated doc | WARN |
+| Explainer coverage | DOC11 | Every `publish: true` series has `docs/explainers/{SID}_EXPLAINER.md` | FAIL (at publication) |
+| Quote anchors verifiable | DOC12 | Every "From the book" quote (doc + explainer) carries a `<!-- kb: ch##, ... -->` anchor AND the quoted text is findable in the referenced KB chapter file | FAIL |
 
-### Running Validation
+---
 
-```bash
-/anu-docs validate
-```
+## Acceptance Gates
 
-Output: `DOCS_VALIDATION_REPORT.md` with PASS/WARN/FAIL/INFO per rule.
+| Gate | Condition |
+|------|-----------|
+| Generation | Registry populated, research JSONs exist (even if auto-generated), Replicator output complete |
+| Publication readiness | Zero DOC01/DOC03/DOC09/DOC11/DOC12 failures, project score >= 60 |
+| T3 eligibility | KB chapter file exists for the target chapter |
+| External distribution | DOC03 scrub compliance PASS for all distributed docs; explainers pass the Web-Format Rules |
+
+---
+
+## Documentation Cascade Writes
+
+| File | When written |
+|------|-------------|
+| `docs/series/S###.md` | After generation or enrichment |
+| `docs/explainers/{SID}_EXPLAINER.md` | After generation or enrichment (every published series) |
+| `docs/README.md` | After any generation run (master index) |
+| `DOCS_VALIDATION_REPORT.md` | After validation run |
+| `ANU_LEDGER.json` | Regenerate after generation (`/anu-ledger generate`) to record doc coverage |
 
 ---
 
 ## Integration with Anu Framework
 
-| Skill | Relationship |
-|-------|-------------|
-| **Anu Research** | Upstream: produces `S###_research.json` that Anu Docs consumes |
-| **Anu Ingestion** | Upstream: produces DECOMPOSITIONs and DPRs used in enrichment fallback |
-| **Anu Extension** | Upstream: produces EPRs referenced in extension section |
-| **Anu Review** | Sibling: D12 Documentation dimension delegates to Anu Docs project score |
-| **Anu Ledger** | Integration: Ledger tracks doc artifact coverage; Anu Docs reads ledger for gap analysis |
-| **Anu Publish** | Downstream: published docs must pass Anu Docs validation (DOC03 scrub) |
-| **Anu Drive** | Downstream: methodology PDF sections are generated from the same research JSONs |
+| Upstream Skill | Input Artifact | This Skill Uses It For |
+|----------------|----------------|------------------------|
+| **Anu Research** | `S###_research.json` | Primary content source (methodology, quotes, context) |
+| **Anu Ingestion** | DECOMPOSITIONs, DPRs | Enrichment fallback (construction detail) |
+| **Anu Extension** | EPRs | Extension section content |
+| **Anu Review** | D12 Documentation dimension | Delegates to Anu Docs project score |
+| **Anu Ledger** | Artifact tracking | Ledger tracks doc artifact coverage; Anu Docs reads for gap analysis |
+| **Anu Publish** | Downstream consumer | Published docs must pass DOC03 scrub |
+| **Anu Drive** | Downstream consumer | Methodology PDF sections generated from same research JSONs |
 
 ### Pipeline Position
 
@@ -412,49 +479,38 @@ Stage 5: Replicator -> Stage 6: Chopped/Extenbook
                     -> Stage 8: Publish/Drive (docs validated first)
 ```
 
-Anu Docs is a FLOATING skill (like Anu Review). It can run at any stage, but is most valuable after Stage 5 when all data artifacts exist. Anu Publish and Anu Drive should not run until Anu Docs validation passes.
-
 ---
 
 ## Anti-Patterns
 
-| Anti-Pattern | Why It's Wrong | Do This Instead |
-|-------------|----------------|-----------------|
-| Generating docs before research JSONs exist | Produces T1 placeholders that mask gaps | Run anu-research first, then generate |
-| Editing generated docs directly | Changes lost on next generation | Enrich the research JSON, then regenerate |
-| Skipping scrub check before publication | Internal paths leak to scholars | Always run `/anu-docs validate` |
-| Enriching without reading KB when KB exists | Misses author quotes, stays at T2 | Read KB files first for T3 potential |
-| Accepting T1 docs as "done" | Placeholder content is not documentation | Target zero T1 docs before publication |
-| Hardcoding theoretical context in the generator | Brittle, project-specific, not regenerable | Store in research JSON `theoretical_context` entries |
-| Generating docs for non-existent series | Produces broken links and empty sections | Filter to series with final data on disk |
+- **DO NOT** generate docs before research JSONs exist — produces T1 placeholders that mask gaps
+- **DO NOT** edit generated docs directly — changes lost on next generation; enrich the research JSON instead
+- **DO NOT** skip scrub check before publication — internal paths leak to scholars
+- **DO NOT** enrich without reading KB when KB exists — misses author quotes, stays at T2
+- **DO NOT** accept T1 docs as "done" — placeholder content is not documentation
+- **DO NOT** hardcode theoretical context in the generator — store in research JSON `theoretical_context` entries
+- **DO NOT** generate docs for non-existent series — produces broken links and empty sections
 
 ---
+
+## Robin Integration
+
+For per-series docs sourcing from Robin, the Adequate-tier doc must cite the `robin_source_id` and `canonical_path` from the project's `Inputs/Robin/[SOURCE]/PROVENANCE.md`. Enriched tier additionally cites the upstream paper/URL from Robin's per-source README.
 
 ## Version History
 
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | 2026-05-12 | Initial release: tier system, scoring rubric, enrichment workflow, validation rules, generator integration, pipeline position |
+| 2.0 | 2026-05-16 | Rewritten to v12.0 common template. Added stage position, cascade writes, acceptance gates, anti-patterns sections. Updated `part-of` to Anu Framework v12.0. |
+| 3.0 | 2026-06-10 | **The Anu Explainer**: new web-facing per-series artifact (`docs/explainers/{SID}_EXPLAINER.md`) with a fixed five-section template (What it is / Where the data comes from / How constructed / Why it matters / From the book) and hard Web-Format Rules (no file paths, no wide tables, sources as definition lists, KB-anchored quotes). DPR repositioned as the downloadable full-provenance "agent context" artifact. New validation rules DOC11 (explainer coverage, FAIL at publication) + DOC12 (KB-verifiable quote anchors, FAIL). Consumed by anu-publish `web` profile; registered in the anu-build cascade. |
 
 ---
 
-## Documentation Contract
+## Canonical References
 
-| Aspect | Detail |
-|--------|--------|
-| **Creates** | `docs/series/S###.md` per-series docs, `docs/README.md` master index |
-| **Reads** | `series_registry.json`, `S###_research.json`, `Inputs/Robert/KB/`, `S###_DECOMPOSITION.md`, `S###_EPR.md` |
-| **Expects** | Registry populated, research JSONs exist (even if auto-generated), Replicator output complete |
-| **Integrates With** | Anu Review D12, Anu Ledger artifact tracking, Anu Publish/Drive scrub validation |
-| **Must Update on Completion** | Regenerate Ledger (`/anu-ledger generate`) to record doc coverage |
+- [`ANU_FRAMEWORK_GLOSSARY.md`](../../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary for all framework terms.
 
 ---
 
-## Canonical references
-
-- [`ANU_FRAMEWORK_GLOSSARY.md`](../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary for all framework terms.
-
----
-
-*Part of the Anu Framework v11.0 — Per-Series Documentation Standard*
-*v1.0 — May 2026*
+*Part of the Anu Framework v12.0 — Per-Series Documentation Standard*

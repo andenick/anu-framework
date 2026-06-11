@@ -1,65 +1,66 @@
-# Anu Framework v11.0 — Complete Architecture Overview
+# Anu Framework v12.2 — Complete Architecture Overview
 
-**Version**: 11.0
-**Date**: May 15, 2026
-**Location**: `docs/ANU_FRAMEWORK_OVERVIEW.md`
+**Version**: 12.2
+**Date**: June 10, 2026
+**Location**: `Council/Druck/docs/ANU_FRAMEWORK_OVERVIEW.md`
 
-> **Changelog 2026-05-15 (Session 34).** Framework v10.0 → v11.0. The 21-commit Shaikh-Tonak (RMWND) rebuild surfaced 12 friction points (codified in [`ANU_FRAMEWORK_IMPROVEMENTS_RFC.md`](ANU_FRAMEWORK_IMPROVEMENTS_RFC.md)) plus a meta-workflow ([`ANU_REBUILD_META_SKILL.md`](ANU_REBUILD_META_SKILL.md)). v11.0 adds two new skills — **anu-scaffold** (generates L01/P02/V03 stubs from registry entries; eliminates ad-hoc generators) and **anu-rebuild** (6-wave salvage-and-port meta-workflow). Ten existing skills version-bumped, and `anu-data` (AnuData Architecture) was renamed to `anu-architecture` (Anu Architecture) for framework-name consistency: anu-research (2.0→2.1, +port), anu-ingestion (4.0→4.1, +migrate-scheme/batch-create-dpr/status-enum), anu-extension (3.4→3.5, +batch-create-epr/central-DIVERGENCE_REGISTER), anu-replicator (3.0→3.1, +lib/ layout), anu-architecture (2.0→2.1 + renamed, +BEA/BLS/FRED cache schemas), anu-pipeline (3.1→3.2, +run.py template), anu-publish (1.1→1.2, +audit.py), anu-doctor (1.0→1.1, +check_project.py with 10 P##-checks). Shared infrastructure: new `_shared/divergences.py` for cross-skill DIVERGENCE_REGISTER writes.
+> **Changelog 2026-06-10 (v12.2).** Framework v12.1 → v12.2 — the **web-readiness release** (triggered by the Heterodata platform overhaul). (1) **Series ID Spec v2.2** (anu-ingestion v5.2): canonical prefixes now `{D: primary, XS: extra}`; legacy `AS`/`ES`/`AD` rejected by anu-doctor P12; XS entries carry `xs_class` (`appendix` | `external_study`) + `xs_attribution`, which drive website sectioning (XS sections render after all primary series, split appendix vs other-study). New mandatory registry fields: `display_name`, `publish`, `triage`; per-subseries `label`+`units`, `mixed_*` units banned. (2) **anu-publish v2.1**: P10/P11 scrub gates promoted WARN→FAIL (workspace paths had shipped to the public web); new `web` packaging profile — the formal Anu→website export contract (publish-filtered registry + chopped CSV + parquet + generated `data_dictionary.csv` + explainers + scrubbed DPRs + `WEB_MANIFEST.json`; downloads contract CSV+parquet only); new gates P13 (dictionary), P14 (units), P15 (no unpublished series). (3) **anu-docs v3.0**: the **Anu Explainer** — web-facing per-series artifact with fixed five-section template and hard Web-Format Rules (no file paths, no wide tables, KB-anchored quotes); DPR repositioned as downloadable full-provenance "agent context"; DOC11/DOC12 gates. (4) New canonical standards under `docs/standards/`: SITE_SPEC_PROTOCOL, SITE_BUILD_ORCHESTRATION, STUDY_PAGE_STANDARD, ANU_NAMING_STANDARD, EDUCATIONAL_DISCLAIMER_STANDARD, UNITS_VALIDATION_STANDARD, PANEL_CONSTRUCTION_RUBRIC. (5) Canonical **"Two namespaces"** section added below — series-ID prefixes vs pipeline-stage prefixes are different vocabularies; site explainers must copy from it.
 >
-> **Changelog 2026-05-14 (Session 32).** Framework integration sweep: `anu-pipeline` v3.0 → v3.1 (Stage 8 split into sibling channels 8a Publish / 8b Drive / 8c Archive; `anu-docs` added as a floating skill; 14 → 17 skills); `anu-review` v4.0 → v4.1 (D14 Outward-Facing Intelligibility formalized as a gate; D1–D12 weighted, D13/D14 gates). New [`SKILL_VERSION_MATRIX.md`](SKILL_VERSION_MATRIX.md) as the authoritative per-skill version table; the skill table above corrected to match actual `SKILL.md` frontmatter.
+> **Changelog 2026-05-24 (v12.1).** Framework v12.0 → v12.1. Decision-doc folder reactivated for *new* canonical decisions (the 0001–0006 set remains archived/integrated into specs). Two new decisions added: **Decision 0007** — canonical verbatim-quote schema for research JSONs (records inside `entries[]` with `entry_type == "verbatim_quote"`; top-level `verbatim_quotes[]` and inline-legacy fields deprecated) — migrated across all 64 RMWND research JSONs in v1.1 Phase 1; and **Decision 0008** — `validation.reference_values` is year-keyed scalars only, non-year statistics split into a new companion field `validation.derived_statistics` (registry schema v2.3.0+). New framework-level capabilities promoted from RMWND v1.1 + v1.2: `anu-doctor` standard scripts now ship at `Council/Druck/anu/check_framework.py` and `check_project.py` as canonical wrappers (no longer per-project authoring); `extension_year_range` field convention codified (per RMWND P29 fix — separate from `year_range` so book-period min/max stays stable when extension data is added); `artifacts.derived_no_l01` exemption flag for derived series that legitimately have no L01 loader (per RMWND P23 fix); stock-form primary support for rate-of-profit series (`DIV-012` pattern — `construction: "stock_form"` allowed where the source measured a stock rather than a flow). check_framework continues to PASS on 21 active skill folders (19 + 2 redirect stubs). No skill-version bumps required — v12.1 is a spec/decisions-layer release.
 >
-> **Changelog 2026-05-14 (Session 30-31).** New skill **#17 Anu Archive** (`anu-archive/SKILL.md` + `generate_archive_package.py`) — the audit-grade transparency distribution channel, sibling to Anu Publish (GitHub) and Anu Drive (Google Drive). **Anu Drive** gains an executable generator (`generate_drive_package.py`, v1.0 → v1.1). The three external distribution channels are now formally defined as siblings.
+> **Changelog 2026-05-16 (v12.0).** Framework v11.0 → v12.0. Major consolidation: `anu-rebuild` + `anu-pipeline` merged into **anu-build** — a single master orchestrator with 9 stages (0 INVENTORY through 8 DISTRIBUTION), computed construction order via topological sort, mandatory acceptance gates, and a 4-file documentation cascade (STEP_LOG.jsonl, BUILD_NARRATIVE.md, ANU_BUILD_MANIFEST.json, SUBSERIES_PLAN.json). All 18 active SKILL.md files rewritten to a common 11-section template enforced by new anu-doctor D16 check. Two archived skill folders (`anu-shiny-archived-20260509`, `anu-standard-v2-removed-20260509`) deleted. anu-doctor extended with D16–D19 (framework) and P15–P20 (project) checks. New canonical docs: `ANU_BUILD_PROTOCOL.md`, `SKILL_DEPENDENCY_GRAPH.md`, `ANU_AUDIT_REPORT_20260516.md`, plus 5 JSON schemas. LEDGER and PIPELINE_STATE schemas extended to v12.0. Skill count: 20 → 19 (net: −anu-rebuild −anu-pipeline +anu-build = −1). All 18 active stage/floating/infrastructure skills version-bumped. Deprecated skills retained as redirect stubs.
 >
-> **Changelog 2026-05-13.** All skill `SKILL.md` headers unified to `part-of: Anu Framework v10.0` (previously a mix of v8.0 and v9.0). New canonical reference documents added: [`ANU_FRAMEWORK_GLOSSARY.md`](ANU_FRAMEWORK_GLOSSARY.md), [`SERIES_REGISTRY_SCHEMA.md`](SERIES_REGISTRY_SCHEMA.md) (with sibling [`schemas/series_registry.schema.json`](../schemas/series_registry.schema.json)), [`DATA_PROVENANCE_STANDARDS.md`](DATA_PROVENANCE_STANDARDS.md). `anu-extension` SKILL.md tightened to enumerate concrete artifacts (v3.3 → v3.4). New review dimension D14 (Outward-Facing Intelligibility) introduced in the the reference project session-28 review and folded into future `anu-review` runs.
+> **Changelog 2026-05-15 (v11.0).** Framework v10.0 → v11.0. Two new skills: anu-scaffold and anu-rebuild. Ten existing skills version-bumped. `anu-data` renamed to `anu-architecture`.
+>
+> **Changelog 2026-05-14 (v10.0).** Integration sweep: anu-pipeline v3.1, anu-review v4.1, new SKILL_VERSION_MATRIX.md.
 
 ---
 
 ## What is the Anu Framework?
 
-The Anu Framework is a **20-skill framework for agent-driven data construction, empirical research, and reproducible publication** that produces outputs reproducible without agents. It covers the full lifecycle: researching source materials, ingesting and structuring data, extending series with modern APIs, producing machine-readable and human-readable outputs, building standalone replication packages, visualizing results interactively, auditing quality, tracking data provenance, orchestrating multi-agent workflows, conducting original econometric research via the Anu Architecture, distributing consumer-facing data packages, scaffolding code from registry entries, and rebuilding predecessor projects into Anu-Framework-native form.
+The Anu Framework is a **19-active-skill framework (plus 2 deprecated redirect stubs = 21 skill folders) for agent-driven data construction, empirical research, and reproducible publication** that produces outputs reproducible without agents. It covers the full lifecycle from research through distribution, orchestrated by `anu-build` — a master skill that drives every other skill through a methodical 9-stage pipeline with computed construction order, mandatory gates, and a documentation cascade that enables reliable multi-agent handoffs.
 
 ---
 
-## 20 Skills
+## 19 Active Skills
 
-| # | Skill | Version | Location | Purpose |
-|---|-------|---------|----------|---------|
-| 1 | **Anu Research** | v2.1 | `anu-research/SKILL.md` | Mine every quote, reference, and methodology note for each series; v2.1 adds `port` sub-command for predecessor JSONs |
-| 2 | **Anu Ingestion** | v4.1 | `anu-ingestion/SKILL.md` | KB construction, import, absorption, decomposition, provenance; v4.1 adds migrate-scheme, batch-create-dpr, status-taxonomy enum |
-| 3 | **Anu Extension** | v3.5 | `anu-extension/SKILL.md` | Faithful data extension methodology with API data; v3.5 adds batch-create-epr + central DIVERGENCE_REGISTER integration |
-| 4 | **Anu Chopped** | v2.0 | `anu-chopped/SKILL.md` | Machine-readable CSV format (Row 1 metadata, Row 2 IDs, Row 3+ data) |
-| 5 | **Anu Extenbook** | v3.2 | `anu-extenbook/SKILL.md` | Human-readable Excel with 4 sheets (Data, Provenance, Research, Construction) |
-| 6 | **Anu Replicator** | v3.1 | `anu-replicator/SKILL.md` | Self-contained L##/P##/V##/M## reproduction package; v3.1 prescribes `lib/` shared-helpers layout |
-| 7 | **Anu Visualize** | v5.0 | `anu-visualize/SKILL.md` | Interactive visualization (R Shiny + Plotly / Plotly Dash) |
-| 8 | **Anu Review** | v4.1 | `anu-review/SKILL.md` | 12 weighted dimensions + 2 gates (D13 Authenticity, D14 Outward-Facing Intelligibility) |
-| 9 | **Anu Pipeline** | v3.2 | `anu-pipeline/SKILL.md` | Master orchestrator — sequences all 19 other skills through 8 stages; v3.2 ships `templates/run.py.j2` |
-| 10 | **Anu Variant** | v1.4 | `anu-variant/SKILL.md` | Methodology variant tracking with canonical IDs (VPRs) |
-| 11 | **Anu Ledger** | v2.2 | `anu-ledger/SKILL.md` | Artifact inventory and coverage tracking |
-| 12 | **Anu Adequacy** | v1.2 | `anu-adequacy/SKILL.md` | Post-research statistical adequacy gate |
-| 13 | **Anu Architecture** | v2.1 | `anu-architecture/SKILL.md` | Anu Architecture (formerly AnuData Architecture); v2.1 documents BEA/BLS/FRED cache schemas (DataValue, UNIT_MULT, observation-list) |
-| 14 | **Anu Publish** | v1.2 | `anu-publish/SKILL.md` | Stage 8a — GitHub replication channel; v1.2 ships `audit.py` (pre-publication scrub) |
-| 15 | **Anu Drive** | v1.1 | `anu-drive/SKILL.md` | Stage 8b — Google Drive consumer channel: master data file, codebook, methodology PDF |
-| 16 | **Anu Docs** | v1.0 | `anu-docs/SKILL.md` | Per-series documentation: 3-tier quality system (Thin/Adequate/Enriched), scoring rubric, enrichment workflow |
-| 17 | **Anu Archive** | v1.0 | `anu-archive/SKILL.md` | Stage 8c — audit-grade transparency channel: provenance trail + manifest + checksums |
-| 18 | **Anu Doctor** | v1.2 | `anu-doctor/SKILL.md` | Framework + project self-audit; v1.1 ships `check_project.py` (10 P##-checks); v1.2 adds D13/D14/D15 consistency checks |
-| 19 | **Anu Scaffold** | v1.0 | `anu-scaffold/SKILL.md` | NEW — generates L01/P02/V03 stubs from registry entries; eliminates ad-hoc generator scripts |
-| 20 | **Anu Rebuild** | v1.1 | `anu-rebuild/SKILL.md` | NEW — 6-wave salvage-and-port runbook for predecessor projects; v1.1 agent-executable (no fictional scripts) |
+| # | Skill | Version | Stage | Location | Purpose |
+|---|-------|---------|-------|----------|---------|
+| 1 | **Anu Research** | v3.0 | Stage 1 | `anu-research/SKILL.md` | Mine KB for quotes, references, methodology per series |
+| 2 | **Anu Adequacy** | v2.0 | Stage 2 (gate) | `anu-adequacy/SKILL.md` | Post-research statistical readiness gate |
+| 3 | **Anu Ingestion** | v5.2 | Stage 3 | `anu-ingestion/SKILL.md` | Registry, DPRs, FPRs, decompositions, status taxonomy, Series ID Spec v2.2 (D/XS) |
+| 4 | **Anu Extension** | v4.0 | Stage 4 | `anu-extension/SKILL.md` | Extension methodology, EPRs, divergence register |
+| 5 | **Anu Scaffold** | v2.1 | Stage 5 (sub) | `anu-scaffold/SKILL.md` | Generate L01/P02/V03 stubs from registry entries |
+| 6 | **Anu Replicator** | v4.0 | Stage 5 | `anu-replicator/SKILL.md` | L01/P02/V03 reproduction package |
+| 7 | **Anu Chopped** | v3.0 | Stage 6a | `anu-chopped/SKILL.md` | Machine-readable CSV format |
+| 8 | **Anu Extenbook** | v4.0 | Stage 6b | `anu-extenbook/SKILL.md` | Human-readable 4-sheet Excel workbooks |
+| 9 | **Anu Visualize** | v6.1 | Stage 7 | `anu-visualize/SKILL.md` | Interactive visualization (Plotly Dash / R Shiny) |
+| 10 | **Anu Publish** | v2.1 | Stage 8a | `anu-publish/SKILL.md` | GitHub replication channel + `web` export contract (P01–P15 gate) |
+| 11 | **Anu Drive** | v2.0 | Stage 8b | `anu-drive/SKILL.md` | Google Drive consumer channel |
+| 12 | **Anu Archive** | v2.0 | Stage 8c | `anu-archive/SKILL.md` | Audit-grade transparency channel |
+| 13 | **Anu Review** | v5.0 | Floating | `anu-review/SKILL.md` | Quality audit (14 dimensions + D13/D14 gates) |
+| 14 | **Anu Docs** | v3.0 | Floating | `anu-docs/SKILL.md` | Per-series documentation (T1/T2/T3 tiers) + the Anu Explainer (web-facing) |
+| 15 | **Anu Variant** | v2.0 | Floating | `anu-variant/SKILL.md` | Methodology variant tracking (VPRs) |
+| 16 | **Anu Ledger** | v3.0 | Infrastructure | `anu-ledger/SKILL.md` | Artifact inventory + per-series stage tracking |
+| 17 | **Anu Architecture** | v3.0 | Infrastructure | `anu-architecture/SKILL.md` | Format standard (BEA/BLS/FRED cache schemas) |
+| 18 | **Anu Doctor** | v2.3 | Infrastructure | `anu-doctor/SKILL.md` | Framework (D01–D15) + project (P01–P36) self-audit |
+| 19 | **Anu Build** | v1.3 | Orchestrator | `anu-build/SKILL.md` | **NEW** — Master orchestrator: 9-stage pipeline + cascade |
 
-All skills are located under `skills/`. The authoritative per-skill version, stage, and `requires:` matrix is [`SKILL_VERSION_MATRIX.md`](SKILL_VERSION_MATRIX.md). `anu-doctor` enforces that the matrix, this table, and every skill's frontmatter stay in agreement.
+All skills are located under `Council/Druck/.claude/skills/`. The authoritative per-skill version matrix is [`SKILL_VERSION_MATRIX.md`](SKILL_VERSION_MATRIX.md). `anu-doctor` enforces that the matrix, this table, and every skill's frontmatter stay in agreement.
 
-### The three external distribution channels
+**Code is source of truth.** When framework executable code (`check_project.py`, `check_framework.py`, SKILL.md frontmatter `version:` fields, the schema validator) diverges from human-readable documentation, the code wins — docs get updated to match. anu-doctor's D-checks are the mechanical enforcement layer. There is no separate decision-log channel: decisions land directly in the canonical spec (`SERIES_REGISTRY_SCHEMA.md`, the affected `SKILL.md`, the framework rules file) with rationale in commit messages.
 
-Skills 14, 15, and 17 are siblings — they consume the same upstream outputs and serve three distinct audiences:
+### Deprecated skills (redirect stubs)
 
-- **Anu Publish (GitHub)** — researchers who `git clone` and run the pipeline. Lean: code + data + minimal docs + CI.
-- **Anu Drive (Google Drive)** — scholars who open files and never run code. Friendly: master workbook + codebook + methodology PDF + per-series workbooks.
-- **Anu Archive (comprehensive)** — peer reviewers, journal data editors, future-proof archival. Everything: code + data + full provenance trail + validation + decisions + reviews + ledger + glossary, with a machine-readable manifest and SHA-256 checksums.
+| Skill | Former Version | Redirect |
+|-------|---------------|----------|
+| anu-rebuild | v1.1 | → `anu-build` (mode=rebuild) |
+| anu-pipeline | v3.2 | → `anu-build` |
 
----
+### Retired skill folders (deleted in v12.0)
 
-## Reference implementation
-
-**the reference project** (`<project>/`) — the replication and extension of every empirical data series in Anwar Shaikh's *Capitalism: Competition, Conflict, Crises* (2016) — is the framework's reference implementation. It is the most complete Anu Framework project: it exercises all 18 skills, ships all three external distribution channels (GitHub repo, Drive package, comprehensive Archive), and was the project that drove the framework to v10.0. New Anu Framework projects should use the reference project as the known-good example to copy — its `Technical/` layout, its `series_registry.json` shape, its per-series DPR/EPR/decomposition docs, and its `anu-review` history are all canonical patterns.
+- `anu-shiny-archived-20260509` — superseded by anu-visualize v5.0
+- `anu-standard-v2-removed-20260509` — superseded by anu-ingestion v4.0
 
 ---
 
@@ -74,151 +75,200 @@ Skills 14, 15, and 17 are siblings — they consume the same upstream outputs an
 KB/HDARP Extractions
         |
         v
-  Stage 1: [Anu Research]    -->  S###_research.json
+  Stage 0: [Anu Build]        -->  ANU_BUILD_MANIFEST.json, SUBSERIES_PLAN.json
         |
         v
-  Stage 2: [Anu Adequacy]   -->  ADEQUACY_REPORT.json [GATE]
+  Stage 1: [Anu Research]     -->  S###_research.json
         |
         v
-  Stage 3: [Anu Ingestion]  -->  series_registry.json, DPRs, Decompositions
+  Stage 2: [Anu Adequacy]     -->  ADEQUACY_REPORT.json [GATE: score >= 80]
         |
         v
-  Stage 4: [Anu Extension]  -->  Extension methodology, EPRs
+  Stage 3: [Anu Ingestion]    -->  series_registry.json, DPRs, Decompositions
         |
         v
-  Stage 5: [Anu Replicator] -->  L##/P##/V##/M## package
-    Loading (L##)  -->  data/raw-data/
-    Processing (P##) --> data/final-data/
-    Validation (V##) --> VALIDATION_REPORT.json
-    Manual (M##)   --> ADJUSTMENT_MANIFEST.json
-        |
-        +---> Stage 6: [Anu Chopped]    -->  Validated CSVs
-        +---> Stage 6: [Anu Extenbook]  -->  4-sheet Excel workbooks
+  Stage 4: [Anu Extension]    -->  Extension methodology, EPRs
         |
         v
-  Stage 7: [Anu Visualize]  -->  Interactive app + figure exports
+  Stage 5: [Anu Scaffold]     -->  L01/P02/V03 stubs
+           [Anu Replicator]   -->  L01/P02/V03 package, VALIDATION_REPORT.json
+        |
+        +---> Stage 6a: [Anu Chopped]    -->  Validated CSVs
+        +---> Stage 6b: [Anu Extenbook]  -->  4-sheet Excel workbooks
         |
         v
-  Stage 8a: [Anu Publish]   -->  Scrubbed, validated public release (GitHub) [OPTIONAL]
-  Stage 8b: [Anu Drive]     -->  Consumer Google Drive package (master file + extenbooks + methodology PDF) [OPTIONAL]
+  Stage 7: [Anu Visualize]    -->  Interactive app + figure exports
+        |
+        v
+  Stage 8a: [Anu Publish]     -->  GitHub replication repo
+  Stage 8b: [Anu Drive]       -->  Google Drive consumer package
+  Stage 8c: [Anu Archive]     -->  Audit-grade transparency package
 
-  FLOATING:  [Anu Review]   -->  Quality audit at ANY stage
-  FLOATING:  [Anu Docs]    -->  Per-series documentation (T1/T2/T3 tiers)
-  FLOATING:  [Anu Variant]  -->  Methodology variant tracking
-  INFRA:     [Anu Ledger]   -->  Artifact inventory (after each stage)
-  INFRA:     [Anu Pipeline] -->  Orchestrates all of the above
+  FLOATING:  [Anu Review]     -->  Quality audit at ANY stage
+  FLOATING:  [Anu Docs]       -->  Per-series documentation (T1/T2/T3 tiers)
+  FLOATING:  [Anu Variant]    -->  Methodology variant tracking
+
+  INFRASTRUCTURE:
+  [Anu Ledger]    -->  Artifact inventory (auto-regenerated after every step)
+  [Anu Doctor]    -->  Framework + project consistency audit
+  [Anu Build]     -->  Orchestrates all of the above via 4-file cascade
 ```
+
+### Documentation Cascade (NEW in v12.0)
+
+Every anu-build step produces exactly three writes:
+1. **STEP_LOG.jsonl** — append-only event stream (one JSON line per action)
+2. **ANU_LEDGER.json** — per-series artifact state (regenerated)
+3. **BUILD_NARRATIVE.md** — chronological human/LLM-readable narrative (appended)
+
+Plus at stage boundaries:
+4. **PIPELINE_STATE.json** — top-level orchestration state (updated)
+
+See [`ANU_BUILD_PROTOCOL.md`](ANU_BUILD_PROTOCOL.md) for the full multi-agent handoff specification.
 
 ### Data Integrity Constraints (MANDATORY)
 
-**No Synthetic Data**: No skill in the Anu Framework may generate synthetic, estimated, or placeholder data. Every value in every output must trace to: an HDARP extraction, an API response, a published table, or a digitized figure. If data is unavailable, the series status is `data_unavailable` and the CSV is empty or absent. The pipeline handles missing series gracefully — it never needs fake data to proceed.
+**No Synthetic Data**: No skill may generate synthetic, estimated, or placeholder data. Every value must trace to a published source or documented analytical method. If data is unavailable, status is `data_unavailable` and the output is empty.
 
-**No Proxies**: Extensions must use the EXACT same data source the original author used. CPI is not PPI. Earnings is not compensation. Yield is not total return. If the exact source is discontinued or proprietary, the substitution must be documented with a Concept Match Justification and flagged as `"proxy": true` in the registry.
+**No Proxies**: Extensions must use the EXACT same data source the original author used. Substitutions require a Concept Match Justification and `"proxy": true` flag.
 
-**No Lazy Splices on Formulas**: If the original author computed a formula (r=NOS/K, P*=D/(r-g)), the extension must compute the same formula with extended component data. Growth-rate splice is only valid for directly-observed time series.
+**No Lazy Splices on Formulas**: If the original computed a formula, the extension must compute the same formula with extended components. Growth-rate splice is only valid for directly-observed time series.
 
-**Unit Documentation**: Every series must have documented units. Every formula combining series must include dimensional analysis.
-
-**Content Type Classification**: Every series must be classified as `time_series`, `cross_sectional`, `theoretical`, or `derived`. Extensions only apply to time_series.
-
-These constraints were formalized from lessons learned in the the reference project Shaikh (2016) replication, where 21% of initial extensions used wrong-concept proxies that were caught only in post-hoc audit. See `Projects/the reference project/Technical/docs/SKEPTICAL_EXTENSION_REVIEW.md` for the full case study.
+**Content Type Classification**: Every series must be classified as `time_series`, `cross_sectional`, `theoretical`, or `derived`. Extensions only apply to `time_series`.
 
 ### Single Source of Truth: series_registry.json
 
-Every output format reads from `series_registry.json`:
+Every output format reads from `series_registry.json`. See [`SERIES_REGISTRY_SCHEMA.md`](SERIES_REGISTRY_SCHEMA.md) for the schema specification.
 
-| Output | What It Reads |
-|--------|--------------|
-| Chopped CSV Row 1 | `subseries[id].source` + `units` + transform info |
-| Chopped CSV Row 2 | Subseries keys as column IDs |
-| Extenbook headers | `subseries[id].name` + `[R:YYYY]` for reindexed |
-| Extenbook Research sheet | `S###_research.json` entries |
-| Dash app trace colors | `subseries[id].color` |
-| Dash app labels | `subseries[id].name` + period |
-| Console reporter | `construction` steps as tree |
-| DPR documents | All registry fields |
+### Two Namespaces (CANONICAL — site explainers copy from here)
 
----
+The framework uses two **unrelated** letter-prefix vocabularies. Conflating them produces wrong public copy (it happened on live sites — a series-ID first letter was presented as a pipeline stage).
 
-## Series ID Specification v2.0
+**1. Series-ID prefixes** identify *what a data series is* (Series ID Spec v2.2, anu-ingestion):
 
-| Pattern | Meaning | Example |
-|---------|---------|---------|
-| `S{NNN}` | Base series | `S001` |
-| `S{NNN}-{LETTER}` | Subseries | `S001-A` |
-| `S{NNN}-EXT` | API extension data | `S001-EXT` |
-| `S{NNN}-COMBINED` | Final spliced series | `S001-COMBINED` |
+| Prefix | Meaning |
+|---|---|
+| `D` (project alias: `S`) | Primary series — from the book or study being replicated |
+| `XS` | Extra series — book-appendix series (`xs_class: appendix`) or series from another study (`xs_class: external_study`) |
 
-Display notation for reindexed subseries: `S001-B [R:1958]`
+**2. Pipeline-script phase prefixes** identify *what a script does* (anu-architecture):
 
-See `docs/SERIES_ID_SPECIFICATION.md` for full details.
+| Prefix | Meaning |
+|---|---|
+| `S##` | Setup |
+| `L##` | Loading — fetch/read raw source data |
+| `P##` | **Processing — and processing only** (construction, transformation) |
+| `V##` | Validation — check outputs against benchmarks |
+| `M##` | Manual adjustment (documented) |
+| `A##` | Analysis |
+| `O##` | Output |
+| `E##` | Exploration |
 
----
-
-## Replicator Two-Phase Architecture
-
-### Phase 1: Loading (L## scripts)
-
-- `L00_load_all_data.py` orchestrates all loading scripts
-- Each `L{NN}_load_{name}.py` loads one series
-- Reads from `data/user-inputs/` (read-only)
-- Writes to `data/raw-data/` (API responses + parsed CSVs)
-
-### Phase 2: Processing (P## scripts)
-
-- `P00_process_all_data.py` orchestrates all processing scripts
-- Each `P{NN}_process_{name}.py` constructs, extends, and validates one series
-- Reads from `data/user-inputs/` + `data/raw-data/`
-- Writes to `data/final-data/` (series CSVs, Chopped, Extenbooks, reports)
-
-### Master Orchestrator
-
-`python replicate.py` runs L00 then P00 with detailed console output.
+A series ID's first letter says **nothing** about pipeline stages, and a script prefix says nothing about series classification. Public-facing "how this was built" copy must describe the pipeline using the script-phase table (counts derived from the replicator script inventory), and describe the catalog using the series-ID table — never by counting series IDs' first letters.
 
 ---
 
-## How to Apply the Anu Framework to a New Project
+## Robin Integration (across all stages)
 
-1. `/anu-pipeline init [chapter]` — Initialize pipeline state
-2. `/anu-research mine-chapter [chapter]` — Mine KB for all series (Stage 1)
-3. `/anu-adequacy [chapter]` — Verify data source readiness (Stage 2, gate)
-4. `/anu-ingestion create-registry [chapter]` — Build series_registry.json (Stage 3)
-5. `/anu-ingestion decompose [series_id]` — For each series
-6. `/anu-extension [chapter]` — Define extension methodology (Stage 4)
-7. `/anu-replicator init [project]` — Scaffold Replicator package (Stage 5)
-8. Create L##, P##, V##, M## scripts for each series
-9. `python replicate.py` — Run end-to-end
-10. `/anu-review [chapter]` — Audit quality (floating — run at any stage)
-11. `/anu-visualize init` — Create Dash app (Stage 7)
-12. `/anu-publish audit [project]` — Prepare for publication (Stage 8, optional)
-13. Target Review score >= 85% before publication
+**Robin** (`Council/Robin/`) is Arcanum's canonical economic data repository. The Anu Framework consumes Robin as its primary external data source. Integration touches every stage:
+
+| Stage | How it touches Robin |
+|---|---|
+| **Stage 1 — anu-research** | Research JSONs cite Robin sources by `robin_source_id` (matches `AUTHORITATIVE_COUNTS.json` keys). |
+| **Stage 2 — anu-adequacy** | +1 score if cited source is in Robin and live; -1 if cited but absent from Robin and OPEN_APIS. |
+| **Stage 2.5 — Data Acquisition from Robin** | Project creates `Inputs/Robin/[SOURCE]/` checkouts per `INPUTS_ROBIN_CONTRACT.md`. PROVENANCE.md records `robin_source_id`, version, file hashes. |
+| **Stage 3 — anu-ingestion** | L## loaders import `lib/data/robin_loader.py`. Never read `Council/Robin/DATA/` directly. |
+| **Stage 4 — anu-extension** | EPRs record Robin source + snapshot timestamp. Extension refreshes the checkout when Robin's canonical updates. |
+| **Stage 5 — anu-replicator** | `lib/data/robin_loader.py` is the canonical helper. Hash-stamps every load against Robin version. |
+| **Stage 6 — anu-chopped / anu-extenbook** | Output formats record `robin_source_id` in subsource metadata. |
+| **Stage 7 — anu-review** | D13 Data Authenticity gate checks: every Robin-sourced series has valid PROVENANCE + non-drifting hashes. |
+| **Stage 8 — anu-publish / anu-archive** | Published manifests include the `robin_version` pinned at construction time. |
+
+**Canonical references**:
+- `Council/Robin/AUTHORITATIVE_COUNTS.json` — the only valid count source
+- `Council/Robin/docs/specs/INPUTS_ROBIN_CONTRACT.md` — checkout contract (PROVENANCE fields)
+- `Council/Druck/docs/ROBIN_INTEGRATION_SPECIFICATION.md` — cross-workspace governance
+
+**Anti-patterns** (anu-doctor flags):
+- Project ingests data via custom API clients that duplicate Robin collectors
+- Hardcoded paths into `Council/Robin/DATA/`
+- Reading through another project's checkout instead of maintaining own
+- Citing hand-curated record counts ("64.9M") instead of pointing at `AUTHORITATIVE_COUNTS.json`
 
 ---
 
-## Reference Implementation
+## How to Build a New Project
 
-**the reference project** (Capitalism Data v2) is the reference implementation, replicating data from Anwar Shaikh's *Capitalism: Competition, Conflict, Crises* (2016). Chapter 2 is the first fully implemented module.
+```
+/anu-build init --project <path> --mode fresh
+/anu-build run-to-completion
+```
+
+Or step by step:
+1. `/anu-build init --mode fresh` — Stage 0: generate manifest + construction plan
+2. `/anu-build run-stage 1` — Research
+3. `/anu-build run-stage 2` — Adequacy gate
+4. `/anu-build run-stage 3` — Ingestion
+5. `/anu-build run-stage 4` — Extension
+6. `/anu-build run-stage 5` — Replication (L01/P02/V03 in topo order)
+7. `/anu-build run-stage 6` — Output (chopped + extenbooks)
+8. `/anu-build run-stage 7` — Visualization
+9. `/anu-build run-stage 8` — Distribution (publish + drive + archive)
+
+Run `/anu-build status` at any point to see progress. Run `/anu-build handoff` to close a session.
 
 ---
 
-*Anu Framework v11.0 — Data Construction, Empirical Research, and Reproducible Publication*
-*Location: docs/ANU_FRAMEWORK_OVERVIEW.md*
+## Reference Implementations
 
-**v9.0 Changes** (May 2026):
-- Added anu-drive (skill #15) — consumer-facing Google Drive distribution package
-- Pipeline Stage 8 split into 8a (Publish/GitHub) and 8b (Drive/Google Drive)
-- Framework now covers full distribution lifecycle: GitHub (technical) + Google Drive (consumer)
+- **CD2** (`Projects/CD2/`) — replication of Anwar Shaikh's *Capitalism: Competition, Conflict, Crises* (2016). Most complete project; exercises all skills. The v11.0 reference.
+- **RMWND** (`Projects/RMWND/`) — replication of Shaikh & Tonak's *Measuring the Wealth of Nations* (1994). 64 series, first project built end-to-end on anu-build v12.0.
 
-**v8.0 Changes** (May 2026):
-- Rebranded from "Anu Suite" to "Anu Framework"
-- Added anu-publish (skill #14) — publication pipeline
-- Reordered pipeline: Research → Adequacy → Ingestion (adequacy is post-research)
-- Anu Review is now floating (can run at any stage)
-- AnuData Architecture (renamed Anu Architecture in v11.0) documented as underlying format standard
-- All 14 skills standardized: consistent frontmatter, part-of fields
-- Data integrity constraints strengthened: no placeholders, approximations, or freezes
+---
 
-**v7.0 Changes** (May 2026):
-- Added anu-data (AnuData Architecture v2.0, formerly NickyData; later renamed anu-architecture in v11.0)
-- Renamed anu-shiny to anu-visualize
-- Removed anu-standard-v2-archived
+## Paper Target Ledger (Replication Contract Phase)
+
+**Added 2026-05-27 by Study 12 Correia Definitive Wave 8 Agent 8D (additive).**
+
+Empirical-paper replication projects under the Anu Framework — where Python
+output must agree with a published paper's tables/figures and/or a canonical
+Stata log — should adopt the **Paper Target Ledger Protocol**
+([`protocols/PAPER_TARGET_LEDGER_PROTOCOL.md`](protocols/PAPER_TARGET_LEDGER_PROTOCOL.md))
+during the contract-gate / W2.5-equivalent phase (roughly Stage 3 ingestion +
+Stage 5 replicator, between data load and headline comparison).
+
+The protocol codifies five documented "target is the bug" failure modes from
+Study 12 (W4.6, W7.0, W7.1, W8A, W8B):
+
+1. **Hand-typed transcription error** (W4.6 sign-flipped targets)
+2. **Wrong Stata log block** (W7.0 rolling-window vs full-sample IRLS)
+3. **Wrong paper table row** (W7.1 Baseline vs Richer Model)
+4. **Misread-prior-conclusion** (W8A handoff inverted a FIX doc's verdict)
+5. **Bar-chart visual-read** (W8B Figure IX bar-heights treated as precise)
+
+Operational rule: **first 10 minutes on the target, not the code.** When Python
+selectively disagrees with a target while other metrics match, the first
+hypothesis is that the target is wrong. Reference implementation:
+`Projects/Volcker/Technical/AnuData/studies/study_12_correia_definitive/code/lib/target_ledger.py`
+(study-local; promotion to a shared framework module pending Druck approval).
+
+Adoption is opt-in until the next framework-level review. Projects in the
+"protocol does not apply" category (no canonical Stata source; first-of-its-kind
+extraction with no published table; pipeline contract-gates) remain valid.
+
+---
+
+## Canonical References
+
+- [`SKILL_VERSION_MATRIX.md`](SKILL_VERSION_MATRIX.md) — per-skill version table
+- [`ANU_FRAMEWORK_GLOSSARY.md`](ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary
+- [`SERIES_REGISTRY_SCHEMA.md`](SERIES_REGISTRY_SCHEMA.md) — registry schema
+- [`SKILL_DEPENDENCY_GRAPH.md`](SKILL_DEPENDENCY_GRAPH.md) — skill dependency DAG
+- [`ANU_BUILD_PROTOCOL.md`](ANU_BUILD_PROTOCOL.md) — multi-agent handoff protocol
+- [`DATA_PROVENANCE_STANDARDS.md`](DATA_PROVENANCE_STANDARDS.md) — provenance chain spec
+- [`protocols/PAPER_TARGET_LEDGER_PROTOCOL.md`](protocols/PAPER_TARGET_LEDGER_PROTOCOL.md) — paper-target ledger discipline for replication projects
+
+---
+
+*Anu Framework v12.1 — Data Construction, Empirical Research, and Reproducible Publication*
+*Location: Council/Druck/docs/ANU_FRAMEWORK_OVERVIEW.md*
