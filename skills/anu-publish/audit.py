@@ -139,6 +139,8 @@ def scan_file(path: Path) -> list[tuple[int, str, str, str]]:
 TEXT_EXTENSIONS = {
     ".md", ".py", ".json", ".csv", ".tex", ".yaml", ".yml", ".cff",
     ".toml", ".txt", ".cfg", ".ini", ".html", ".rst",
+    # v2.2 gate fix: run/build outputs are text and DID carry real leaks
+    ".out", ".log",
 }
 
 

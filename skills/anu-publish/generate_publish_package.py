@@ -48,9 +48,12 @@ from pathlib import Path
 EXCLUDE_DIR_NAMES = {
     ".git", "__pycache__", ".pytest_cache", ".mypy_cache", "cache",
     ".ipynb_checkpoints", ".claude", ".codex", ".cursor", ".venv", "venv",
-    "node_modules",
+    "node_modules", "Handoffs",
 }
 EXCLUDE_FILE_NAMES = {"api_keys.env", ".env", "PROGRESS_LOG.md"}
+# Compiled/run artifacts that must never ship (v2.2 gate fix — real .pyc/.out
+# leaks reached published bundles while only __pycache__ *dirs* were checked).
+EXCLUDE_FILE_SUFFIXES = {".pyc", ".pyo", ".pyd"}
 
 SECRET_PATTERNS = [
     re.compile(r"(?i)(api[_-]?key|secret|token|password|passwd)\s*[:=]\s*['\"]?[A-Za-z0-9_\-]{16,}"),
@@ -72,6 +75,8 @@ INTERNAL_DIR_NAMES = {"inputs_bundled", "SalvagedInputs"}
 TEXT_SUFFIXES = {
     ".md", ".txt", ".json", ".py", ".csv", ".yml", ".yaml", ".cff",
     ".tex", ".r", ".cfg", ".ini", ".toml", ".rst", ".sh",
+    # v2.2 gate fix: run/build outputs are text and DID carry real leaks
+    ".out", ".log", ".html",
 }
 
 # `web` is not a superset profile: it is the formal Anu->website export
@@ -104,7 +109,8 @@ def copy_tree(src: Path, dst: Path) -> int:
     for item in src.rglob("*"):
         if any(part in EXCLUDE_DIR_NAMES for part in item.parts):
             continue
-        if item.is_file() and item.name not in EXCLUDE_FILE_NAMES:
+        if (item.is_file() and item.name not in EXCLUDE_FILE_NAMES
+                and item.suffix.lower() not in EXCLUDE_FILE_SUFFIXES):
             rel = item.relative_to(src)
             target = dst / rel
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -918,21 +924,26 @@ def validate_export(export_dir: Path, profile: str, scrub_hits: dict,
                else f"{n_arc} file(s) with internal references: "
                     + ", ".join(h["path"] for h in scrub_hits["arcanum_refs"][:5]))
 
-    # P12 — NO_PYCACHE / no excluded or internal artifacts leaked into export
+    # P12 — NO_PYCACHE / no excluded or internal artifacts leaked into export.
+    # v2.2: also flag stray compiled files (*.pyc outside __pycache__) and
+    # internal Handoffs/ session docs — both leaked into real bundles.
     pycache = [str(p.relative_to(export_dir)).replace("\\", "/")
                for p in export_dir.rglob("*")
-               if p.is_dir() and p.name == "__pycache__"]
+               if p.is_dir() and p.name in ("__pycache__", "Handoffs")]
+    compiled = [str(p.relative_to(export_dir)).replace("\\", "/")
+                for p in export_dir.rglob("*")
+                if p.is_file() and p.suffix.lower() in EXCLUDE_FILE_SUFFIXES]
     internal_dirs = [str(p.relative_to(export_dir)).replace("\\", "/")
                      for p in export_dir.rglob("*")
                      if p.is_dir() and p.name in INTERNAL_DIR_NAMES]
     leaked = [str(p.relative_to(export_dir)).replace("\\", "/")
               for p in export_dir.rglob("*")
               if p.is_file() and p.name in EXCLUDE_FILE_NAMES]
-    clean = not pycache and not internal_dirs and not leaked
+    clean = not pycache and not compiled and not internal_dirs and not leaked
     report.add("P12_NO_BUILD_ARTIFACTS", "FAIL", clean,
-               "no __pycache__/internal-staging dirs or secret files in export"
+               "no __pycache__/Handoffs/compiled/internal-staging artifacts in export"
                if clean
-               else f"leaked artifacts: {(pycache + internal_dirs + leaked)[:5]}")
+               else f"leaked artifacts: {(pycache + compiled + internal_dirs + leaked)[:5]}")
 
     # P13 — DICTIONARY_PRESENT (FAIL for web profile; the data dictionary is
     # mandatory for every public dataset per ANU_NAMING_STANDARD)
