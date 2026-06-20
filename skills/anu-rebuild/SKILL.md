@@ -343,7 +343,7 @@ git tag v1.0.0 && git push --tags
 
 ### Step D.5 — Drive folder upload
 
-Copy `Outputs/<project>_Drive_v1.0/` to the shared cloud folder (e.g., `E:\Storage\Cloud Drive\Shared\Heterodata\`). Cloud sync propagates.
+Copy `Outputs/<project>_Drive_v1.0/` to your shared cloud folder (e.g., `<cloud-drive>/Shared/Heterodata/`). Cloud sync propagates.
 
 ### Step D.6 — Archive
 
