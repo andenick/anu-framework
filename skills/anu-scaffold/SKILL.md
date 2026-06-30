@@ -18,7 +18,7 @@ part-of: Anu Framework v12.2
 
 Every series in an Anu Framework project needs three scripts: a loader (`L01_<sid>_<slug>.py`), a processor (`P02_<sid>_<slug>.py`), and a validator (`V03_<sid>_<slug>.py`). Each has the same header structure (imports, paths, registry-entry lookup) regardless of the series. `anu-scaffold` writes that header. The agent writes the body.
 
-This is the same role `cookiecutter` plays for project layouts — pure templating, no decisions baked in. Derived from the RMWND build, where 17 hand-rolled generator scripts (`MIGRATION/_gen_*_scripts.py`) did this work informally.
+This is the same role `cookiecutter` plays for project layouts — pure templating, no decisions baked in. Derived from the reference replication build, where 17 hand-rolled generator scripts (`MIGRATION/_gen_*_scripts.py`) did this work informally.
 
 ### What it does NOT do
 
@@ -178,9 +178,9 @@ Override with `--template <name>` to force a specific template.
 | 5 | Create custom templates per series instead of per content_type | Template proliferation; maintain 3 templates, not 64 |
 | 6 | Use scaffold output as-is without filling in construction logic | Produces empty/no-op scripts that pass syntax checks but do nothing |
 
-## Robin Integration
+## Data Repository Integration
 
-When scaffolding an L## loader template for a Robin source (content_type=`robin`), use the `lib/data/robin_loader.py` import. Registry entries with `source_type: robin` get a robin-loader L## stub; agent fills in the source_id.
+When scaffolding an L## loader template for a data-repository source (content_type=`data_repo`), use the `lib/data/data_loader.py` import. Registry entries with `source_type: data_repo` get a data-repository-loader L## stub; agent fills in the source_id.
 
 ## Version History
 

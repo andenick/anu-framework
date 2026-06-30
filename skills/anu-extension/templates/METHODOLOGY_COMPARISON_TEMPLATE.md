@@ -22,8 +22,8 @@
 | Document Title | [Full title] |
 | Publisher | [e.g., BEA, BLS] |
 | Publication Date | [YYYY-MM] |
-| HDARP Location | [Path to HDARP extraction] |
-| HDARP Extraction Date | [YYYY-MM-DD] |
+| KB Location | [Path to KB extraction] |
+| KB Extraction Date | [YYYY-MM-DD] |
 
 ### Current Methodology Source
 
@@ -32,8 +32,8 @@
 | Document Title | [Full title] |
 | Publisher | [e.g., BEA, BLS] |
 | Publication Date | [YYYY-MM] |
-| HDARP Location | [Path to HDARP extraction] |
-| HDARP Extraction Date | [YYYY-MM-DD] |
+| KB Location | [Path to KB extraction] |
+| KB Extraction Date | [YYYY-MM-DD] |
 
 ---
 

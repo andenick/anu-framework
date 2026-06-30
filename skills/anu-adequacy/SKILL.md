@@ -43,7 +43,7 @@ Run Anu Adequacy **before** Anu Research (Pipeline Stage 0):
 
 ## Prerequisites
 
-1. **Knowledge Base exists**: Some form of KB (HDARP extractions, page-level text, appendix files) is available
+1. **Knowledge Base exists**: Some form of KB (Knowledge Base extractions, page-level text, appendix files) is available
 2. **Chapter scope identified**: The chapter number, expected series list, and associated figures are known (from a Chapter Investigation or similar scoping document)
 3. **Project structure initialized**: The framework-standard directory structure exists (Inputs/, Technical/)
 
@@ -141,7 +141,7 @@ Run Anu Adequacy **before** Anu Research (Pipeline Stage 0):
 | Check | Method | Pass Criteria |
 |-------|--------|---------------|
 | No synthetic series planned | Review series_registry.json status fields | No series has `"status": "synthetic"` |
-| HDARP tables extracted | Verify all annual data tables in KB are parsed to CSV | 100% of available annual tables extracted |
+| KB tables extracted | Verify all annual data tables in KB are parsed to CSV | 100% of available annual tables extracted |
 | Data gaps documented | Review GAP_REGISTER for data availability | Each gap has an acquisition plan (API, digitize, request) |
 
 **If any series would require synthetic data**: BLOCKED. The agent must acquire real data before proceeding.
@@ -267,8 +267,8 @@ When gaps are found, the adequacy report includes a `remediation_checklist`:
 
 | Gap Type | Remediation |
 |----------|-------------|
-| Missing KB pages | Run HDARP extraction or manual transcription for missing page range |
-| Missing tables | Extract tables from book PDF using HDARP table extraction |
+| Missing KB pages | Run a PDF extraction or manual transcription for missing page range |
+| Missing tables | Extract tables from book PDF using table extraction |
 | Missing equations | Manually transcribe equations from book into TEX format |
 | Undefined series | Create chapter investigation document defining all series |
 | Missing API source IDs | Research BEA/FRED/BLS table catalogs for equivalent modern tables |
@@ -281,7 +281,7 @@ When gaps are found, the adequacy report includes a `remediation_checklist`:
 ## Anu Framework Context
 
 - **Pipeline Stage**: 0 (ADEQUACY — pre-pipeline gate)
-- **Upstream**: KB exists (HDARP extractions, data imports)
+- **Upstream**: KB exists (Knowledge Base extractions, data imports)
 - **Downstream**: Stage 1 Research (gated), all subsequent stages
 - **Adequacy Relevance**: IS the adequacy check — produces the ADEQUACY_REPORT.json that flows through all stages
 - **Key Handoff**: ADEQUACY_REPORT.json consumed by Research (adequacy_refs), Review (D0), Pipeline (stage_0_adequacy)

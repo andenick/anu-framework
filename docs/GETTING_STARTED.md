@@ -21,7 +21,7 @@ This guide walks you through applying the Anu Framework to a new data constructi
 mkdir -p Inputs Technical Outputs
 ```
 
-Organize source materials in `Inputs/` (read-only — never modify originals). If you have PDFs that need extraction, use HDARP (`<KB construction>` → `<KB construction>`).
+Organize source materials in `Inputs/` (read-only — never modify originals). If you have PDFs that need extraction, run a KB extraction pass to turn them into structured knowledge-base files first.
 
 ## Step 2: Initialize the Pipeline
 

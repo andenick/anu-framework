@@ -99,7 +99,7 @@ The generator walks a project's `Technical/` tree and pulls:
 | `data/methodology.pdf` | The methodology PDF from the latest Drive package or `Technical/` |
 | `provenance/series/` | `Technical/docs/series/*_DPR.md`, `*_EPR.md`, `*_DECOMPOSITION.md` |
 | `provenance/figures/` | `Technical/docs/figures/*_FPR.md` |
-| `provenance/knowledge_base/` | `Inputs/Robert/KB/*` (or the project's KB directory) |
+| `provenance/knowledge_base/` | `knowledge_base/*` (or the project's KB directory) |
 | `provenance/registry.json` | `Technical/series_registry.json` |
 | `validation/` | `Technical/ANU_REPLICATOR/data/final-data/logs/VALIDATION_LOG.json` + any validation reports |
 | `decisions/` | `Technical/ANU_REPLICATOR/docs/DECISION_LOG.md`, `docs/ASSUMPTIONS.md` |

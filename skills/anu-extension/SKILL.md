@@ -50,7 +50,7 @@ See `docs/DATA_PROVENANCE_STANDARDS.md` for full EPR field definitions, Concept 
 
 ## Ten Principles of Extension Faithfulness
 
-1. **UNDERSTAND BEFORE EXTENDING** - Read all source documentation (HDARP extracts)
+1. **UNDERSTAND BEFORE EXTENDING** - Read all source documentation (Knowledge Base extracts)
 2. **DOCUMENT AGENT REASONING** - Write detailed explanation of understanding
 3. **SOURCE MATCH VERIFICATION** - Confirm original and extension sources are identical
 4. **METHODOLOGY COMPARISON** - Quote old vs new methodology documentation
@@ -72,12 +72,12 @@ Before using this skill, ensure:
    - DPR file for the series (`S###_DPR.md`)
    - Series registered in `series_registry.json`
 
-2. **HDARP Extractions Available**
+2. **Knowledge Base Extractions Available**
    - Book chapters and appendices (full text)
    - Original methodology PDFs (BEA, BLS, etc.)
    - Current methodology PDFs
-   - All source quotes must come from HDARP extractions
-   - **NO DIRECT PDF READING** - All content via HDARP
+   - All source quotes must come from Knowledge Base extractions
+   - **NO DIRECT PDF READING** - All content via the Knowledge Base
 
 3. **Transition Analysis Capability**
    - Access to `transition_analysis.py` or equivalent
@@ -117,8 +117,8 @@ Document agent's understanding of the series. Outputs:
 /anu-extension compare-methodology [series_id]
 ```
 Compare original vs current methodology. Outputs:
-- Old methodology quotes (from HDARP extractions)
-- Current methodology quotes (from HDARP extractions)
+- Old methodology quotes (from Knowledge Base extractions)
+- Current methodology quotes (from Knowledge Base extractions)
 - Web research findings on methodology changes
 - Impact assessment
 
@@ -207,8 +207,8 @@ Record resolution decision for a divergence. Outputs:
 Before any extension work:
 
 - [ ] Verify DPR exists for series
-- [ ] Verify HDARP extractions exist for book content
-- [ ] Verify HDARP extractions exist for methodology PDFs
+- [ ] Verify Knowledge Base extractions exist for book content
+- [ ] Verify Knowledge Base extractions exist for methodology PDFs
 - [ ] If missing, document what is needed and STOP
 
 **Output**: Prerequisite status report
@@ -242,13 +242,13 @@ Agent writes comprehensive explanation answering:
 
 ### Step 3: Book Context Extraction
 
-From HDARP book extractions, gather:
+From Knowledge Base book extractions, gather:
 
 | Content | Source | Purpose |
 |---------|--------|---------|
-| Chapter quotes | `Inputs/Robert/KB/ch##_topic.md` | Context and interpretation |
-| Appendix quotes | `Inputs/Robert/KB/ch18_appendices.md` | Methodology details |
-| Variable definitions | `Inputs/Robert/KB/appendix_methodology_summary.json` | Exact formulas |
+| Chapter quotes | `knowledge_base/ch##_topic.md` | Context and interpretation |
+| Appendix quotes | `knowledge_base/ch18_appendices.md` | Methodology details |
+| Variable definitions | `knowledge_base/appendix_methodology_summary.json` | Exact formulas |
 | Formulas | `series_registry.json` construction steps | Transformation specifications |
 | Figure usage | `series_registry.json` figures field | Visual representation |
 
@@ -256,7 +256,7 @@ From HDARP book extractions, gather:
 
 ### Step 4: Original Methodology Documentation
 
-From HDARP methodology extractions:
+From Knowledge Base methodology extractions:
 
 1. **Identify Original Vintage**
    - Find methodology documentation from original data period
@@ -272,13 +272,13 @@ From HDARP methodology extractions:
    - Variable definitions
    - Units and base years
 
-**Source Location**: `Inputs/Robert/KB/` (project Knowledge Base files)
+**Source Location**: `knowledge_base/` (project Knowledge Base files)
 
 **Output**: Original Methodology section in EPR file
 
 ### Step 5: Current Methodology Research
 
-1. **Read Current HDARP Methodology Extractions**
+1. **Read Current Knowledge Base Methodology Extractions**
    - Find latest methodology documentation
    - Example: BEA 2024 methodology
 
@@ -521,8 +521,8 @@ Schema:
 
 ### With Knowledge Base
 
-- All quotes sourced from KB files (`Inputs/Robert/KB/`)
-- KB files are HDARP extractions synthesized into structured markdown
+- All quotes sourced from KB files (`knowledge_base/`)
+- KB files are PDF extractions synthesized into structured markdown
 - Reference KB file paths in EPR methodology comparison sections
 
 ### With Transition Analysis
@@ -548,7 +548,7 @@ The Anu Extension Standard supports live API data pulls for extending series wit
 - All keys stored in project-local config: `Technical/ANU_REPLICATOR/config/api_keys.env`
 - Load via `api_config.py` - NEVER hardcode API keys
 - Available keys: FRED_API_KEY, BEA_API_KEY
-- NEVER use internal database tools (e.g., Robin) as intermediaries for API data
+- NEVER use internal database tools (e.g., a private data repository) as intermediaries for API data
 
 ### Extension Implementation
 
@@ -700,7 +700,7 @@ The `series_registry.json` maps project series IDs to API sources:
 | Code | Description | Resolution |
 |------|-------------|------------|
 | `EXT_NO_DPR` | No DPR exists for series | Create DPR first using anu-ingestion |
-| `EXT_NO_HDARP` | HDARP extractions missing | Run HDARP on required documents |
+| `EXT_NO_KB` | Knowledge Base extractions missing | Run PDF extraction on required documents |
 | `EXT_METHODOLOGY_MISMATCH` | Cannot match methodology | Document difference, seek review |
 | `EXT_TRANSITION_FAILED` | Transition analysis failed | Investigate data quality, methodology |
 | `EXT_VALIDATION_FAILED` | Validation tests failed | Review extension, fix issues |
@@ -792,13 +792,13 @@ These requirements are validated by the Anu Review D10b quality checklist item Q
 | 1.0 | 2026-01-28 | Initial Anu Extension Standard |
 | 1.1 | 2026-02-03 | API Data Integration: live pulls, per-series scripts, year-source attribution |
 | 2.0 | 2026-03-07 | Replicator integration, registry-driven config, Research prerequisite, dash notation |
-| 2.1 | 2026-03-08 | Removed legacy paths (Knowledge_Base/, DEFINITIVE_SERIES_CATALOG.json, per-series extension scripts); updated KB paths to Inputs/Robert/KB/; fixed "Anu Standard" references to "Anu Ingestion" |
+| 2.1 | 2026-03-08 | Removed legacy paths (old Knowledge Base layout, DEFINITIVE_SERIES_CATALOG.json, per-series extension scripts); updated KB paths to `knowledge_base/`; fixed "Anu Standard" references to "Anu Ingestion" |
 | 2.2 | 2026-03-12 | Added Visualization Requirements section: extension subsources must appear as separate chart traces; cross-referenced with Anu Review D10b Q5 and Anu Visualize quality checklist |
 | 2.3 | 2026-03-12 | Added chart-readiness and column map coverage to visualization requirements; cross-referenced with Anu Review D10c |
 | 2.4 | 2026-03-15 | Added dual extension column convention (S###-EXT raw + S###-F re-indexed), re-indexing formula, automatic subsource registration via generate_shiny_subsources.py, updated Year-Source Attribution table |
 | 3.0 | 2026-03-15 | Generalized: replaced project-specific hardcoding with placeholders; added generic Year-Source template; renamed shaikh_original to original; labeled the reference project examples |
 | 3.1 | 2026-03-15 | Added Concurrent Series (CS) extension rules: CS columns are NOT independently extended; component subsource type; CS/extension interaction documented |
-| 3.2 | 2026-03-16 | External replicability: removed Robin references; API data cached in Inputs/API/FRED/; added source_url requirement for subsource metadata; added API Data Cache Location section |
+| 3.2 | 2026-03-16 | External replicability: removed data-repository references; API data cached in Inputs/API/FRED/; added source_url requirement for subsource metadata; added API Data Cache Location section |
 | 3.3 | 2026-04-07 | Version bump for Anu Framework v11.0 alignment (format unchanged) |
 | 3.4 | 2026-05-13 | Outputs section tightened to enumerate five concrete artifacts (EPR, EXTENSION_LOG.json, registry block, extended subseries, Divergence Register) |
 | 3.5 | 2026-05-15 | Integrated with the central `DIVERGENCE_REGISTER.json` (via `_shared/divergences.py`) so extension-time divergences are visible to `anu-review` D13 alongside ingestion and manual-adjustment divergences. The `batch-create-epr` idea was considered and rejected: EPRs are content-heavy documents (each documents a methodology choice, splice rationale, and concept-match justification) that benefit from per-series authoring; batch templating would produce uniform-looking shells that hide the methodology decisions. |

@@ -239,15 +239,15 @@ VPRs are stored under `{Project}/Technical/docs/variants/V###_VPR.md`. See `anu-
 
 The user's rule for outward-facing artifacts:
 
-> External-facing packages refer to content by its public name. Quote the book directly. Cite public data by its public source (FRED, BEA, BLS, OECD). DARP and HDARP may be honestly disclosed as the extraction method with the caveat that extraction errors are possible. All other internal nomenclature is scrubbed at the packaging boundary.
+> External-facing packages refer to content by its public name. Quote the book directly. Cite public data by its public source (FRED, BEA, BLS, OECD). The PDF-extraction step may be honestly disclosed as the method by which book text and tables were captured, with the caveat that extraction errors are possible. All other workspace-internal nomenclature is scrubbed at the packaging boundary.
 
 **How DPR / EPR / FPR honor this rule:**
 
-- **Internally** (in `Technical/docs/series/`, `Technical/docs/figures/`), records may use internal vocabulary: `KB`, `DARP`, `HDARP`, project codenames, Council-member references, internal-only acronyms. This is the working language of the agent team.
+- **Internally** (in `Technical/docs/series/`, `Technical/docs/figures/`), records may use internal vocabulary: `KB`, extraction-pipeline names, project codenames, internal infrastructure references, internal-only acronyms. This is the working language of the agent team.
 - **At the packaging boundary** (when content from a DPR/EPR/FPR is rendered into a methodology PDF, codebook, README, or Drive package), all internal terms must be translated:
   - "KB" → "the book" or "the publication"
-  - "DARP / HDARP" → may be retained as "PDF extraction" with the caveat *"text and tables were extracted from the source PDF via DARP, a multi-engine extraction protocol; extraction errors are possible and are flagged in the per-series documentation"*
-  - "Robert" / "Robin" / project codenames → removed entirely; replaced with the underlying public source
+  - extraction-pipeline names → may be retained as "PDF extraction" with the caveat *"text and tables were extracted from the source PDF via a multi-engine extraction protocol; extraction errors are possible and are flagged in the per-series documentation"*
+  - internal infrastructure names / project codenames → removed entirely; replaced with the underlying public source
   - "Chopped CSV" → "the machine-readable data file"
   - "Extenbook" → "the Excel workbook"
   - "S###-A", "S###-EXT" notation → retained but explained at first use with a Series ID legend

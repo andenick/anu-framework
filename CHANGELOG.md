@@ -6,9 +6,9 @@ The authoritative current state is always [`ANU_FRAMEWORK_OVERVIEW.md`](ANU_FRAM
 
 ---
 
-## 2026-05-15 — v11.0: RMWND rebuild absorption
+## 2026-05-15 — v11.0: reference-replication rebuild absorption
 
-The 21-commit Shaikh-Tonak (RMWND) rebuild — a public-facing replication package taken from blank scaffold to 64/64 PASS with `git push` to GitHub — surfaced 12 friction points the framework had no answer for. v11.0 absorbs them. RFCs at [`LESSONS_LEARNED_RMWND_2026.md`](LESSONS_LEARNED_RMWND_2026.md), [`ANU_FRAMEWORK_IMPROVEMENTS_RFC.md`](ANU_FRAMEWORK_IMPROVEMENTS_RFC.md), [`ANU_REBUILD_META_SKILL.md`](ANU_REBUILD_META_SKILL.md).
+The 21-commit Shaikh & Tonak reference-replication rebuild — a public-facing replication package taken from blank scaffold to 64/64 PASS with `git push` to GitHub — surfaced 12 friction points the framework had no answer for. v11.0 absorbs them. RFCs at [`LESSONS_LEARNED_RMWND_2026.md`](LESSONS_LEARNED_RMWND_2026.md), [`ANU_FRAMEWORK_IMPROVEMENTS_RFC.md`](ANU_FRAMEWORK_IMPROVEMENTS_RFC.md), [`ANU_REBUILD_META_SKILL.md`](ANU_REBUILD_META_SKILL.md).
 
 ### Skill renamed
 
@@ -16,8 +16,8 @@ The 21-commit Shaikh-Tonak (RMWND) rebuild — a public-facing replication packa
 
 ### Skills added (18 → 20)
 
-- **#19 `anu-scaffold`** (v1.0) — generates `L01_loaders/`, `P02_processors/`, `V03_validators/` script stubs from `series_registry.json` entries. Auto-selects template (`direct_column`, `derived`, `matrix_summary`) from the registry's `content_type` and construction blocks. Replaces the 17 one-off generator scripts written by hand during the RMWND build.
-- **#20 `anu-rebuild`** (v1.0) — 6-wave salvage-and-port meta-workflow for taking a predecessor project Anu-Framework-native. Wraps the cadence proven on RMWND (Foundation → per-cohort → Distribution → Polish) into a reusable skill. Sub-commands: `salvage`, `crosswalk`, `scaffold`, `wave-execute`, `closeout`.
+- **#19 `anu-scaffold`** (v1.0) — generates `L01_loaders/`, `P02_processors/`, `V03_validators/` script stubs from `series_registry.json` entries. Auto-selects template (`direct_column`, `derived`, `matrix_summary`) from the registry's `content_type` and construction blocks. Replaces the 17 one-off generator scripts written by hand during the reference-replication build.
+- **#20 `anu-rebuild`** (v1.0) — 6-wave salvage-and-port meta-workflow for taking a predecessor project Anu-Framework-native. Wraps the cadence proven on the reference replication (Foundation → per-cohort → Distribution → Polish) into a reusable skill. Sub-commands: `salvage`, `crosswalk`, `scaffold`, `wave-execute`, `closeout`.
 
 ### Skills changed
 
@@ -27,7 +27,7 @@ The 21-commit Shaikh-Tonak (RMWND) rebuild — a public-facing replication packa
 - `anu-replicator` v3.0 → **v3.1** — prescribes a `lib/` shared-helpers layout (`lib/data/`, `lib/transforms/`, `lib/validation/`, `lib/io/`) so cross-series patterns (BookColumnLoader, BenchmarkValidator, cached-API readers, IO matrix utilities) live in one canonical place.
 - `anu-data` v2.0 → **anu-architecture v2.1** — RENAMED from `anu-data` (AnuData Architecture) to `anu-architecture` (Anu Architecture) for framework-name consistency. Skill folder `anu-data/` → `anu-architecture/`; project-level folder default `Technical/AnuData/` → `Technical/AnuArchitecture/` (legacy `Technical/AnuData/` still recognized). v2.1 also documents canonical cache schemas for BEA NIPA (DataValue comma-stripping, UNIT_MULT exponent application), BLS, and FRED API responses.
 - `anu-pipeline` v3.1 → **v3.2** — ships `templates/run.py.j2` that scaffolds a project-level `run.py` with `--validate-only`, `--from <stage>`, `--series <sid>`, and `--health` modes.
-- `anu-publish` v1.1 → **v1.2** — ships `audit.py` (port of the RMWND `S06_publish_scrub_audit.py`). Formalizes `.publish_ignore` as a standard with documented FAIL/WARN scrub patterns.
+- `anu-publish` v1.1 → **v1.2** — ships `audit.py` (port of the reference replication's `S06_publish_scrub_audit.py`). Formalizes `.publish_ignore` as a standard with documented FAIL/WARN scrub patterns.
 - `anu-doctor` v1.0 → **v1.1** — adds project mode via `check_project.py`. Ten P##-checks (P01–P10) audit individual data projects for DPR coverage, L01/P02/V03 triad completeness, research-registry alignment, chopped subseries match, status-taxonomy enum compliance, synthetic-data detection, and divergence logging.
 - All 20 skill `SKILL.md` headers updated to `part-of: Anu Framework v11.0`.
 
@@ -43,9 +43,9 @@ The 21-commit Shaikh-Tonak (RMWND) rebuild — a public-facing replication packa
 
 ---
 
-## 2026-05-14 — v10.0 integration sweep (the reference project Sessions 30–35)
+## 2026-05-14 — v10.0 integration sweep (example-replication Sessions 30–35)
 
-The framework was brought to full internal consistency over six working sessions driven by the the reference project reference project.
+The framework was brought to full internal consistency over six working sessions driven by the example replication.
 
 ### Skills added
 - **#17 `anu-archive`** (v1.0) — audit-grade transparency distribution channel; ships `generate_archive_package.py`.
@@ -73,7 +73,7 @@ The framework was brought to full internal consistency over six working sessions
 - `anu-ledger` now records distribution events (a `distribution` block tracking which channel shipped which version when).
 
 ### Reference implementation
-- **the reference project** (`<project>/`) is designated the framework's reference implementation — the most complete Anu Framework project and the known-good example for new projects to copy. It exercises all 18 skills and all three distribution channels.
+- **the example replication** (`<project>/`) is designated the framework's reference implementation — the most complete Anu Framework project and the known-good example for new projects to copy. It exercises all 18 skills and all three distribution channels.
 
 ---
 

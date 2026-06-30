@@ -29,7 +29,7 @@
 - [ ] Subsource documentation (S[XXX]A, S[XXX]B, etc.)
 - [ ] Transformation chain (T[XXX] identifiers)
 - [ ] Validation record with date and status
-- [ ] HDARP linkage (if extracted from PDF)
+- [ ] Knowledge Base / PDF-extraction linkage (if extracted from PDF)
 
 ### Series DPR Status
 

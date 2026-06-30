@@ -1,7 +1,7 @@
 ---
 name: anu-rebuild
 version: "1.1"
-description: "Agent-executable runbook for taking a predecessor data construction project and producing a fresh, Anu-Framework-native rebuild. Six waves: Foundation → per-cohort Construction → Distribution → Polish. The agent does the work, guided by this spec; the framework provides templates and validators, not automation. Derived from the RMWND/Shaikh-Tonak rebuild (May 2026, 64 series, 100% PASS, 21 commits)."
+description: "Agent-executable runbook for taking a predecessor data construction project and producing a fresh, Anu-Framework-native rebuild. Six waves: Foundation → per-cohort Construction → Distribution → Polish. The agent does the work, guided by this spec; the framework provides templates and validators, not automation. Derived from the Shaikh-Tonak reference replication rebuild (May 2026, 64 series, 100% PASS, 21 commits)."
 when-to-use: "Agent has been asked to refactor or rebuild an existing data project under the Anu Framework. Open this file and execute Waves 0..N+2 sequentially."
 search-hints: "rebuild refactor port salvage predecessor migration crosswalk ground-up regenerate workflow waves"
 allowed-tools: Read, Write, Bash, Glob, Grep, Edit
@@ -22,7 +22,7 @@ part-of: Anu Framework v11.0
 | Created | 2026-05-15 |
 | Updated | 2026-05-15 |
 | Purpose | Agent-executable runbook for predecessor-to-rebuild |
-| Derived from | RMWND/Shaikh-Tonak rebuild (May 2026, 64 series, 100% PASS) |
+| Derived from | Shaikh-Tonak reference replication rebuild (May 2026, 64 series, 100% PASS) |
 
 ---
 
@@ -97,7 +97,7 @@ mkdir -p Technical/data/{raw,intermediate,final,user-inputs,source}
 touch .gitignore .publish_ignore
 ```
 
-The agent adapts paths to project conventions; the structure above is the RMWND-proven default.
+The agent adapts paths to project conventions; the structure above is the proven default from the reference replication.
 
 ### Step 0.3 — Salvage from the predecessor
 
@@ -184,7 +184,7 @@ python <framework>/skills/anu-doctor/check_project.py --project .
 
 # Waves 1..N — Per-cohort Construction
 
-Each cohort is a logical group of series the agent builds in one wave. Default: one cohort per book chapter. For RMWND-style projects, ~13 cohorts.
+Each cohort is a logical group of series the agent builds in one wave. Default: one cohort per book chapter. For a multi-chapter book replication, ~13 cohorts.
 
 For each cohort, the agent executes the following steps. Estimated 1 focused session per cohort (≤ 8 series for a medium book, scaling to 12-15 for big chapters).
 
@@ -339,7 +339,7 @@ gh repo create andenick/<descriptive-slug> --public --source=. --remote=origin -
 git tag v1.0.0 && git push --tags
 ```
 
-**Folder name discipline**: the slug must be descriptive (`measuring-wealth-of-nations-replication`), not a codename (`RSCD`, `the reference project`). Codename-shaped folder names get flagged by the audit.
+**Folder name discipline**: the slug must be descriptive (`measuring-wealth-of-nations-replication`), not a codename or internal shorthand. Codename-shaped folder names get flagged by the audit.
 
 ### Step D.5 — Drive folder upload
 
@@ -418,7 +418,7 @@ Each wave ends with a commit listing every series gained and validation status. 
 
 ### Folder naming convention
 
-Public output folders use descriptive slugs (`measuring-wealth-of-nations-replication`), not codenames (`RSCD`, `the reference project`). Audit flags codename-shaped names.
+Public output folders use descriptive slugs (`measuring-wealth-of-nations-replication`), not codenames or internal shorthand. Audit flags codename-shaped names.
 
 ---
 
@@ -428,7 +428,7 @@ Public output folders use descriptive slugs (`measuring-wealth-of-nations-replic
 
 The predecessor's `data/final/*.csv` are reference benchmarks at most. Re-derive every value from documented sources.
 
-**Real RMWND example**: ST2's `T507.csv` carried a NIPA-proxy surplus ratio of 0.5698 at 1948. The book identity S/Y = e/(1+e) yields 0.6296. RMWND's S507 was re-derived; the divergence was caught and logged.
+**Real example**: ST2's `T507.csv` carried a NIPA-proxy surplus ratio of 0.5698 at 1948. The book identity S/Y = e/(1+e) yields 0.6296. The rebuild's S507 was re-derived; the divergence was caught and logged.
 
 ### Do not skip per-wave review
 
@@ -465,7 +465,7 @@ Every command in this runbook is either a generic file-system operation (`mkdir`
 
 ## Generalization beyond economic data
 
-The RMWND build was economic data (Marxian aggregates). The workflow generalizes to any domain meeting the four invocation conditions.
+The reference replication build was economic data (Marxian aggregates). The workflow generalizes to any domain meeting the four invocation conditions.
 
 | Domain | Predecessor | Salvage candidates | Per-cohort partition |
 |---|---|---|---|
@@ -523,7 +523,7 @@ The rebuild is correctly executed when:
 ## Version History
 
 - **v1.1** (May 2026) — Reframed as agent-executable runbook. Removed all fictional script commands (`anu-rebuild salvage|crosswalk|scaffold|wave-execute|closeout`). The agent makes decisions; the framework provides templates and validators. Added concrete acceptance criteria per step. Added explicit cross-cutting policy on folder naming (descriptive slugs, not codenames). Documented `D`/`AD` as canonical prefix scheme — Data Series (primary) and Additional Data Series — chosen to avoid collision with anu-architecture's eight phase prefixes (S/L/P/V/M/A/O/E). Project may extend with a third prefix if genuinely needed.
-- **v1.0** (May 2026) — Initial release. 6-wave workflow + cross-cutting policies + anti-patterns. Derived from RMWND/Shaikh-Tonak rebuild (64 series, 100% PASS, 21 commits).
+- **v1.0** (May 2026) — Initial release. 6-wave workflow + cross-cutting policies + anti-patterns. Derived from the Shaikh-Tonak reference replication rebuild (64 series, 100% PASS, 21 commits).
 
 ---
 

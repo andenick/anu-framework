@@ -73,7 +73,7 @@
 | [Ch#] | [Page] | "[Exact quote from the book]" | [How this informs the extension] |
 | [Ch#] | [Page] | "[Another quote]" | [Relevance] |
 
-**HDARP Source**: `Knowledge_Base/HDARP_v3.3_Campaign/Body_Text/ch##_*.md`
+**KB Source**: `knowledge_base/body_text/ch##_*.md`
 
 ### Appendix References
 
@@ -82,7 +82,7 @@
 | [App X.Y] | [Section title] | "[Exact quote from appendix]" | [Formula if applicable] |
 | [App X.Y] | [Section] | "[Quote about methodology]" | [Formula] |
 
-**HDARP Source**: `Knowledge_Base/HDARP_v4.0_Figure_Metadata/Chapter_18_Appendices/appendix_*.json`
+**KB Source**: `knowledge_base/figure_metadata/Chapter_18_Appendices/appendix_*.json`
 
 ### Figure Usage
 
@@ -91,7 +91,7 @@
 | [Fig X.Y] | [Full caption] | [How series appears: axis, line, component] |
 | [Fig X.Y] | [Caption] | [Role in figure] |
 
-**HDARP Source**: `ShinyApp/data/ShaikhAbsorbed/hdarp_v4/ch##_figures.json`
+**KB Source**: `knowledge_base/figures/ch##_figures.json`
 
 ### Variable Definitions from Book
 
@@ -106,7 +106,7 @@
 ### Source: [Original Methodology PDF Title]
 
 **Document**: [Full title, e.g., "BEA NIPA Methodology, September 2011"]
-**HDARP Location**: `Knowledge_Base/HDARP_Methodology_Sources_2025.12.22/DOC_###/`
+**KB Location**: `knowledge_base/methodology_sources/DOC_###/`
 **Vintage Date**: [YYYY-MM]
 
 #### Key Methodology Quotes
@@ -142,7 +142,7 @@
 ### Source: [Current Methodology PDF Title]
 
 **Document**: [Full title, e.g., "BEA NIPA Handbook Chapter 13, 2024"]
-**HDARP Location**: `Knowledge_Base/HDARP_Methodology_Sources_2025.12.22/DOC_###/`
+**KB Location**: `knowledge_base/methodology_sources/DOC_###/`
 **Vintage Date**: [YYYY-MM]
 
 #### Key Methodology Quotes

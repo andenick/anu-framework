@@ -28,7 +28,7 @@ Per-series documentation lifecycle: generation, scoring, enrichment, and validat
 |-------|--------|----------|
 | `series_registry.json` | anu-ingestion output | Yes |
 | `S###_research.json` | anu-research output | Yes (even if auto-generated) |
-| `Inputs/Robert/KB/ch##_*.md` | HDARP extractions | Recommended (enables T3) |
+| `knowledge_base/ch##_*.md` | Knowledge Base extractions | Recommended (enables T3) |
 | `S###_DECOMPOSITION.md` | anu-ingestion output | Recommended (enrichment fallback) |
 | `S###_EPR.md` | anu-extension output | Recommended (extension section) |
 | `ANU_LEDGER.json` | anu-ledger output | Recommended (gap analysis) |
@@ -240,7 +240,7 @@ The Explainer is the **web-facing** per-series artifact — what a site visitor 
 1. **No file paths of any kind** — no workspace paths, no relative repo paths; sources are named institutionally (gate: DOC03 + anu-publish P10/P11)
 2. **No tables wider than 2 columns** — narrow panels make wide markdown tables unreadable; use definition lists for sources
 3. **No internal links** — the explainer renders standalone inside a site template
-4. **Every quote carries a KB anchor** — an HTML comment `<!-- kb: ch##, ... -->` verifiable against `Inputs/Robert/KB/` (gate: DOC12)
+4. **Every quote carries a KB anchor** — an HTML comment `<!-- kb: ch##, ... -->` verifiable against `knowledge_base/` (gate: DOC12)
 5. **Sourced from the research JSON only** — fixing explainer content means fixing `{SID}_research.json` and regenerating, identical to the doc contract
 
 ### Generation Contract
@@ -265,7 +265,7 @@ The enrichment workflow upgrades docs from T1 to T2 or T3. It operates on **rese
 When enriching a series, read sources in this order (highest priority first):
 
 ```
-1. KB chapter file (Inputs/Robert/KB/ch##_*.md)         -> enables T3
+1. KB chapter file (knowledge_base/ch##_*.md)           -> enables T3
 2. Appendix methodology (KB/ch18_appendices.md)          -> cross-references
 3. S###_DECOMPOSITION.md (Technical/docs/series/)        -> rich construction detail
 4. S###_EPR.md (Technical/docs/series/)                  -> extension methodology
@@ -276,7 +276,7 @@ When enriching a series, read sources in this order (highest priority first):
 
 ```
 For target chapter:
-  IF KB file exists (Inputs/Robert/KB/ch##_*.md):
+  IF KB file exists (knowledge_base/ch##_*.md):
     -> Full enrichment possible (target T3)
     -> Read KB, extract quotes and theoretical context
   ELSE:
@@ -314,7 +314,7 @@ For each series with `"researcher": "auto-generated"`:
 ### Step 3: Doc Regeneration
 
 Each project provides its own doc-regeneration script implementing this
-skill's contract (the reference implementation is CD2's
+skill's contract (the reference implementation lives at the project's
 `Technical/ANU_REPLICATOR/scripts/utils/`). The expected invocation:
 
 ```bash
@@ -493,9 +493,9 @@ Stage 5: Replicator -> Stage 6: Chopped/Extenbook
 
 ---
 
-## Robin Integration
+## Data Repository Integration
 
-For per-series docs sourcing from Robin, the Adequate-tier doc must cite the `robin_source_id` and `canonical_path` from the project's `Inputs/Robin/[SOURCE]/PROVENANCE.md`. Enriched tier additionally cites the upstream paper/URL from Robin's per-source README.
+For per-series docs sourcing from the data repository, the Adequate-tier doc must cite the `data_source_id` and `canonical_path` from the project's `inputs/data-repository/[SOURCE]/PROVENANCE.md`. Enriched tier additionally cites the upstream paper/URL from the data repository's per-source README.
 
 ## Version History
 

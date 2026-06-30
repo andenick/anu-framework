@@ -27,7 +27,7 @@ Anu Architecture is a standardized, self-contained architecture for bespoke econ
 5. **Audit Trail**: Every transformation, parameter choice, and model run is logged in structured JSON.
 6. **Exploration Preservation**: Exploratory work feeds `data/scratch/` (ephemeral); conclusions go to DECISION_LOG.md. E## scripts are never deleted — they are the permanent record of the research process.
 7. **No Synthetic Data**: Every value in every CSV must come from a real, documented source. If data is unavailable, the series is `data_unavailable` — never filled with trends, noise, or estimates. Missing data is a gap to be resolved, not a hole to be papered over. `np.random` in a data construction script is always wrong.
-8. **Public Reproducibility**: Every L## script must either call a public API or include a comment with the public download URL. No private data paths (Robin, internal databases) in the pipeline. If data comes from a non-API source, the L## header must include a `PUBLIC SOURCE:` line with the URL where anyone can obtain this data. Learned from the reference project: had to retroactively strip all private data references from 40+ scripts.
+8. **Public Reproducibility**: Every L## script must either call a public API or include a comment with the public download URL. No private data paths (private data repositories, internal databases) in the pipeline. If data comes from a non-API source, the L## header must include a `PUBLIC SOURCE:` line with the URL where anyone can obtain this data. Learned from the reference project: had to retroactively strip all private data references from 40+ scripts.
 9. **Source Specification Before Code**: Before writing any L## or P## script, produce a Source Specification listing: variable name, source agency, table/series ID, units, frequency, URL, and date range. This is the contract the code must fulfill. Learned from the reference project: building extensions first then checking the Knowledge Base produced a 21% error rate.
 10. **No Proxies Without Justification**: If the exact source is unavailable, document why and what proxy is used. Proxies must be flagged in project_registry.json with `"proxy": true` and a justification. CPI is not PPI. Earnings is not compensation. Yield is not total return. Every concept substitution degrades faithfulness.
 
@@ -112,7 +112,7 @@ S## -> L## -> P## (+ E## runs concurrently) -> V## -> M## -> A## -> V## (diagnos
 - **XX01-XX99**: Individual scripts, numbered to reflect execution order
 - **Numbers mean execution order, nothing else.** No reserved ranges, no semantic sub-bands. If you need to insert between XX03 and XX04, renumber the phase and follow the Renumbering Protocol below.
 - Every script must include a standard header block declaring Purpose, Inputs, Outputs, and Dependencies (see Script Header Standard below).
-- Naming pattern: `XX##_descriptive_name.ext` (e.g., `L01_load_robin_failing_banks.py`)
+- Naming pattern: `XX##_descriptive_name.ext` (e.g., `L01_load_bls_employment.py`)
 - File extension determined by project language config (`.R`, `.py`, `.do`, `.jl`)
 - **Letter suffixes (A01b, P03b) are NOT allowed** — they are invisible to the orchestrator glob and break pipeline discovery. Renumber instead.
 - **Only the 8 defined phase prefixes are valid**: S, L, P, V, M, A, O, E. Do not invent new prefixes (e.g., no "N##" for robustness — use A## instead).
@@ -441,7 +441,7 @@ Every L## loading script must acquire data using this priority order:
 
 1. **PUBLIC API** — Always try first (FRED, BEA, BLS, World Bank, IMF). Requires user-provided API key from `config/api_keys.env`.
 2. **DOWNLOADED FILE** — If API unavailable or key missing. Script must document the exact public URL for manual download.
-3. **HDARP EXTRACTION** — Last resort, for methodology text or historical data only available in the book PDF.
+3. **PDF EXTRACTION** — Last resort, for methodology text or historical data only available in the book PDF.
 
 ### L## Script Source Documentation (MANDATORY)
 

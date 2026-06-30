@@ -59,7 +59,7 @@ Before creating a variant:
 
 1. **Anu Standard DPR/EPR Exists**: Underlying series documented via Anu Standard or Anu Extension
 2. **Calculator Script**: Python script with a `VariantConfig` pattern (or equivalent parameterization)
-3. **HDARP Extractions**: Methodology sources extracted for each variant author
+3. **KB Extractions**: Methodology sources extracted for each variant author
 4. **Output Data**: At least one computed CSV for the variant
 
 ---
@@ -379,7 +379,7 @@ For each registered variant:
 ## Anu Framework Context
 
 - **Pipeline Stage**: Post-pipeline (operates on completed series)
-- **Upstream**: Complete pipeline (DPR/EPR, calculator scripts, HDARP extractions)
+- **Upstream**: Complete pipeline (DPR/EPR, calculator scripts, Knowledge Base extractions)
 - **Downstream**: Review (variant quality), research (methodology comparisons)
 - **Adequacy Relevance**: Variants require the same L1/L3 sources as the base series plus additional methodology papers
 - **Key Handoff**: VARIANT_REGISTRY.json; variant VPRs; comparison CSVs
@@ -400,7 +400,7 @@ For each registered variant:
 | Aspect | Detail |
 |--------|--------|
 | **Creates** | `VARIANT_REGISTRY.json`, `V-{DOM}{NN}-{MTH}_VPR.md`, variant comparison CSVs, `VINTAGE_DOWNLOAD_LOG.json` |
-| **Expects** | `S###_DPR.md` or `S###_EPR.md`, calculator scripts, HDARP extractions |
+| **Expects** | `S###_DPR.md` or `S###_EPR.md`, calculator scripts, Knowledge Base extractions |
 | **Must Update on Completion** | Update `VARIANT_REGISTRY.json` with new variant entries |
 
 ---
