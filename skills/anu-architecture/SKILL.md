@@ -599,11 +599,11 @@ This section tracks learnings from real-world usage of Anu Architecture to impro
 
 ### Learning L001 (2026-04-05, Research Planning)
 
-**Context**: First real-world application (as NickyData v1.0) to a an applied research project.
+**Context**: First real-world application to an applied research project.
 
 **Findings**:
 1. The original skill lacked evolutionary versioning — critical for long-running research projects. Added snake-shedding model.
-2. The original skill lacked an assumptions register — critical for research projects where every claim must be defensible. Added ASSUMPTIONS.md.
+2. The original skill lacked an assumptions register — critical for long-running research projects where every claim must be defensible. Added ASSUMPTIONS.md.
 3. The 8-phase pipeline maps well to the research workflow, but V## needs to be explicitly split into "data quality" (pre-analysis) and "model diagnostics" (post-analysis) passes.
 4. E## exploration scripts are invaluable for building intuition before formal estimation. The "never delete" rule is essential.
 5. Source attribution must be a first-class concern — every decision, variable construction, and method choice needs a citation trail.
