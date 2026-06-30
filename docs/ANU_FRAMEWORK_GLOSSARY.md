@@ -40,16 +40,6 @@ Every term used across the Anu Framework — agent skills, internal artifacts, o
 **Example:** `<project>/Technical/replicator/` reproduces all 40+ the reference project series end-to-end.
 **Related:** [[Anu Architecture]] [[L## Loading]] [[P## Processing]]
 
-### Council
-**Definition:** Top-level Arcanum directory housing infrastructure agents (Druck, etc.) whose skills, docs, and standards govern projects.
-**Example:** Anu Framework skills live at `skills/anu-*/`.
-**Related:**  [[Anu Framework]]
-
-### Druck
-**Definition:** The Arcanum workspace-lifecycle and performance-monitoring agent that owns the Anu Framework skills, HDARP protocol, and project standards.
-**Example:** the framework enforces the mandatory `Inputs/` folder and the 4-agent concurrency cap.
-**Related:** [[Council]] [[HDARP]]
-
 ### Pipeline Stage
 **Definition:** One of eight ordered Anu Pipeline phases — Adequacy, Research, Ingestion, Extension, Replicator, Output, Distribution, Review — with prerequisites enforced between adjacent stages.
 **Example:** a project chapter 2 passed Adequacy (D0) before any `S###_research.json` was written.
@@ -198,7 +188,7 @@ Every term used across the Anu Framework — agent skills, internal artifacts, o
 ## 5. Pipeline Scripts
 
 ### L## Loading
-**Definition:** Numbered Python script that acquires one or more raw subsources — from a public API, downloaded file, or HDARP table — and writes to `data/raw-data/`. Never modifies data.
+**Definition:** Numbered Python script that acquires one or more raw subsources — from a public API, downloaded file, or extracted Knowledge Base table — and writes to `data/raw-data/`. Never modifies data.
 **Example:** `L01_industrial_production.py` fetches FRED INDPRO and reads the BEA LTEG TA15 CSV.
 **Related:** [[P## Processing]] [[Anu Replicator]]
 
@@ -300,25 +290,13 @@ Every term used across the Anu Framework — agent skills, internal artifacts, o
 
 ### Knowledge Base
 **Definition:** Searchable, agent-readable extraction of book chapters, appendices, methodology PDFs, and footnotes — the ground truth against which all construction must be verified.
-**Example:** the project KB at `Inputs/Robert/KB/` contains chapter pages and historical methodology PDFs from BEA, BLS, and FRB.
-**Related:** [[HDARP]] [[Anu Research]]
+**Example:** the project KB at `knowledge_base/` contains chapter pages and historical methodology PDFs from BEA, BLS, and FRB.
+**Related:** [[PDF Extraction]] [[Anu Research]]
 
-### DARP
-**Full name:** Direct Agent Reading Protocol
-**Definition:** Lightweight protocol for agent extraction of small or born-digital PDFs without OCR. Acceptable to disclose externally as the extraction method with the caveat that extraction errors are possible.
-**Example:** A single-chapter methodology PDF processed via `/pdarp` rather than the full chunked protocol.
-**Related:** [[HDARP]] [[Knowledge Base]]
-
-### HDARP
-**Full name:** Hybrid Direct Agent Reading Protocol
-**Definition:** Chunked PDF-extraction protocol for files >10 pages or >1MB, combining agent vision with multi-engine OCR; produces body text, tables, equations, and figures per chunk. Acceptable to disclose externally.
-**Example:** Shaikh's full book was extracted via `<KB construction>` to populate the the reference project Knowledge Base.
-**Related:** [[Knowledge Base]] [[DARP]] [[Sraffa OCR]]
-
-### Sraffa OCR
-**Definition:** Internal document-adaptive OCR pipeline (PyMuPDF + EasyOCR GPU + Chandra 2 escalation) used inside HDARP. Internal-only nomenclature — not referenced in outward-facing packages.
-**Example:** Scanned historical FRB statistical bulletins are routed through Sraffa 4.0 before HDARP extraction.
-**Related:** [[HDARP]] [[External Disclosure Policy]]
+### PDF Extraction
+**Definition:** The process of converting source PDFs (book chapters, appendices, methodology documents) into searchable, agent-readable text plus structured tables, equations, and figures, using agent vision and/or OCR. For files larger than ~10 pages or 1 MB this is done chunk-by-chunk; small born-digital PDFs can be read directly without OCR. Extraction errors are always possible, so the published source remains authoritative.
+**Example:** A full book is extracted chapter-by-chapter to populate the project Knowledge Base; a single born-digital methodology PDF is read directly.
+**Related:** [[Knowledge Base]] [[Anu Research]]
 
 ---
 
@@ -432,15 +410,15 @@ Every term used across the Anu Framework — agent skills, internal artifacts, o
 
 ## External Disclosure Policy
 
-The following rule governs every artifact that crosses the packaging boundary into outward-facing distribution (GitHub publish, Drive package, public methodology PDF, README files, per-series docs visible to non-Arcanum scholars):
+The following rule governs every artifact that crosses the packaging boundary into outward-facing distribution (GitHub publish, Drive package, public methodology PDF, README files, per-series docs visible to outside scholars):
 
-> External-facing packages refer to content by its public name. Quote the book directly. Cite public data by its public source (FRED, BEA, BLS, OECD). DARP and HDARP may be honestly disclosed as the extraction method with the caveat that extraction errors are possible. All other internal nomenclature is scrubbed at the packaging boundary.
+> External-facing packages refer to content by its public name. Quote the book directly. Cite public data by its public source (FRED, BEA, BLS, OECD). The PDF-extraction step may be honestly disclosed as the method by which book text and tables were captured, with the caveat that extraction errors are possible. All other workspace-internal nomenclature is scrubbed at the packaging boundary.
 
-**Scrubbed at the boundary (internal-only):** Sraffa OCR, Druck, Council, Robin, HDARP chunk identifiers, batch numbers, agent names, Arcanum-internal paths, KB filenames.
+**Scrubbed at the boundary (internal-only):** internal tooling/agent names, internal OCR-engine names, extraction chunk identifiers, batch numbers, workspace-internal filesystem paths, and raw Knowledge Base filenames.
 
 **Allowed in external artifacts:** Series IDs (S###, CS###-N/D, -EXT, -F, -COMBINED), public source names (BEA, NIPA, FRED, BLS, OECD, IRS SOI, PWT, Maddison Project, MeasuringWorth), methodological terms (ROP, IROP, HP(100), NOS, WPI, PPP), direct author quotes, public URLs.
 
-**Honest-disclosure exceptions:** A `METHODS_AND_LIMITATIONS.md` or equivalent section may disclose that data and methodology were extracted from PDFs via DARP/HDARP agent-vision-plus-OCR, with the explicit caveat that extraction errors are possible and the published source is authoritative.
+**Honest-disclosure exceptions:** A `METHODS_AND_LIMITATIONS.md` or equivalent section may disclose that data and methodology were extracted from PDFs via agent-vision-plus-OCR, with the explicit caveat that extraction errors are possible and the published source is authoritative.
 
 See [[D14 Outward-Facing Intelligibility]] and [[Anu Publish]] for enforcement.
 

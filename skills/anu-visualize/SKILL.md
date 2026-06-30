@@ -69,7 +69,7 @@ Technical/ShinyApp/                    # (R Shiny variant)
 |------|---------|------------|
 | `DEFINITIVE_SERIES_CATALOG.json` | Master series metadata | series_id, name, chapter, figure_ids, time_period, extension_status, subsource_ids |
 | `SUBSOURCE_METADATA.json` | Per-subsource metadata | subsource_id, column_name, source_name, source_text, source_url, period, role, is_construction_member, is_extension, parent_series |
-| `HDARP_SERIES_LINKAGE.json` | Figure-to-series-to-data mapping | figure_id, chapter, page_number, full_caption, hdarp_variables, linked_series, data_columns, axis specs, year_range |
+| `FIGURE_SERIES_LINKAGE.json` | Figure-to-series-to-data mapping | figure_id, chapter, page_number, full_caption, figure_variables, linked_series, data_columns, axis specs, year_range |
 | `[PROJECT]_QUOTES_MASTER.json` | Author quotes organized by chapter/figure (optional) | quotes_by_chapter, page_number, text, topic_tags |
 | `config/app_config.json` | App configuration | color_palettes, figure_column_map, figure_file_registry, figure_cross_chapter, figure_highlight_series |
 
@@ -260,7 +260,7 @@ Colors are loaded from `config/app_config.json`:
 | Aspect | Detail |
 |--------|--------|
 | **Creates** | Visualization app, validated data views |
-| **Expects** | Canonical JSON files, HDARP chapter files, chopped CSVs, chapter extended CSVs |
+| **Expects** | Canonical JSON files, KB chapter files, chopped CSVs, chapter extended CSVs |
 | **Must Validate** | All 12 quality checklist items before marking app as ready |
 
 ---

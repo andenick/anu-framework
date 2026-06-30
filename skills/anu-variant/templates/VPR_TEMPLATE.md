@@ -42,7 +42,7 @@
 >
 > — [Source]
 
-**HDARP Source**: `Knowledge_Base/HDARP_*/[document_path]`
+**KB Source**: `knowledge_base/[document_path]`
 
 ---
 

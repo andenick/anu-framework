@@ -40,12 +40,12 @@ Stage 3 — INGESTION
 | Artifact | Path / Pattern | Required |
 |----------|---------------|----------|
 | Research JSONs | `Technical/research/S###_research.json` | Yes |
-| KB chapter files | `Inputs/Robert/KB/ch##_topic.md` | Yes |
-| KB methodology summary | `Inputs/Robert/KB/appendix_methodology_summary.json` | Yes |
+| KB chapter files | `knowledge_base/ch##_topic.md` | Yes |
+| KB methodology summary | `knowledge_base/appendix_methodology_summary.json` | Yes |
 | Adequacy report | `Technical/docs/chapters/CH{N}_ADEQUACY_REPORT.json` | Recommended |
 | Raw data files | `Inputs/` (flat structure) | Yes |
 | API data cache | `Inputs/API/[SOURCE]/` | If extending |
-| Robert/HDARP extractions | `Inputs/Robert/` | Yes |
+| Knowledge Base extractions | `knowledge_base/` | Yes |
 | Crosswalk CSV (migration only) | `MIGRATION/crosswalk.csv` | Migration only |
 
 ## Outputs
@@ -60,8 +60,8 @@ Stage 3 — INGESTION
 | KB manifest | `KB_MANIFEST.json` | JSON |
 | Absorption report | `Technical/absorbed/ABSORPTION_REPORT.md` | Markdown |
 | Absorbed database | `Technical/absorbed/chapter_##_absorbed.csv` | CSV (5-column long format) |
-| Per-chapter KB file | `Inputs/Robert/KB/ch##_topic.md` | Markdown |
-| Methodology summary | `Inputs/Robert/KB/appendix_methodology_summary.json` | JSON |
+| Per-chapter KB file | `knowledge_base/ch##_topic.md` | Markdown |
+| Methodology summary | `knowledge_base/appendix_methodology_summary.json` | JSON |
 | Migration scheme log (migration only) | `MIGRATION/MIGRATE_SCHEME_LOG.md` | Markdown |
 
 ### Series ID Specification v2.2
@@ -139,7 +139,7 @@ The **single source of truth** for all series metadata. Located at `Technical/se
 | Field | Type | Description |
 |-------|------|-------------|
 | `name` | string | Internal series name |
-| `display_name` | string | **Public-facing, human-readable name** — propagated identically to website display, download filenames, zip internals, data dictionaries, Robin/API, and GitHub (see `ANU_NAMING_STANDARD.md`). Sentence-case prose; no codes, no `clean_tax_panel`-style identifiers. |
+| `display_name` | string | **Public-facing, human-readable name** — propagated identically to website display, download filenames, zip internals, data dictionaries, the data repository/API, and GitHub (see `ANU_NAMING_STANDARD.md`). Sentence-case prose; no codes, no `clean_tax_panel`-style identifiers. |
 | `chapter` | int | Chapter number |
 | `figures` | array | Figure references (e.g., `["Fig2.1"]`) |
 | `subseries` | object | Map of subseries ID to subseries config — **each subseries MUST carry its own `label` (human-readable) and `units`**; a parent series may only declare a single `units` value if all subseries share it (no `mixed_*` unit strings — see `UNITS_VALIDATION_STANDARD.md`) |
@@ -290,19 +290,19 @@ The Anu Ledger (v1.1+) is Tier-aware: Tier 2 series are not penalized for missin
 #### 1. Knowledge Base Construction
 
 Build a searchable KB from source materials. Two distinct activities:
-1. **HDARP Extraction** (mechanical): Robert/HDARP extracts raw text from PDFs
+1. **PDF Extraction** (mechanical): a PDF extraction pipeline extracts raw text from PDFs
 2. **KB Synthesis** (analytical): An agent reads raw extractions and creates structured, searchable markdown per chapter
 
-KB Synthesis outputs: per-chapter KB file (`Inputs/Robert/KB/ch##_topic.md`), methodology summary (`appendix_methodology_summary.json`), `KB_INDEX.md`.
+KB Synthesis outputs: per-chapter KB file (`knowledge_base/ch##_topic.md`), methodology summary (`appendix_methodology_summary.json`), `KB_INDEX.md`.
 
-Steps: Identify source materials → Run HDARP if needed → Read extractions → Synthesize KB markdown → Update methodology summary → Update KB index.
+Steps: Identify source materials → Run PDF extraction if needed → Read extractions → Synthesize KB markdown → Update methodology summary → Update KB index.
 
 #### 2. Data Import
 
-Bring raw data files into `Inputs/` following Druck's mandatory 3-folder pattern:
+Bring raw data files into `Inputs/` following the mandatory 3-folder pattern:
 - `Inputs/` is FLAT — preserve user organization, no type-based subdirectories
 - API data in `Inputs/API/[SOURCE]/` — all API data must be from public, externally replicable sources
-- Robert imports in `Inputs/Robert/`
+- Knowledge Base imports in `knowledge_base/`
 - Read-only originals — never modify files in `Inputs/`
 
 #### 3. Data Absorption
@@ -350,7 +350,7 @@ Before ingesting any data, verify it comes from an authentic source:
 
 | Source Type | Status |
 |-------------|--------|
-| HDARP table extraction | Acceptable (primary) |
+| KB table extraction | Acceptable (primary) |
 | API response from official statistical agency | Acceptable (primary) |
 | Digitized from published figure | Acceptable (secondary, document precision) |
 | Computed from primary data using documented methodology | Acceptable (derived) |
@@ -380,7 +380,7 @@ Cross-project ID migration looks mechanical but isn't: series may be renamed and
 
 #### AS/ES → XS recipe (Series ID Spec v2.2 migration)
 
-For projects carrying legacy `AS`/`ES` prefixes (e.g., RSCD, RMWND), the crosswalk is a pure prefix swap with digit counts preserved — `AS003 → XS003`, `ES2301 → XS2301` (3-digit AS and 4-digit ES occupy disjoint ranges, so no collisions). Beyond the standard 7 steps above:
+For projects carrying legacy `AS`/`ES` prefixes (e.g., predecessor replication projects), the crosswalk is a pure prefix swap with digit counts preserved — `AS003 → XS003`, `ES2301 → XS2301` (3-digit AS and 4-digit ES occupy disjoint ranges, so no collisions). Beyond the standard 7 steps above:
 
 8. Add `xs_class` + `xs_attribution` to every migrated entry (classify appendix-of-main-book vs attributable-to-other-study from existing `book_table`/provenance fields; agent-reviewed, never inferred blindly)
 9. Rewrite `subseries_id` values inside chopped CSVs (`AS003-A → XS003-A`), not just filenames
@@ -466,22 +466,22 @@ Must also update on completion: Regenerate Ledger (`/anu-ledger generate`). If `
 - [`SERIES_REGISTRY_SCHEMA.md`](../../../docs/SERIES_REGISTRY_SCHEMA.md) — the formal `series_registry.json` schema.
 - [`DATA_PROVENANCE_STANDARDS.md`](../../../docs/DATA_PROVENANCE_STANDARDS.md) — DPR / EPR / FPR / VPR record specs.
 
-## Robin Integration
+## Data Repository Integration
 
-Anu projects ingest data from **Robin** via the static-checkout pattern. Each L## loader that consumes a Robin source MUST:
+Anu projects ingest data from **the canonical data repository** via the static-checkout pattern. Each L## loader that consumes a data-repository source MUST:
 
-1. Read from `ProjectX/Inputs/Robin/[SOURCE]/`, never from `Council/Robin/DATA/` directly.
-2. Verify the checkout's `PROVENANCE.md` exists and validates (use the shared helper in `anu-replicator/lib/data/robin_loader.py` once it lands; see Robin revamp Phase 5).
-3. Record the `robin_source_id`, `robin_version`, and PROVENANCE hash in the DPR (Data Provenance Record) for that series.
+1. Read from `ProjectX/inputs/data-repository/[SOURCE]/`, never from `<data-repository>/DATA/` directly.
+2. Verify the checkout's `PROVENANCE.md` exists and validates (use the shared helper in `anu-replicator/lib/data/data_loader.py` once it lands; see the data-repository revamp Phase 5).
+3. Record the `data_source_id`, `data_repo_version`, and PROVENANCE hash in the DPR (Data Provenance Record) for that series.
 
-If the source you need is NOT in Robin yet, the answer is to **add it to Robin** (see `Council/Druck/docs/ROBIN_INTEGRATION_SPECIFICATION.md` §6 "Adding a new Robin source"), not to ingest it project-locally.
+If the source you need is NOT in the data repository yet, the answer is to **add it to the data repository** (see `docs/DATA_REPOSITORY_INTEGRATION.md` §6 "Adding a new data-repository source"), not to ingest it project-locally.
 
 **Anti-patterns** (anu-doctor will flag):
-- Custom API client in the project that duplicates a Robin collector
-- Hardcoded paths into `Council/Robin/DATA/...` (bypasses PROVENANCE)
-- Reading another project's `Inputs/Robin/` checkout instead of maintaining your own
+- Custom API client in the project that duplicates a data-repository collector
+- Hardcoded paths into `<data-repository>/DATA/...` (bypasses PROVENANCE)
+- Reading another project's `inputs/data-repository/` checkout instead of maintaining your own
 
-Canonical reference: `Council/Robin/docs/specs/INPUTS_ROBIN_CONTRACT.md`.
+Canonical reference: `<data-repository>/docs/DATA_CHECKOUT_CONTRACT.md`.
 
 ## Anti-Patterns
 
@@ -504,7 +504,7 @@ Canonical reference: `Council/Robin/docs/specs/INPUTS_ROBIN_CONTRACT.md`.
 
 - **v2.2** (archived) — Former "Anu Standard"
 - **v3.0** (March 2026) — Renamed to Anu Ingestion; expanded to 7 sub-processes
-- **v3.1** (March 2026) — Added Two-Tier Architecture and Series Type Patterns; fixed absorbed database format to 5-column standard; added KB synthesis vs HDARP extraction distinction; standardized Figure ID format (no spaces)
+- **v3.1** (March 2026) — Added Two-Tier Architecture and Series Type Patterns; fixed absorbed database format to 5-column standard; added KB synthesis vs PDF extraction distinction; standardized Figure ID format (no spaces)
 - **v3.2** (March 2026) — Added CRITICAL criticality level for subseries fields (name, period, units); added Registry Completeness Validation requirements for viz export
 - **v3.3** (March 2026) — Generalized: replaced project-specific chapter references with descriptive type names; labeled series examples; genericized path patterns
 - **v3.4** (March 2026) — Added Concurrent Series (CS) specification for ratio/rate series

@@ -44,7 +44,7 @@ The Provenance sheet uses a two-column key-value layout with section headers.
 | 8 | Shaikh Quote 2 | "[Additional quote if relevant]" — Shaikh (2016), p. ## |
 | 9 | Relevance | [Description of series significance to Shaikh's argument] |
 | 10 | Key Arguments | [Theoretical points this series supports] |
-| 11 | HDARP Source | Knowledge_Base/HDARP_v3.3_Campaign/Body_Text/ch##_*.md |
+| 11 | KB Source | knowledge_base/body_text/ch##_*.md |
 | 12 | Appendix Reference | Appendix #.# — [Appendix title] |
 
 **Styling**:
@@ -206,8 +206,8 @@ The Provenance sheet uses a two-column key-value layout with section headers.
 | 90 | Raw Data Location | Inputs/API/[SOURCE]/[file].csv |
 | 91 | Extended Data Location | Outputs/Data/##_CHAPTER_NAME/S###_extended.csv |
 | 92 | Shaikh Chopped Source | Inputs/ShaikhChoppedTables/Appendix#_[Name].xlsx |
-| 93 | HDARP Chapter | Knowledge_Base/HDARP_v3.3_Campaign/Body_Text/ch##_*.md |
-| 94 | HDARP Appendix | Knowledge_Base/HDARP_v4.0_Figure_Metadata/Chapter_18_Appendices/appendix_#_#.json |
+| 93 | KB Chapter | knowledge_base/body_text/ch##_*.md |
+| 94 | KB Appendix | knowledge_base/figure_metadata/appendix_#_#.json |
 | 95 | Extenbook Generated | YYYY-MM-DD HH:MM:SS |
 
 ---

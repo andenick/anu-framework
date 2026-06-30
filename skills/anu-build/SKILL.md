@@ -1,7 +1,7 @@
 ---
 name: anu-build
 version: "1.3"
-description: Master orchestrator that drives every Anu Framework skill through a methodical 9-stage pipeline (Stage 0 Inventory through Stage 8 Distribution) with computed construction order, mandatory gates, and a 4-file documentation cascade. Replaces anu-rebuild and anu-pipeline. Canonical CLI implementation at `Council/Druck/anu/anu_build.py` (project-agnostic, `--project <path>`).
+description: Master orchestrator that drives every Anu Framework skill through a methodical 9-stage pipeline (Stage 0 Inventory through Stage 8 Distribution) with computed construction order, mandatory gates, and a 4-file documentation cascade. Replaces anu-rebuild and anu-pipeline. Canonical CLI implementation at `tools/anu_build.py` (project-agnostic, `--project <path>`).
 when-to-use: Build, rebuild, or resume any Anu Framework data-construction project
 search-hints: build pipeline orchestrate rebuild resume stage gate cascade
 argument-hint: [command] [options]
@@ -134,7 +134,7 @@ Technical/
       catalogs/
         DEFINITIVE_SERIES_CATALOG.json
         SUBSERIES_METADATA.json     # Canonical name (replaces SUBSOURCE_METADATA)
-        HDARP_SERIES_LINKAGE.json
+        FIGURE_SERIES_LINKAGE.json
         DATA_MANIFEST.json
     shiny/                          # Stage 7 (R variant)
       R/
@@ -237,7 +237,7 @@ Between every pair of adjacent stages:
 
 ## Commands
 
-The canonical CLI is `python Council/Druck/anu/anu_build.py --project <path> <subcommand>`. Projects may ship a thin local shim (e.g. `Technical/build.py`) that imports `anu_build.main(default_project=...)` so users in the project directory can omit `--project`. The full v1.0 verb set (init / plan / run-stage / run-to-completion / audit / handoff) is reserved for orchestrator extensions; the implemented v1.2 subcommands are:
+The canonical CLI is `python tools/anu_build.py --project <path> <subcommand>`. Projects may ship a thin local shim (e.g. `Technical/build.py`) that imports `anu_build.main(default_project=...)` so users in the project directory can omit `--project`. The full v1.0 verb set (init / plan / run-stage / run-to-completion / audit / handoff) is reserved for orchestrator extensions; the implemented v1.2 subcommands are:
 
 | Command | CLI | Description |
 |---------|-----|-------------|
@@ -320,16 +320,16 @@ The CLI is also importable: `from anu_build import status, advance, validate, ch
 
 ---
 
-## Robin Integration
+## Data Repository Integration
 
-Stage 0 (Inventory) walks `Inputs/Robin/` and records every checkout. Stage 8 (Distribution) runs `/robin-validate --strict` — pipeline fails if any Robin checkout drift detected. Other stages do not modify Robin checkouts.
+Stage 0 (Inventory) walks `inputs/data-repository/` and records every checkout. Stage 8 (Distribution) runs `/data-validate --strict` — pipeline fails if any data-repository checkout drift detected. Other stages do not modify data-repository checkouts.
 
 ## Version History
 
 - **v1.0** (May 2026) — Initial release. Consolidates anu-rebuild v1.1 and anu-pipeline v3.2 into a single orchestrator. 9-stage pipeline with computed construction order. 4-file documentation cascade. LLM read-order protocol. Part of Anu Framework v12.0.
 - **v1.1** (May 2026) — Added canonical project directory layout with all standard paths relative to `Technical/`. Added relative path convention requirement (no absolute paths). Documented `SUBSERIES_METADATA.json` as canonical name (replaces `SUBSOURCE_METADATA`). Added shared loader convention (`shared_*_loader.py` exempt from LPV triad).
 - **v1.3** (June 2026) — Anu Framework v12.2 web-readiness release: registered the Anu Explainer (anu-docs v3.0) in the cascade — explainers are REQUIRED before a Stage 8a `web`-profile publish (DOC11 gate). Headline/matrix/overview version stamps re-synced.
-- **v1.2** (May 2026) — Promoted RMWND's per-project `build.py` into a project-agnostic orchestrator at `Council/Druck/anu/anu_build.py` taking `--project <path>`. Resolves all per-project paths from `<project>/Technical/`. Importable surface (`status`, `advance`, `validate`, `chopped`, `extenbooks`, `ledger`, `viz`, `review`, `main`, `BuildContext`, `resolve_context`). RMWND's `Technical/build.py` is now a thin shim that injects `default_project` so per-project UX is unchanged. Other Anu v12.0+ projects can adopt the same shim pattern (5 lines) or invoke `anu_build.py` directly.
+- **v1.2** (May 2026) — Promoted a reference project's per-project `build.py` into a project-agnostic orchestrator at `tools/anu_build.py` taking `--project <path>`. Resolves all per-project paths from `<project>/Technical/`. Importable surface (`status`, `advance`, `validate`, `chopped`, `extenbooks`, `ledger`, `viz`, `review`, `main`, `BuildContext`, `resolve_context`). The reference project's `Technical/build.py` is now a thin shim that injects `default_project` so per-project UX is unchanged. Other Anu v12.0+ projects can adopt the same shim pattern (5 lines) or invoke `anu_build.py` directly.
 
 ---
 

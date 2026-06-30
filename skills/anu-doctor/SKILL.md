@@ -14,9 +14,9 @@ part-of: Anu Framework v12.2
 
 Two-mode self-audit for framework and project consistency. "Entirely integrated across all skills" is not a state you reach once — it is a property you have to *keep*. Anu Doctor turns integration from a recurring manual cleanup into an invariant the framework enforces on itself.
 
-**v2.3 (2026-05-19, evening)** added seven project-mode checks (P30-P36) following the RMWND/RSCD comprehensive hyper-review session: rollup freshness (P30), DPR↔registry status sync (P31), V03↔registry reference-value match (P32, enforces registry-side `validation.reference_values`), no nested .git in Inputs/ (P33), orphan figures (P34), PROJECT_INDEX.md presence (P35), and the extension binary invariant (P36: subseries with -EXT iff `extension` block populated and complete; see `SERIES_REGISTRY_SCHEMA.md` § Extension Binary Invariant and `anu-extension/SKILL.md` § Binary State). Also: P04 is now format-aware (reads `chopped_format` from registry; see `anu-chopped/SKILL.md` § Format Selection) and the P02 LPV triad regex requires compact `L01_<sid>.py` naming (see `anu-replicator/SKILL.md` § Canonical Script Naming; descriptive `_load`/`_construct`/`_validate` suffixes are non-canonical). Historical context: `Council/Druck/docs/{RMWND,RSCD}_HYPER_REVIEW_2026-05-19.md`.
+**v2.3 (2026-05-19, evening)** added seven project-mode checks (P30-P36) following a comprehensive framework rebuild review session: rollup freshness (P30), DPR↔registry status sync (P31), V03↔registry reference-value match (P32, enforces registry-side `validation.reference_values`), no nested .git in Inputs/ (P33), orphan figures (P34), PROJECT_INDEX.md presence (P35), and the extension binary invariant (P36: subseries with -EXT iff `extension` block populated and complete; see `SERIES_REGISTRY_SCHEMA.md` § Extension Binary Invariant and `anu-extension/SKILL.md` § Binary State). Also: P04 is now format-aware (reads `chopped_format` from registry; see `anu-chopped/SKILL.md` § Format Selection) and the P02 LPV triad regex requires compact `L01_<sid>.py` naming (see `anu-replicator/SKILL.md` § Canonical Script Naming; descriptive `_load`/`_construct`/`_validate` suffixes are non-canonical). Historical context: see the framework rebuild review.
 
-**v2.2 (2026-05-19)** added six project-mode checks (P24-P29) targeting integrity-of-state failures observed in the RMWND/RSCD parallel build review: stale ledgers (P24), exemplar-only ledgers (P25), hand-populated PIPELINE_STATE (P26), `anu_doctor_status: not_run` while stages are complete (P27), retroactive decision approvals (P28), and registry/chopped year_range drift (P29). See `Council/Druck/docs/ANU_REBUILD_LESSONS_v1.md`.
+**v2.2 (2026-05-19)** added six project-mode checks (P24-P29) targeting integrity-of-state failures observed in a parallel-build review: stale ledgers (P24), exemplar-only ledgers (P25), hand-populated PIPELINE_STATE (P26), `anu_doctor_status: not_run` while stages are complete (P27), retroactive decision approvals (P28), and registry/chopped year_range drift (P29). See the framework rebuild review.
 
 ---
 
@@ -30,9 +30,9 @@ Two-mode self-audit for framework and project consistency. "Entirely integrated 
 
 | Input | Source | Required |
 |-------|--------|----------|
-| `Council/Druck/.claude/skills/anu-*/SKILL.md` | All skill files | Yes (framework mode) |
-| `Council/Druck/docs/ANU_FRAMEWORK_OVERVIEW.md` | Framework docs | Yes (framework mode) |
-| `Council/Druck/docs/SKILL_VERSION_MATRIX.md` | Framework docs | Yes (framework mode) |
+| `skills/anu-*/SKILL.md` | All skill files | Yes (framework mode) |
+| `docs/ANU_FRAMEWORK_OVERVIEW.md` | Framework docs | Yes (framework mode) |
+| `docs/SKILL_VERSION_MATRIX.md` | Framework docs | Yes (framework mode) |
 | `series_registry.json` | Project root | Yes (project mode) |
 | Project code and doc directories | Project filesystem | Yes (project mode) |
 
@@ -73,7 +73,7 @@ python check_project.py --project <root> --json     # machine-readable report
 
 ## Framework Mode Checks (D##)
 
-The skill ships an executable checker at `check_framework.py` (alongside this SKILL.md). It runs the following checks against `Council/Druck/.claude/skills/` and `Council/Druck/docs/`:
+The skill ships an executable checker at `check_framework.py` (alongside this SKILL.md). It runs the following checks against `skills/` and `docs/`:
 
 | # | Check | Severity |
 |---|---|---|
@@ -92,7 +92,7 @@ The skill ships an executable checker at `check_framework.py` (alongside this SK
 | D13 | The body headline `# Anu <Name> ... vN.N` matches the frontmatter `version:` | FAIL |
 | D14 | Every `SKILL.md` ships an evolution-log section (`## Version History`, `## Changelog`, or `## Skill Evolution Log`) | WARN |
 | D15 | The `requires:`-graph across all skills is acyclic | FAIL |
-| D16 | Every active `SKILL.md` has all 11 v12.0-template sections (Stage Position, Inputs, Outputs, Commands, Acceptance Gates, Documentation Cascade Writes, Integration with Anu Framework, Anti-Patterns, Robin Integration, Version History, Canonical References) | FAIL |
+| D16 | Every active `SKILL.md` has all 11 v12.0-template sections (Stage Position, Inputs, Outputs, Commands, Acceptance Gates, Documentation Cascade Writes, Integration with Anu Framework, Anti-Patterns, Data Repository Integration, Version History, Canonical References) | FAIL |
 | D17 | `docs/schemas/skill_graph.json` exists, parses as JSON, and covers every active skill | FAIL |
 | D18 | `docs/schemas/anu_build_manifest.schema.json` exists and parses as JSON | FAIL |
 | D19 | Each active skill's `Stage Position` tag agrees with anu-build's canonical stage table | WARN |
@@ -142,9 +142,9 @@ P##-checks verify that an individual data project is internally consistent:
 | P34 | Every top-level figure is referenced by at least one series | WARN |
 | P35 | `PROJECT_INDEX.md` exists at the project root | WARN |
 | P36 | Extension binary invariant: a series has `-EXT`/`-COMBINED` subseries iff its `extension` block is populated and complete | FAIL |
-| P37 | Every `Inputs/Robin/[SOURCE]/` checkout has a valid `PROVENANCE.md` (schema + files present) | FAIL |
-| P38 | Every `Inputs/Robin/` checkout's file SHA-256s match `PROVENANCE.md` (strict re-hash) | FAIL |
-| P39 | No code hardcodes `Council/Robin/DATA/` paths (reads go through `Inputs/Robin/`) | WARN |
+| P37 | Every `inputs/data-repository/[SOURCE]/` checkout has a valid `PROVENANCE.md` (schema + files present) | FAIL |
+| P38 | Every `inputs/data-repository/` checkout's file SHA-256s match `PROVENANCE.md` (strict re-hash) | FAIL |
+| P39 | No code hardcodes `<data-repository>/DATA/` paths (reads go through `inputs/data-repository/`) | WARN |
 
 (There is no P11 — the number was skipped when project mode was first numbered.)
 
@@ -270,29 +270,29 @@ $ python check_framework.py --json
 - **v1.2** (May 2026) — Added D13 (headline vs frontmatter version match), D14 (evolution-log section required), D15 (requires-graph acyclic). Added P12 (prefix-scheme conformance), P13 (status-vs-artifacts consistency), P14 (crosswalk completeness for rebuild projects).
 - **v2.0** (May 2026) — Rewritten to v12.0 common template. Added stage position, cascade writes, acceptance gates, anti-patterns sections. Updated `part-of` to Anu Framework v12.0. `requires:` remains `none`.
 - **v2.1** (May 2026) — P04 now pipeline-stage-aware (extension subseries exempt when Stage 4 incomplete). P02 excludes `shared_*_loader.py` from triad matching. P06/P13 support `study_complete` and `extension_methodology_documented` statuses. New P21 (minimum required fields), P22 (subseries suffix convention), P23 (series-to-downstream correspondence matrix). P23 writes `SERIES_CORRESPONDENCE_MATRIX.json`.
-- **v2.2** (May 2026) — Six project-mode checks P24–P29 (ledger freshness, ledger inventory completeness, STEP_LOG/PIPELINE_STATE consistency, anu-doctor-mandatory-before-advance, decision-log numbering, year-range integrity) from the RMWND/RSCD parallel-build review.
-- **v2.3** (May 2026) — Seven project-mode checks P30–P36 (rollup freshness, DPR↔registry status sync, V03↔registry reference values, no nested .git, orphan figures, PROJECT_INDEX presence, extension binary invariant) + three Robin checks P37–P39, plus framework checks D16–D19 (v12.0 11-section template, skill-graph JSON, build-manifest schema, stage-tag agreement). P04 made format-aware; P02 triad requires compact naming.
+- **v2.2** (May 2026) — Six project-mode checks P24–P29 (ledger freshness, ledger inventory completeness, STEP_LOG/PIPELINE_STATE consistency, anu-doctor-mandatory-before-advance, decision-log numbering, year-range integrity) from a parallel-build review.
+- **v2.3** (May 2026) — Seven project-mode checks P30–P36 (rollup freshness, DPR↔registry status sync, V03↔registry reference values, no nested .git, orphan figures, PROJECT_INDEX presence, extension binary invariant) + three data-repository checks P37–P39, plus framework checks D16–D19 (v12.0 11-section template, skill-graph JSON, build-manifest schema, stage-tag agreement). P04 made format-aware; P02 triad requires compact naming.
 
 ---
 
-## Robin Integration
+## Data Repository Integration
 
-`check_project.py` adds a Robin compliance check:
+`check_project.py` adds a data-repository compliance check:
 
-1. **Enumerate** every `Inputs/Robin/[SOURCE]/` checkout in the project.
+1. **Enumerate** every `inputs/data-repository/[SOURCE]/` checkout in the project.
 2. **For each checkout, verify**:
    - PROVENANCE.md exists
-   - PROVENANCE.md has the required YAML frontmatter fields (see `Council/Robin/docs/specs/INPUTS_ROBIN_CONTRACT.md`)
+   - PROVENANCE.md has the required YAML frontmatter fields (see `<data-repository>/docs/DATA_CHECKOUT_CONTRACT.md`)
    - `canonical_path` resolves to an existing folder
    - Each file's recorded sha256 matches its current sha256
    - `expiry` is not in the past
 3. **Cross-check the project**:
-   - Grep project scripts for hardcoded `Council/Robin/DATA/` paths (anti-pattern — should read from `Inputs/Robin/`)
-   - Detect projects bypassing Robin via custom API clients (compare against `Council/Robin/API_MODULES/` collector names)
+   - Grep project scripts for hardcoded `<data-repository>/DATA/` paths (anti-pattern — should read from `inputs/data-repository/`)
+   - Detect projects bypassing the data repository via custom API clients (compare against the `<data-repository>/collectors/` collector names)
 
-Outputs a Robin compliance subscore in the project health report. Failures block `anu-build` Stage 8 (distribution).
+Outputs a data-repository compliance subscore in the project health report. Failures block `anu-build` Stage 8 (distribution).
 
-Canonical reference: `Council/Druck/docs/ROBIN_INTEGRATION_SPECIFICATION.md`.
+Canonical reference: `docs/DATA_REPOSITORY_INTEGRATION.md`.
 
 ---
 

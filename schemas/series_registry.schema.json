@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://arcanum/druck/schemas/series_registry.schema.json",
+  "$id": "https://andenick.github.io/anu-framework/schemas/series_registry.schema.json",
   "title": "Anu Framework Series Registry",
   "description": "Formal schema for series_registry.json, the single source of truth for every Anu Framework data project. Validates the shape produced by /anu-ingestion and consumed by every downstream output (Chopped, Extenbook, Visualize, Replicator, Drive, Ledger).",
   "type": "object",

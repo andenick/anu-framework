@@ -3,9 +3,9 @@
 **Status**: RFC — proposed new skill, target framework v11.0
 **Eventual location**: `skills/anu-rebuild/SKILL.md`
 **Companion docs**: [`LESSONS_LEARNED_RMWND_2026.md`](LESSONS_LEARNED_RMWND_2026.md), [`ANU_FRAMEWORK_IMPROVEMENTS_RFC.md`](ANU_FRAMEWORK_IMPROVEMENTS_RFC.md)
-**Derived from**: the 21-commit RMWND rebuild (May 2026, 64 series, 100% PASS, 12-15 focused sessions)
+**Derived from**: the 21-commit reference-replication rebuild (May 2026, 64 series, 100% PASS, 12-15 focused sessions)
 
-This document is the full SKILL.md specification for a new framework skill that formalizes the rebuild workflow I converged on during the RMWND build. When approved and implemented, this document will become `skills/anu-rebuild/SKILL.md` and the contents below will be its body.
+This document is the full SKILL.md specification for a new framework skill that formalizes the rebuild workflow I converged on during the reference-replication build. When approved and implemented, this document will become `skills/anu-rebuild/SKILL.md` and the contents below will be its body.
 
 ---
 
@@ -15,7 +15,7 @@ This document is the full SKILL.md specification for a new framework skill that 
 ---
 name: anu-rebuild
 version: "1.0"
-description: "Salvage-and-port workflow that takes a predecessor data construction project and produces a fresh, Anu-Framework-native rebuild. Wraps the other framework skills into a 6-wave + closeout cadence proven on the RMWND/Shaikh-Tonak project (64 series, 100% PASS, ~12-15 sessions)."
+description: "Salvage-and-port workflow that takes a predecessor data construction project and produces a fresh, Anu-Framework-native rebuild. Wraps the other framework skills into a 6-wave + closeout cadence proven on the reference replication (64 series, 100% PASS, ~12-15 sessions)."
 when-to-use: "User wants to refactor or rebuild an existing data project under the Anu Framework, salvaging methodology and data while rewriting structure from scratch. Series count ≥20."
 search-hints: "rebuild refactor port salvage predecessor migration crosswalk ground-up regenerate"
 allowed-tools: Read, Write, Bash, Glob, Grep, Edit
@@ -33,9 +33,9 @@ part-of: Anu Framework v11.0
 
 `anu-rebuild` wraps the salvage-and-port workflow for taking an existing data construction project (typically a predecessor like ST2 or an academic replication that lives outside the Anu Framework) and producing a fresh, Anu-Framework-native implementation.
 
-It is **the meta-skill that orchestrates the other 19 skills** through a 6-wave + closeout cadence proven to take a 60-series replication from blank scaffold to 100% PASS distribution-ready in **~12-15 focused sessions** (RMWND baseline). With the friction-point remediations in [`ANU_FRAMEWORK_IMPROVEMENTS_RFC.md`](ANU_FRAMEWORK_IMPROVEMENTS_RFC.md) absorbed, the target drops to **~7-10 sessions**.
+It is **the meta-skill that orchestrates the other 19 skills** through a 6-wave + closeout cadence proven to take a 60-series replication from blank scaffold to 100% PASS distribution-ready in **~12-15 focused sessions** (reference-replication baseline). With the friction-point remediations in [`ANU_FRAMEWORK_IMPROVEMENTS_RFC.md`](ANU_FRAMEWORK_IMPROVEMENTS_RFC.md) absorbed, the target drops to **~7-10 sessions**.
 
-The skill is general: it works on any large data-construction predecessor regardless of domain. The RMWND rebuild was economic data; the same workflow applies to capital-markets, sectoral-employment, environmental-accounts, or any other domain where you have a predecessor project + book/source documents + the intention to reauthor under audit-grade discipline.
+The skill is general: it works on any large data-construction predecessor regardless of domain. The reference-replication rebuild was economic data; the same workflow applies to capital-markets, sectoral-employment, environmental-accounts, or any other domain where you have a predecessor project + book/source documents + the intention to reauthor under audit-grade discipline.
 
 ---
 
@@ -50,7 +50,7 @@ Invoke `anu-rebuild` when **all four** of these conditions hold:
 
 ### Examples that DO fit
 
-- ST2 (T###/N#### naming, hardcoded internal paths, multi-phase pipeline but no Anu skill alignment) → RMWND
+- ST2 (T###/N#### naming, hardcoded internal paths, multi-phase pipeline but no Anu skill alignment) → the reference replication
 - A heterodox-economics replication that lives in a Jupyter notebook → fresh `Technical/` project
 - An academic data package with no per-series provenance → series_registry.json + 64 DPRs
 
@@ -90,7 +90,7 @@ anu-rebuild salvage <predecessor_root> --to Inputs/Salvaged/ [--manifest salvage
 anu-rebuild crosswalk --predecessor Inputs/<pred>/series_registry.json \
                       --prefix-scheme '{"primary":"S","external":"ES","analytical":"AS"}' \
                       --output MIGRATION/crosswalk.csv
-anu-rebuild scaffold --target . --crosswalk MIGRATION/crosswalk.csv [--from-template the reference project]
+anu-rebuild scaffold --target . --crosswalk MIGRATION/crosswalk.csv [--from-template reference-replication]
 anu-doctor                        # framework consistency check (existing skill)
 ```
 
@@ -218,7 +218,7 @@ Once Wave 0's `salvage` sub-command completes, **nothing else writes to `Inputs/
 
 ### 5.3 Divergences logged centrally
 
-Every divergence from the predecessor — whether ingestion-phase, extension-phase, or manual adjustment — is logged via `register_divergence()` (Friction 3) into the top-level `DIVERGENCE_REGISTER.json`. No silent rewrites. The RMWND build surfaced one (S507 surplus ratio NIPA proxy → book-faithful e/(1+e)); a more conventional rebuild might surface zero or many. The point is none are hidden.
+Every divergence from the predecessor — whether ingestion-phase, extension-phase, or manual adjustment — is logged via `register_divergence()` (Friction 3) into the top-level `DIVERGENCE_REGISTER.json`. No silent rewrites. The reference-replication build surfaced one (S507 surplus ratio NIPA proxy → book-faithful e/(1+e)); a more conventional rebuild might surface zero or many. The point is none are hidden.
 
 ### 5.4 Status field discipline
 
@@ -242,7 +242,7 @@ Things `anu-rebuild` explicitly prohibits or warns against, all observed in pred
 
 The predecessor's `data/final/*.csv` are reference benchmarks at most. Re-derive every value from the documented source (book table, BEA API cache, external study CSV). Copying outputs creates silent dependencies; if the predecessor had a bug, your rebuild inherits it.
 
-**Real example**: ST2's `T507.csv` carried the NIPA-proxy surplus ratio with values like 0.5698 at 1948. The book itself implies S/Y = e/(1+e) = 0.6296 (algebraic identity). RMWND's S507 was re-derived from S505 and S504; the divergence was caught and documented. Had I copied ST2's T507.csv, the bug would have shipped.
+**Real example**: ST2's `T507.csv` carried the NIPA-proxy surplus ratio with values like 0.5698 at 1948. The book itself implies S/Y = e/(1+e) = 0.6296 (algebraic identity). The reference replication's S507 was re-derived from S505 and S504; the divergence was caught and documented. Had I copied ST2's T507.csv, the bug would have shipped.
 
 ### 6.2 Do not skip per-wave review
 
@@ -258,7 +258,7 @@ Once `MIGRATION/crosswalk.csv` is approved at Wave 0, every artifact uses the ne
 
 ### 6.5 Do not write generators outside `MIGRATION/`
 
-One-off scripts that don't belong in the public release live in `MIGRATION/`. The directory is in `.publish_ignore` by default. Keeps the public tree clean. The 17 RMWND generators were all in `MIGRATION/`.
+One-off scripts that don't belong in the public release live in `MIGRATION/`. The directory is in `.publish_ignore` by default. Keeps the public tree clean. The 17 reference-replication generators were all in `MIGRATION/`.
 
 ---
 
@@ -307,7 +307,7 @@ The skill does NOT replace `anu-pipeline` — it sits *above* it, prescribing th
 
 ## 10. Generalization beyond economic data
 
-The RMWND build was economic data (Shaikh-Tonak Marxian aggregates). The workflow generalizes to any domain that meets the four "when to invoke" conditions in §2.
+The reference-replication build was economic data (Shaikh-Tonak Marxian aggregates). The workflow generalizes to any domain that meets the four "when to invoke" conditions in §2.
 
 **Examples of how the same workflow maps to other domains**:
 
@@ -326,18 +326,18 @@ In every case the 6-wave cadence applies. Only the per-cohort partition varies. 
 
 The skill is correctly implemented and useful when:
 
-1. **A new rebuild target measured against RMWND baseline shows ≥30% session-count reduction** (12-15 → 7-10 sessions). This is the primary metric.
-2. **The 6-wave cadence produces complete artifacts without ad-hoc generator scripts.** The 17 RMWND generators all become unnecessary; their work absorbed by `anu-scaffold`, `anu-ingestion batch-create-dpr`, and `anu-rebuild salvage/crosswalk`.
+1. **A new rebuild target measured against reference-replication baseline shows ≥30% session-count reduction** (12-15 → 7-10 sessions). This is the primary metric.
+2. **The 6-wave cadence produces complete artifacts without ad-hoc generator scripts.** The 17 reference-replication generators all become unnecessary; their work absorbed by `anu-scaffold`, `anu-ingestion batch-create-dpr`, and `anu-rebuild salvage/crosswalk`.
 3. **Every divergence from the predecessor is logged in `DIVERGENCE_REGISTER.json`** — not in ad-hoc markdown.
 4. **`anu-doctor project` is CLEAN at Wave N+2.**
 5. **The public release passes the scrub audit and external review** without manual scrubbing iterations.
-6. **The 14 RMWND empirical findings (or domain-equivalent findings) are reproduced** post-rebuild.
+6. **The 14 reference-replication empirical findings (or domain-equivalent findings) are reproduced** post-rebuild.
 
 ---
 
 ## 12. Version history (proposed)
 
-- **v1.0** (target framework v11.0) — Initial release. 6-wave workflow + cross-cutting policies + anti-patterns. Derived from RMWND/Shaikh-Tonak rebuild experience.
+- **v1.0** (target framework v11.0) — Initial release. 6-wave workflow + cross-cutting policies + anti-patterns. Derived from reference-replication rebuild experience.
 
 ---
 

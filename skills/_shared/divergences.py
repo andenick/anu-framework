@@ -15,7 +15,7 @@ Usage (from any skill):
     from _shared.divergences import register_divergence
 
     register_divergence(
-        project_root=Path("Projects/RMWND/Technical"),
+        project_root=Path("projects/reference-replication/Technical"),
         series_id="S507",
         skill="anu-ingestion",
         category="ingestion",

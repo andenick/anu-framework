@@ -46,7 +46,7 @@ The research output is a **prerequisite** for Anu Ingestion and feeds programmat
 
 ## Prerequisites
 
-1. **Knowledge Base exists**: HDARP extractions of book text, appendices, footnotes available (typically in `Inputs/Robert/` or a KB directory)
+1. **Knowledge Base exists**: Knowledge Base extractions of book text, appendices, footnotes available (typically in `knowledge_base/` or a KB directory)
 2. **Series ID assigned**: The series has a canonical ID (S001, S002, etc.) per the Series ID Specification v2.0
 3. **Chopped data available**: The Anu Chopped CSV for the series exists in the project's Chopped directory
 4. **Adequacy Check passed** (recommended): `CH{N}_ADEQUACY_REPORT.json` exists for the chapter with `overall_adequacy` >= ADEQUATE. If absent, warn but proceed — adequacy can be assessed retroactively
@@ -55,14 +55,14 @@ The research output is a **prerequisite** for Anu Ingestion and feeds programmat
 
 ## Data Extraction Obligation
 
-When mining the KB for a series, the agent MUST check whether the HDARP extraction contains actual annual data tables — not just benchmark summaries or narrative descriptions. If annual data tables exist in any chunk:
+When mining the KB for a series, the agent MUST check whether the Knowledge Base extraction contains actual annual data tables — not just benchmark summaries or narrative descriptions. If annual data tables exist in any chunk:
 
 1. **Flag them explicitly** in the research output
 2. **Include table location** (chunk, page, table number)
 3. **Extract the data** as part of the research process — do not defer to a later stage
 4. **Never approximate** what can be extracted directly
 
-Common failure mode: an HDARP extraction contains a complete 28-year annual data table, but the agent reads only the narrative summary and generates synthetic data from the summary statistics. This is unacceptable — always extract the actual table data.
+Common failure mode: a Knowledge Base extraction contains a complete 28-year annual data table, but the agent reads only the narrative summary and generates synthetic data from the summary statistics. This is unacceptable — always extract the actual table data.
 
 ---
 
@@ -400,7 +400,7 @@ For each predecessor research JSON in the cohort's scope:
 | Aspect | Detail |
 |--------|--------|
 | **Creates** | `S###_research.json` in `Technical/research/` |
-| **Expects** | KB files in `Inputs/Robert/KB/`, series ID assigned |
+| **Expects** | KB files in `knowledge_base/`, series ID assigned |
 | **Must Update on Completion** | No additional updates required — the research.json itself is the deliverable |
 
 ---

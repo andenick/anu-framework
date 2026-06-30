@@ -39,7 +39,7 @@ Usage:
 
 Part of the Anu Framework v11.0 — see anu-publish/SKILL.md.
 
-Derived from the RMWND build's code/S00_setup/S06_publish_scrub_audit.py.
+Derived from the reference-replication build's publish-scrub audit script.
 """
 from __future__ import annotations
 

@@ -19,8 +19,8 @@ import re
 import sys
 from pathlib import Path
 
-SKILLS_DIR = Path(__file__).resolve().parent.parent          # .../.claude/skills
-DRUCK_DIR = SKILLS_DIR.parent.parent                          # .../Council/Druck
+SKILLS_DIR = Path(__file__).resolve().parent.parent          # the skills directory
+DRUCK_DIR = SKILLS_DIR.parent.parent                          # the framework repo root
 DOCS_DIR = DRUCK_DIR / "docs"
 OVERVIEW = DOCS_DIR / "ANU_FRAMEWORK_OVERVIEW.md"
 MATRIX = DOCS_DIR / "SKILL_VERSION_MATRIX.md"
@@ -435,7 +435,7 @@ def run_checks() -> Report:
         "Documentation Cascade Writes",
         "Integration with Anu Framework",
         "Anti-Patterns",
-        "Robin Integration",
+        "Data Repository Integration",
         "Version History",
         "Canonical References",
     ]

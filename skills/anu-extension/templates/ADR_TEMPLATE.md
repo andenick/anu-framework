@@ -30,8 +30,8 @@
 
 | Document | Location | Relevant Section |
 |----------|----------|------------------|
-| [Original methodology doc] | [HDARP path] | [Section/page] |
-| [Current methodology doc] | [HDARP path] | [Section/page] |
+| [Original methodology doc] | [KB path] | [Section/page] |
+| [Current methodology doc] | [KB path] | [Section/page] |
 
 ---
 

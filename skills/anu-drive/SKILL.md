@@ -114,10 +114,10 @@ Anu Drive is **Stage 8b** — one of three sibling distribution channels. Anu Pu
 | Component | Pattern | Example |
 |-----------|---------|---------|
 | Root folder | `{ProjectName}_Drive_v{VERSION}` | `MyProject_Drive_v1.0` |
-| Master workbook | `{ProjectName}_All_Series_v{VERSION}.xlsx` | `CD2_All_Series_v1.0.xlsx` |
-| Master CSV | `{ProjectName}_All_Series_v{VERSION}.csv` | `CD2_All_Series_v1.0.csv` |
-| Codebook | `{ProjectName}_Codebook_v{VERSION}.csv` | `CD2_Codebook_v1.0.csv` |
-| Methodology PDF | `{ProjectName}_Methodology_v{VERSION}.pdf` | `CD2_Methodology_v1.0.pdf` |
+| Master workbook | `{ProjectName}_All_Series_v{VERSION}.xlsx` | `MyProject_All_Series_v1.0.xlsx` |
+| Master CSV | `{ProjectName}_All_Series_v{VERSION}.csv` | `MyProject_All_Series_v1.0.csv` |
+| Codebook | `{ProjectName}_Codebook_v{VERSION}.csv` | `MyProject_Codebook_v1.0.csv` |
+| Methodology PDF | `{ProjectName}_Methodology_v{VERSION}.pdf` | `MyProject_Methodology_v1.0.pdf` |
 | Citation file | `CITATION.txt` (fixed name) | `CITATION.txt` |
 | Extenbook file | `S{NNN}_{snake_case_name}.xlsx` | `S001_industrial_production.xlsx` |
 | Supplementary file | `{snake_case_descriptor}.xlsx` | `input_output_table_1947.xlsx` |
@@ -654,7 +654,7 @@ Please also cite the original work when using this data.
 | `{ORIGINAL_TITLE}` | `series_registry.json` → `original_work.title` |
 | `{ORIGINAL_YEAR}` | `series_registry.json` → `original_work.year` |
 | `{PUBLISHER}` | `series_registry.json` → `original_work.publisher` |
-| `{CITATION_KEY}` | Auto-generated: `{author_last}{year}_{project_slug}` (e.g., `beshara2026_cd2`) |
+| `{CITATION_KEY}` | Auto-generated: `{author_last}{year}_{project_slug}` (e.g., `smith2026_myproject`) |
 | `{REPO_URL}` | `series_registry.json` → `repo_url` (blank if unpublished) |
 
 ---
@@ -1055,7 +1055,7 @@ Before any Drive package is shared externally, the following must be verified:
 - **Upstream**: Stage 5 Replicator, Stage 6 Chopped + Extenbook
 - **Downstream**: None (terminal output — the scholar receives this)
 - **Adequacy Relevance**: N/A (all adequacy checks happen upstream)
-- **Key Handoff**: The Drive folder IS the handoff — it leaves Arcanum and goes to the recipient
+- **Key Handoff**: The Drive folder IS the handoff — it leaves the internal workspace and goes to the recipient
 
 ---
 
@@ -1080,7 +1080,7 @@ Before any Drive package is shared externally, the following must be verified:
 |---------|------|---------|
 | 1.0 | 2026-05-12 | Initial release — folder structure, master file spec, series library, methodology PDF, README template, validation rules, generation process, LaTeX specification |
 | 1.1 | 2026-05-14 | Shipped `generate_drive_package.py` — canonical generator. Master XLSX has a single sheet ("All Time Series") holding time-series and derived series only; cross-sectional / theoretical / panel-indexed series are excluded from the master and ship only as individual per-series workbooks in `Series/`. Master CSV mirrors that sheet. Validation rules are advisory in v1.1; FAIL/WARN enforcement is on the v1.2 roadmap. |
-| 1.1.1 | 2026-05-15 | Generator robustness: (a) falls back to `Technical/chopped/` + `Technical/extenbooks/` if the canonical `Technical/ANU_REPLICATOR/data/final-data/` layout is absent; (b) accepts `{SID}.csv` filenames if `{SID}_final.csv` glob is empty; (c) auto-detects Chopped 3-row CSV format vs standard 1-row header; (d) synthesizes a `drive_config` block from top-level registry fields (`author`, `original_work`, `book`) if absent, with `CC-BY-4.0` license default; (e) `registry["drive_config"]` is updated in-memory so downstream README/CITATION helpers see the synthesized values. Validated against the Shaikh-Tonak (RMWND) project layout. |
+| 1.1.1 | 2026-05-15 | Generator robustness: (a) falls back to `Technical/chopped/` + `Technical/extenbooks/` if the canonical `Technical/ANU_REPLICATOR/data/final-data/` layout is absent; (b) accepts `{SID}.csv` filenames if `{SID}_final.csv` glob is empty; (c) auto-detects Chopped 3-row CSV format vs standard 1-row header; (d) synthesizes a `drive_config` block from top-level registry fields (`author`, `original_work`, `book`) if absent, with `CC-BY-4.0` license default; (e) `registry["drive_config"]` is updated in-memory so downstream README/CITATION helpers see the synthesized values. Validated against the Shaikh-Tonak reference project layout. |
 
 ---
 

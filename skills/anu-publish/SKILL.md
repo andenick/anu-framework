@@ -329,9 +329,9 @@ references:
 | 6 | Include synthetic or placeholder data in the export | Every value must trace to a published source; `data_unavailable` series are excluded, not faked |
 | 7 | Include HANDOFF_*.md or PROGRESS_LOG.md in the export | Internal workflow artifacts; replace with CHANGELOG.md |
 
-## Robin Integration
+## Data Repository Integration
 
-Published manifests MUST pin the Robin version at construction time. Before packaging, run `python robin_loader.py validate <project>` — fail the pre-publication gate if any drift is detected.
+Published manifests MUST pin the data repository version at construction time. Before packaging, run `python data_loader.py validate <project>` — fail the pre-publication gate if any drift is detected.
 
 ## Version History
 
@@ -339,7 +339,7 @@ Published manifests MUST pin the Robin version at construction time. Before pack
 |---------|------|---------|
 | 1.0 | 2026-05-13 | Initial release — scrub rules, four packaging profiles, pre-publication validation gate, CITATION.cff and README templates |
 | 1.1 | 2026-05-14 | Added the `generate_publish_package.py` executable generator; renumbered the validation gate as P01-P12 to mirror the generator's static checks |
-| 1.2 | 2026-05-15 | Added `audit.py` as canonical pre-publication scrub implementation; formalized `.publish_ignore` exclusion manifest with documented FAIL/WARN scrub pattern set. Friction-Point-4 absorbed from RMWND build experience. |
+| 1.2 | 2026-05-15 | Added `audit.py` as canonical pre-publication scrub implementation; formalized `.publish_ignore` exclusion manifest with documented FAIL/WARN scrub pattern set. Friction-Point-4 absorbed from the reference-replication build experience. |
 | 2.0 | 2026-05-16 | Rewritten to Anu Framework v12.0 common template. Added Stage Position (Stage 8a — DISTRIBUTION Publish), machine-listed Inputs/Outputs tables, Acceptance Gates, Documentation Cascade Writes (STEP_LOG + NARRATIVE + LEDGER), Anti-Patterns table. All substantive content preserved including audit phases, packaging profiles, P01-P12 gate, and templates. |
 | 2.1 | 2026-06-10 | Scrub hardening + the web export contract. **P10 (absolute paths) and P11 (Arcanum refs) promoted WARN→FAIL** (workspace paths had shipped to the public web under WARN). audit.py FAIL patterns extended (C:/Users, E:/Storage, andenick). P12 now also rejects internal staging dirs (`inputs_bundled/`, `SalvagedInputs/`). New **`web` packaging profile** — publish-filtered registry + chopped CSV + parquet + generated `data_dictionary.csv` + explainers + scrubbed DPRs + `WEB_MANIFEST.json` (downloads contract: CSV + parquet only). New gates: P13 DICTIONARY_PRESENT (web), P14 UNITS_DECLARED (no `mixed_*` units), P15 NO_UNPUBLISHED_SERIES (web). |
 

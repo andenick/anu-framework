@@ -1,7 +1,7 @@
 # Anu Framework — Skill Version Matrix
 
 **Framework version:** v12.1
-**Last verified:** 2026-05-24 (v12.1 spec bump — Decisions 0007 + 0008 added, framework-level anu-doctor wrappers shipped at `Council/Druck/anu/`, `extension_year_range` + `derived_no_l01` field conventions codified, stock-form primary supported; no skill-version bumps required; verified by `anu-doctor/check_framework.py` — 21/21 PASS across D01–D19)
+**Last verified:** 2026-05-24 (v12.1 spec bump — Decisions 0007 + 0008 added, framework-level anu-doctor wrappers shipped at `tools/`, `extension_year_range` + `derived_no_l01` field conventions codified, stock-form primary supported; no skill-version bumps required; verified by `anu-doctor/check_framework.py` — 21/21 PASS across D01–D19)
 **Purpose:** the single at-a-glance source of truth for which version of each skill is current. Every `SKILL.md` frontmatter `version:` field is authoritative; this table mirrors them. `ANU_FRAMEWORK_OVERVIEW.md` should agree with this matrix. `anu-doctor` enforces that agreement automatically (checks D04, D05, D06).
 
 ## The 19 active skills
@@ -58,7 +58,7 @@ Skills 10, 11, 12 are siblings — same upstream inputs, three audiences:
 
 1. When a skill's `SKILL.md` frontmatter `version:` changes, update this table and `ANU_FRAMEWORK_OVERVIEW.md` in the same commit. Same-commit propagation is required; if the matrix lags by even one commit, `anu-doctor check_framework.py` will fail D04/D05 and CI blocks the merge.
 2. The frontmatter `version:` is authoritative — if any other reference disagrees, fix the reference.
-3. `anu-doctor` checks D04, D05, D06 enforce agreement automatically. Run `python Council/Druck/.claude/skills/anu-doctor/check_framework.py` locally before pushing a version bump; expect 0 failures, 0 warnings.
+3. `anu-doctor` checks D04, D05, D06 enforce agreement automatically. Run `python tools/check_framework.py` locally before pushing a version bump; expect 0 failures, 0 warnings.
 4. **Patch-version bumps (e.g. v2.2 → v2.3) still require this propagation.** Two drift incidents have been caught by D04/D05 this way (2026-05-19): skills moved ahead of matrix on five v6.0→v6.1 / v5.0→v5.1 / v2.0→v2.1 / v2.0→v2.2 / v1.0→v1.1 changes, then again on anu-doctor v2.2→v2.3.
 5. The `Last verified:` line above must be updated to the date of the most recent successful `anu-doctor check_framework.py` run.
 

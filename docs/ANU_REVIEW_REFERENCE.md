@@ -116,7 +116,7 @@ The Anu Review incorporates best practices from:
 - Knowledge Base text pages cover the chapter's page range
 - Tables extracted from book appendices (CSV format)
 - Equations extracted (TEX/TXT format)
-- External papers integrated via HDARP (organized by theme)
+- External papers integrated via PDF extraction (organized by theme)
 - EXTERNAL_PAPERS_INDEX.md exists with paper-to-series mapping
 
 **Scoring:**
@@ -740,7 +740,7 @@ Action Items:
 - [Anu Framework Overview](ANU_FRAMEWORK_OVERVIEW.md)
 - [Skill Version Matrix](SKILL_VERSION_MATRIX.md)
 - [Anu Extension Standard](ANU_EXTENSION_STANDARD.md)
-- [SKILL.md](../.claude/skills/anu-review/SKILL.md)
+- [SKILL.md](../skills/anu-review/SKILL.md)
 
 ---
 

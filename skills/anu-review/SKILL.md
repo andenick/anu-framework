@@ -95,7 +95,7 @@ D14 audits every artifact an external party actually receives — the GitHub rep
 - [ ] No internal infrastructure names leak (Council-member names, internal tool names, internal directory names)
 - [ ] Public data sources are cited by their public name and URL (FRED, BEA, BLS, OECD — not internal import folders)
 - [ ] Internal acronyms (DPR, EPR, FPR, KB, L##/P##/V##, tier labels, wave labels) are either defined inline or absent from external surfaces
-- [ ] DARP / HDARP, where mentioned, are honestly disclosed as the extraction method with the caveat that extraction errors are possible
+- [ ] The Knowledge Base / PDF extraction method, where mentioned, is honestly disclosed as the extraction method with the caveat that extraction errors are possible
 - [ ] Methodological abbreviations (IROP, HP-filter, NIPA, etc.) are defined in a Notation or Glossary section
 - [ ] Series-ID notation (`S###`, `-A`, `-EXT`, `-COMBINED`) is explained at first use
 
@@ -107,7 +107,7 @@ Score D14: 100 minus deductions per unexplained internal term weighted by surfac
 
 **Before scoring ANY dimension**, the reviewer MUST:
 
-1. **Read the original source material** via the Knowledge Base (`Inputs/Robert/KB/`). Every chapter has HDARP-extracted text from the author's book. Read the methodology sections, appendix descriptions, and figure captions.
+1. **Read the original source material** via the Knowledge Base (`knowledge_base/`). Every chapter has KB-extracted text from the author's book. Read the methodology sections, appendix descriptions, and figure captions.
 
 2. **Cross-check data values** against the author's published figures and tables. Do not rely solely on automated validation — V01 reference value checks cover a sample of points, not every value.
 
@@ -160,7 +160,7 @@ The following v6.0 artifacts are checked as a gate condition. Absence does not r
 
 ### D1. KB Completeness (6%)
 
-- [ ] KB synthesis file exists for the chapter (`Inputs/Robert/KB/ch##_topic.md`)
+- [ ] KB synthesis file exists for the chapter (`knowledge_base/ch##_topic.md`)
 - [ ] Theoretical framework section present with key equations
 - [ ] Data sources and methods documented with appendix references
 - [ ] Key quotes from the book extracted and cited
@@ -305,8 +305,8 @@ For each Tier 1 series in the chapter:
 
 **D10c. Chart-Readiness Validation (bonus, adds up to 10% to D10)**
 
-- [ ] Every empirical figure has a data resolution path (column map, chopped CSV, or hdarp_variables match)
-- [ ] `hdarp_variables` in HDARP_SERIES_LINKAGE.json match actual `series_name` values in chapter CSVs
+- [ ] Every empirical figure has a data resolution path (column map, chopped CSV, or figure_variables match)
+- [ ] `figure_variables` in FIGURE_SERIES_LINKAGE.json match actual `series_name` values in chapter CSVs
 - [ ] `figure_column_map.json` entries exist for all figures using extended chapter data (supports flat JSON format)
 - [ ] `figure_column_map.json` entries include extension column names (`S###-EXT`, `S###-F`) for extended series figures
 - [ ] Year-range filtering does not clip data when metadata range predates available data
@@ -512,7 +512,7 @@ The D12 Documentation dimension should reference the Ledger's `coverage` percent
 - **v3.0** (March 2026) - Full checklist rewrite: replaced 9 legacy R Shiny dimensions with 12 Anu Framework v6.0 dimensions; tier-aware scoring; updated review process to registry-driven workflow
 - **v3.1** (March 2026) - Added D7-V10 (SUBSOURCE_METADATA.json column coverage); added D10 checks for SUBSOURCE_METADATA.json existence, construction_text completeness, and subsource field quality
 - **v3.2** (March 2026) - Expanded D10 into D10a (Data Artifacts) and D10b (Application Quality Checklist) with 10-point viz quality assessment covering chart rendering, error-free operation, metadata exposition, extension visibility, and programmatic validation
-- **v3.3** (March 2026) - Added D10c (Chart-Readiness Validation) with checks for data resolution paths, hdarp_variables matching, figure_column_map coverage, year-range safety, and NA guard requirements
+- **v3.3** (March 2026) - Added D10c (Chart-Readiness Validation) with checks for data resolution paths, figure_variables matching, figure_column_map coverage, year-range safety, and NA guard requirements
 - **v3.4** (March 2026) - Updated Q5 with extension column verification (both -EXT and -F columns in chopped CSVs); added D10c check for extension columns in figure_column_map.json; documented flat JSON support for figure_column_map
 - **v3.5** (March 2026) - Generalized: labeled the reference project file locations as example; fixed Plotly Dash references to R Shiny + Plotly
 - **v3.6** (March 2026) - Added Q5b (Component data visible) for ratio/rate series with Concurrent Series (CS) architecture: checks CS columns in chopped CSV, `is_component` entries in SUBSOURCE_METADATA, and "Show Components" dual-axis rendering

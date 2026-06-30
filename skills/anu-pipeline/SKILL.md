@@ -149,7 +149,7 @@ Tracks completion of each stage per chapter:
 
 The practical order for implementing a full chapter pipeline, refined from 4 completed chapters:
 
-1. **KB Synthesis**: Read appendix/methodology sources. Create `Inputs/Robert/KB/ch##_topic.md` with equations, data sources, adjustments. Update `appendix_methodology_summary.json`.
+1. **KB Synthesis**: Read appendix/methodology sources. Create `knowledge_base/ch##_topic.md` with equations, data sources, adjustments. Update `appendix_methodology_summary.json`.
 2. **Research**: Batch-create all `S###_research.json` for the chapter's Tier 1 series, mining the KB and appendix files.
 3. **Registry — Tier 2**: Register all raw input tables (Tier 2) in `series_registry.json` with `"tier": 2`, `source_file`, and column mappings.
 4. **Decompositions**: Create `S###_DECOMPOSITION.md` for each Tier 1 series with sub-components, construction steps, and Mermaid diagram.

@@ -58,7 +58,7 @@ Usage:
 
 Part of the Anu Framework v12.0 — see anu-doctor/SKILL.md.
 
-Derived from the RMWND build, where 10+ ad-hoc consistency cross-checks
+Derived from the reference-replication build, where 10+ ad-hoc consistency cross-checks
 were done by hand. This skill formalizes them.
 """
 from __future__ import annotations
@@ -917,7 +917,7 @@ def check_P23_correspondence_matrix(project: Path, reg: dict, res: Result) -> No
         # Derived series may legitimately have no L01: P02 reads upstream
         # series outputs from data/final/ (or a chopped source CSV) rather than
         # loading from a raw source via L01. Recorded per-series in the
-        # registry under artifacts.derived_no_l01 (see RMWND v1.2 iter2).
+        # registry under artifacts.derived_no_l01 (see reference-replication v1.2 iter2).
         derived_no_l01 = bool((entry.get("artifacts") or {}).get("derived_no_l01"))
 
         applicable = ["dpr", "p02", "v03", "chopped"]
@@ -973,8 +973,8 @@ def check_P23_correspondence_matrix(project: Path, reg: dict, res: Result) -> No
 
 
 # ============================ P24-P29 (v2.2.0) ============================
-# Added in response to the RMWND/RSCD comparative review (2026-05-19).
-# See Council/Druck/docs/ANU_REBUILD_LESSONS_v1.md for context.
+# Added in response to a comparative rebuild review.
+# See the framework rebuild review for context.
 
 def _parse_iso(ts: str) -> str:
     """Normalize an ISO timestamp string to YYYY-MM-DDTHH:MM:SS for comparison."""
@@ -989,7 +989,7 @@ def _parse_iso(ts: str) -> str:
 def check_P24_ledger_freshness(project: Path, reg: dict, res: Result) -> None:
     """ANU_LEDGER.generated must be >= the latest STEP_LOG entry and PIPELINE_STATE.last_updated.
 
-    Catches the RMWND failure mode: ledger regenerated on 2026-05-16; later sessions
+    Catches the reference-replication failure mode: ledger regenerated on 2026-05-16; later sessions
     wrote new artifacts; ledger was never refreshed; downstream counts under-reported.
     """
     ledger_path = project / "ANU_LEDGER.json"
@@ -1035,7 +1035,7 @@ def check_P24_ledger_freshness(project: Path, reg: dict, res: Result) -> None:
 def check_P25_ledger_inventory(project: Path, reg: dict, res: Result) -> None:
     """ANU_LEDGER.series_inventory size must match registry series count.
 
-    Catches the RSCD failure mode: ledger contains 1 exemplar entry (S201) while
+    Catches a predecessor-project failure mode: ledger contains 1 exemplar entry (S201) while
     the registry has 118 series. Ledger consumers cannot rely on it as truth.
     """
     ledger_path = project / "ANU_LEDGER.json"
@@ -1077,7 +1077,7 @@ def check_P25_ledger_inventory(project: Path, reg: dict, res: Result) -> None:
 def check_P26_step_log_pipeline_consistency(project: Path, reg: dict, res: Result) -> None:
     """Every PIPELINE_STATE stage marked 'complete' must have STEP_LOG entries for that stage.
 
-    Catches the RSCD failure mode: stages 3-6 all reported started_at = same minute
+    Catches a predecessor-project failure mode: stages 3-6 all reported started_at = same minute
     and completed_at = same minute, hand-populated without orchestration. STEP_LOG
     is the authoritative event log.
     """
@@ -1166,7 +1166,7 @@ def check_P26_step_log_pipeline_consistency(project: Path, reg: dict, res: Resul
 def check_P27_anu_doctor_mandatory(project: Path, reg: dict, res: Result) -> None:
     """framework_audit.anu_doctor_status MUST NOT be 'not_run' when any stage > 0 is complete.
 
-    Catches the RSCD failure mode: PIPELINE_STATE.framework_audit explicitly admits
+    Catches a predecessor-project failure mode: PIPELINE_STATE.framework_audit explicitly admits
     'anu-* skills not loaded in this session', yet stages 1-8 are marked complete.
     """
     ps_path = project / "PIPELINE_STATE.json"
@@ -1223,7 +1223,7 @@ def check_P27_anu_doctor_mandatory(project: Path, reg: dict, res: Result) -> Non
 def check_P28_decision_log_convention(project: Path, reg: dict, res: Result) -> None:
     """Decision documents follow NNNN_*.md numbering and carry an approval timestamp.
 
-    Catches retroactive approvals (RSCD Decision 0006 approved 18:45;
+    Catches retroactive approvals (a predecessor project's Decision 0006 approved 18:45;
     dependent fanout started 19:00 same day).
     """
     dec_dir = project / "docs" / "decisions"
@@ -1303,10 +1303,10 @@ def check_P28_decision_log_convention(project: Path, reg: dict, res: Result) -> 
 def check_P29_year_range_integrity(project: Path, reg: dict, res: Result) -> None:
     """Registry year_range matches the min/max year in the chopped CSV per series.
 
-    Catches the RSCD failure mode: 12 series with registry year_range vs chopped CSV
+    Catches a predecessor-project failure mode: 12 series with registry year_range vs chopped CSV
     start/end mismatch (marked Q6-informational in viz, but a real signal of drift).
 
-    v2.3.1 (RMWND v1.2 iter2): when the registry validation block declares
+    v2.3.1 (reference-replication v1.2 iter2): when the registry validation block declares
     ``extension_year_range: [start, end]`` the effective accepted range becomes
     the UNION of ``year_range`` and ``extension_year_range``. This preserves
     book-period authority in ``year_range`` while permitting downstream -EXT /
@@ -1387,9 +1387,9 @@ def check_P29_year_range_integrity(project: Path, reg: dict, res: Result) -> Non
             # When extension_year_range is declared the check is a containment
             # test: the chopped CSV bounds must lie WITHIN the effective range
             # (CSV may start later than the book period if -EXT subseries
-            # introduce a new origin, e.g. RMWND Ch7 proxies). Without the
+            # introduce a new origin, e.g. reference-replication Ch7 proxies). Without the
             # extension declaration the original strict-equality semantics
-            # apply, preserving the original RSCD-drift detection.
+            # apply, preserving the original drift detection.
             if ext_used:
                 if csv_min < eff_min or csv_max > eff_max:
                     issues.append(
@@ -1412,10 +1412,8 @@ def check_P29_year_range_integrity(project: Path, reg: dict, res: Result) -> Non
 
 
 # ============================ P30-P36 (v2.3.0) ============================
-# Added after the comprehensive RMWND/RSCD hyper-review session 2026-05-19.
-# See Council/Druck/docs/RMWND_HYPER_REVIEW_2026-05-19.md
-#     Council/Druck/docs/RSCD_HYPER_REVIEW_2026-05-19.md
-#     Council/Druck/docs/decisions/0001-0006.md
+# Added after a comprehensive framework rebuild review session.
+# See the framework rebuild review and its decision records for context.
 
 from collections import Counter as _Counter
 
@@ -1630,7 +1628,7 @@ def _find_project_inputs_robin(project: Path) -> Path | None:
     a sibling Inputs/Robin/, stopping at the workspace root.
     """
     # Workspace root resolved from this script's location, not hardcoded:
-    # check_project.py is at <workspace>/Council/Druck/.claude/skills/anu-doctor/
+    # this checker lives in skills/anu-doctor/ within the workspace.
     workspace = Path(__file__).resolve().parents[5]
     cur = project.resolve()
     while cur != workspace and cur.parent != cur:
@@ -1742,7 +1740,7 @@ def check_P39_no_hardcoded_robin_data_paths(project: Path, reg: dict, res: Resul
     Projects should read through `Inputs/Robin/[SOURCE]/` checkouts. Direct reads
     of the canonical store skip PROVENANCE / drift detection. WARN severity
     because some scripts intentionally reference the canonical path in comments
-    or fallback logic (e.g., freenic's checkout-with-fallback pattern).
+    or fallback logic (e.g., a private data layer's checkout-with-fallback pattern).
     """
     code_dirs = [project / "code", project / "scripts", project / "src"]
     code_dirs = [d for d in code_dirs if d.exists()]

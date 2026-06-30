@@ -1,6 +1,6 @@
-# Lessons Learned — RMWND Rebuild (May 2026)
+# Lessons Learned — Reference-Replication Rebuild (May 2026)
 
-**Project**: Replication: Measuring Wealth of Nations Data (RMWND) — `Projects/RMWND/Technical/`
+**Project**: Replication: Measuring Wealth of Nations Data (the reference replication) — `projects/reference-replication/Technical/`
 **Predecessor**: ST2 (`Inputs/ST2/`) — Shaikh-Tonak (1994) replication, mature but with internal coupling
 **Outcome**: 64 series, 100% PASS, 21 commits, distribution-ready
 **Framework**: Anu Framework v10.0 (18 skills)
@@ -185,4 +185,4 @@ The rebuild is complete; the next one starts with the framework one notch sharpe
 
 ---
 
-*Compiled by the agent that conducted the RMWND rebuild, 2026-05-15. References to friction point numbers are mirrored in `ANU_FRAMEWORK_IMPROVEMENTS_RFC.md`.*
+*Compiled by the agent that conducted the reference-replication rebuild, 2026-05-15. References to friction point numbers are mirrored in `ANU_FRAMEWORK_IMPROVEMENTS_RFC.md`.*

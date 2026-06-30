@@ -38,7 +38,7 @@ When a replicator package is intended for public release (GitHub, journal submis
 L## scripts acquire data in this priority order:
 1. **PUBLIC API** (FRED, BEA, BLS, World Bank) — always try first
 2. **DOWNLOADED FILE** — if API unavailable (document exact URL)
-3. **HDARP EXTRACTION** — last resort (methodology text from book PDF)
+3. **PDF EXTRACTION** — last resort (methodology text from book PDF)
 
 ### L## Script Docstring Standard
 

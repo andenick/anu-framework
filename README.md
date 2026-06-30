@@ -1,10 +1,10 @@
 # Anu Framework
 
-A 20-skill framework for **agent-driven data construction, empirical research,
-and reproducible publication** — designed so the outputs reproduce without
-agents.
+**Version 12.2** · A **19-active-skill** framework (plus 2 deprecated redirect
+stubs) for **agent-driven data construction, empirical research, and
+reproducible publication** — designed so the outputs reproduce without agents.
 
-The framework covers the full lifecycle:
+The framework covers the full lifecycle, orchestrated by `anu-build`:
 
 - **Researching** source materials (mining quotes, methodology, footnotes)
 - **Ingesting** data into a registry-driven structure with full provenance
@@ -16,15 +16,15 @@ The framework covers the full lifecycle:
 - **Auditing** quality across 14 dimensions with two hard gates
 - **Distributing** through three sibling channels: GitHub repo (`anu-publish`),
   Google Drive package (`anu-drive`), audit-grade archive (`anu-archive`)
-- **Scaffolding** new code from registry entries
-- **Rebuilding** legacy data projects into Anu-Framework-native form
+- **Orchestrating** the whole pipeline with `anu-build` (9 stages, computed
+  construction order, mandatory gates, multi-agent handoff cascade)
 
-The framework is self-auditing: `anu-doctor` checks 15 invariants across all
-20 skills, every change to a `SKILL.md` is gated by CI.
+The framework is self-auditing: `anu-doctor` checks framework invariants across
+all skills, and every change to a `SKILL.md` is gated by CI.
 
 ---
 
-## The 20 skills
+## The 19 active skills
 
 See [`docs/SKILL_VERSION_MATRIX.md`](docs/SKILL_VERSION_MATRIX.md) for the
 authoritative table, or [`docs/ANU_FRAMEWORK_OVERVIEW.md`](docs/ANU_FRAMEWORK_OVERVIEW.md)
@@ -36,22 +36,26 @@ for the full architecture write-up.
 | 2 | [`anu-adequacy`](skills/anu-adequacy/) | Post-research readiness gate |
 | 3 | [`anu-ingestion`](skills/anu-ingestion/) | Build `series_registry.json`, decompose series, write DPRs |
 | 4 | [`anu-extension`](skills/anu-extension/) | Faithful data extension methodology (EPRs) |
+| 5 | [`anu-scaffold`](skills/anu-scaffold/) | Generate L01/P02/V03 stubs from registry |
 | 5 | [`anu-replicator`](skills/anu-replicator/) | Self-contained L##/P##/V##/M## reproduction package |
-| 6 | [`anu-chopped`](skills/anu-chopped/) | Machine-readable CSV format |
-| 6 | [`anu-extenbook`](skills/anu-extenbook/) | Human-readable Excel workbook (4 sheets) |
+| 6a | [`anu-chopped`](skills/anu-chopped/) | Machine-readable CSV format |
+| 6b | [`anu-extenbook`](skills/anu-extenbook/) | Human-readable Excel workbook (4 sheets) |
 | 7 | [`anu-visualize`](skills/anu-visualize/) | Interactive Plotly Dash / R Shiny app |
-| 8a | [`anu-publish`](skills/anu-publish/) | GitHub replication channel |
+| 8a | [`anu-publish`](skills/anu-publish/) | GitHub replication channel + `web` export contract |
 | 8b | [`anu-drive`](skills/anu-drive/) | Google Drive consumer package |
 | 8c | [`anu-archive`](skills/anu-archive/) | Audit-grade transparency archive |
 | Float | [`anu-review`](skills/anu-review/) | 14-dimension quality audit (D1–D12 weighted + D13/D14 gates) |
-| Float | [`anu-docs`](skills/anu-docs/) | Per-series documentation (T1/T2/T3 tiers) |
+| Float | [`anu-docs`](skills/anu-docs/) | Per-series documentation (T1/T2/T3 tiers) + the Anu Explainer |
 | Float | [`anu-variant`](skills/anu-variant/) | Methodology variant tracking |
-| Orch | [`anu-pipeline`](skills/anu-pipeline/) | Master orchestrator |
 | Infra | [`anu-ledger`](skills/anu-ledger/) | Artifact inventory |
 | Infra | [`anu-architecture`](skills/anu-architecture/) | 8-phase econometric research scaffold (also available [standalone on GitHub](https://github.com/andenick/anu-architecture)) |
 | Infra | [`anu-doctor`](skills/anu-doctor/) | Framework + project self-audit |
-| Infra | [`anu-scaffold`](skills/anu-scaffold/) | Generate L01/P02/V03 stubs from registry |
-| Meta | [`anu-rebuild`](skills/anu-rebuild/) | 6-wave salvage-and-port workflow for predecessor projects |
+| Orch | [`anu-build`](skills/anu-build/) | **Master orchestrator** — 9-stage pipeline + documentation cascade |
+
+**Deprecated (redirect stubs, not counted in the 19):**
+[`anu-pipeline`](skills/anu-pipeline/) → `anu-build`, and
+[`anu-rebuild`](skills/anu-rebuild/) → `anu-build` (mode=rebuild). Both were
+merged into `anu-build` in v12.0.
 
 ---
 
@@ -119,7 +123,7 @@ Every change to the framework is gated by `anu-doctor`:
 python tools/check_framework.py
 ```
 
-15 D##-checks verify version consistency across the matrix/overview/frontmatter
+The D##-checks verify version consistency across the matrix/overview/frontmatter
 triangle, requires-graph acyclicity, headline-version match, evolution-log
 presence, canonical-doc existence, stage-map coherence, and stale-version-string
 detection. CI runs this on every PR.
@@ -147,11 +151,11 @@ If you use the framework in academic work:
 
 ```bibtex
 @software{anu_framework_2026,
-  title  = {Anu Framework: 20-skill data construction and reproducible
+  title  = {Anu Framework: agent-driven data construction and reproducible
             publication},
   author = {Anu Framework contributors},
   year   = {2026},
   url    = {https://github.com/andenick/anu-framework},
-  version = {11.0.0}
+  version = {12.2.0}
 }
 ```
