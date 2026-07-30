@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Anu Build — Master orchestrator CLI for the Anu Framework v12.0.
+"""Anu Build — Master orchestrator CLI for the Anu Framework v12.2.
 
 Drives every Anu Framework skill through a methodical 9-stage pipeline
 with computed construction order, mandatory gates, and a 4-file
@@ -15,7 +15,7 @@ Usage:
     python build.py audit
     python build.py handoff
 
-Part of the Anu Framework v12.0 — see anu-build/SKILL.md.
+Part of the Anu Framework v12.2 — see anu-build/SKILL.md.
 """
 from __future__ import annotations
 
@@ -241,7 +241,7 @@ def cmd_handoff(args: argparse.Namespace) -> int:
         f"# Handoff — {state.get('project', '?')}\n\n"
         f"**Date**: {ts}\n"
         f"**Current Stage**: {current} ({label})\n"
-        f"**Framework**: Anu Framework v12.0\n\n"
+        f"**Framework**: Anu Framework v12.2\n\n"
         f"## Status\n\nSee `Technical/Build/BUILD_NARRATIVE.md` for recent work.\n"
         f"See `Technical/PIPELINE_STATE.json` for stage progress.\n"
         f"See `Technical/ANU_LEDGER.json` for per-series state.\n\n"
@@ -271,7 +271,7 @@ def cmd_handoff(args: argparse.Namespace) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Anu Build — Master orchestrator for Anu Framework v12.0")
+        description="Anu Build — Master orchestrator for Anu Framework v12.2")
     parser.add_argument("--project", type=str, default=None,
                         help="Project root (default: cwd)")
     sub = parser.add_subparsers(dest="command")

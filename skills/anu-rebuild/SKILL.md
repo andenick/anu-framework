@@ -7,7 +7,7 @@ search-hints: "rebuild refactor port salvage predecessor migration crosswalk gro
 allowed-tools: Read, Write, Bash, Glob, Grep, Edit
 argument-hint: "<predecessor_root> <target_root>"
 requires: anu-doctor, anu-ingestion, anu-publish, anu-pipeline, anu-scaffold
-part-of: Anu Framework v11.0
+part-of: Anu Framework v12.2
 ---
 
 # Anu Rebuild Standard v1.1
@@ -18,7 +18,7 @@ part-of: Anu Framework v11.0
 |----------|-------|
 | Skill Name | Anu Rebuild |
 | Version | 1.1 |
-| Part Of | Anu Framework v11.0 |
+| Part Of | Anu Framework v12.2 |
 | Created | 2026-05-15 |
 | Updated | 2026-05-15 |
 | Purpose | Agent-executable runbook for predecessor-to-rebuild |

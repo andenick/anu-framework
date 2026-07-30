@@ -9,7 +9,7 @@ Usage:
     python check_framework.py --json   # machine-readable FRAMEWORK_AUDIT.json
     python check_framework.py --fix     # auto-fix the mechanically-fixable checks
 
-Part of the Anu Framework v12.0 — see anu-doctor/SKILL.md.
+Part of the Anu Framework v12.2 — see anu-doctor/SKILL.md.
 """
 from __future__ import annotations
 

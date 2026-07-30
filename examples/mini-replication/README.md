@@ -1,7 +1,9 @@
 # mini-replication — minimal Anu Framework example
 
-A two-series replication package that exercises the full Anu Replicator
-four-phase architecture (L## → P## → V## → M##) plus output formatting.
+A two-series replication package that exercises the Anu Replicator loading,
+processing and validation phases (L## → P## → V##) plus output formatting (O##).
+It does **not** contain an M## manual-adjustment phase — nothing here needs a
+manual adjustment, and the framework forbids inventing one.
 
 ## The two series
 
@@ -38,9 +40,19 @@ Sequence:
 ## Validate
 
 ```bash
-# project-level checks (anu-doctor v1.1+)
 python ../../skills/anu-doctor/check_project.py --project .
 ```
+
+**This example does not pass the project doctor cleanly, and the gaps are
+listed rather than hidden.** It fails P25/P26/P27 because it has no
+`ANU_LEDGER.json` and no `PIPELINE_STATE.json`: those are artifacts the
+`anu-build` cascade generates during a real run, and hand-writing them would be
+inventing a pipeline history that never happened. It also warns on P23 because
+its scripts use the flat `code/{loading,processing,validation,outputs}/` layout
+rather than the `code/{L01_loaders,P02_processors,V03_validators}/` triad the
+doctor looks for. Everything the example *does* claim — sources, units, year
+ranges, the S002 formula, complete-year-only annual aggregation — is checked
+and true.
 
 ## Why this example
 

@@ -7,7 +7,7 @@ search-hints: "adequacy readiness gate validate knowledge base sufficient ready 
 allowed-tools: Read, Write, Bash, Glob, Grep, Edit
 argument-hint: "[action] [chapter]"
 requires: anu-research
-part-of: Anu Framework v11.0
+part-of: Anu Framework v12.2
 ---
 
 # Anu Adequacy Standard v1.2

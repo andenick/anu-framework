@@ -4,7 +4,7 @@
 **Date**: June 10, 2026
 **Location**: `docs/ANU_FRAMEWORK_OVERVIEW.md`
 
-> **Changelog 2026-06-10 (v12.2).** Framework v12.1 → v12.2 — the **web-readiness release** (triggered by a downstream website platform overhaul). (1) **Series ID Spec v2.2** (anu-ingestion v5.2): canonical prefixes now `{D: primary, XS: extra}`; legacy `AS`/`ES`/`AD` rejected by anu-doctor P12; XS entries carry `xs_class` (`appendix` | `external_study`) + `xs_attribution`, which drive website sectioning (XS sections render after all primary series, split appendix vs other-study). New mandatory registry fields: `display_name`, `publish`, `triage`; per-subseries `label`+`units`, `mixed_*` units banned. (2) **anu-publish v2.1**: P10/P11 scrub gates promoted WARN→FAIL (workspace paths had shipped to the public web); new `web` packaging profile — the formal Anu→website export contract (publish-filtered registry + chopped CSV + parquet + generated `data_dictionary.csv` + explainers + scrubbed DPRs + `WEB_MANIFEST.json`; downloads contract CSV+parquet only); new gates P13 (dictionary), P14 (units), P15 (no unpublished series). (3) **anu-docs v3.0**: the **Anu Explainer** — web-facing per-series artifact with fixed five-section template and hard Web-Format Rules (no file paths, no wide tables, KB-anchored quotes); DPR repositioned as downloadable full-provenance "agent context"; DOC11/DOC12 gates. (4) New canonical standards under `docs/standards/`: SITE_SPEC_PROTOCOL, SITE_BUILD_ORCHESTRATION, STUDY_PAGE_STANDARD, ANU_NAMING_STANDARD, EDUCATIONAL_DISCLAIMER_STANDARD, UNITS_VALIDATION_STANDARD, PANEL_CONSTRUCTION_RUBRIC. (5) Canonical **"Two namespaces"** section added below — series-ID prefixes vs pipeline-stage prefixes are different vocabularies; site explainers must copy from it.
+> **Changelog 2026-06-10 (v12.2).** Framework v12.1 → v12.2 — the **web-readiness release** (triggered by a downstream website platform overhaul). (1) **Series ID Spec v2.2** (anu-ingestion v5.2): canonical prefixes now `{D: primary, XS: extra}`; legacy `AS`/`ES`/`AD` rejected by anu-doctor P12; XS entries carry `xs_class` (`appendix` | `external_study`) + `xs_attribution`, which drive website sectioning (XS sections render after all primary series, split appendix vs other-study). New mandatory registry fields: `display_name`, `publish`, `triage`; per-subseries `label`+`units`, `mixed_*` units banned. (2) **anu-publish v2.1**: P10/P11 scrub gates promoted WARN→FAIL (workspace paths had shipped to the public web); new `web` packaging profile — the formal Anu→website export contract (publish-filtered registry + chopped CSV + parquet + generated `data_dictionary.csv` + explainers + scrubbed DPRs + `WEB_MANIFEST.json`; downloads contract CSV+parquet only); new gates P13 (dictionary), P14 (units), P15 (no unpublished series). (3) **anu-docs v3.0**: the **Anu Explainer** — web-facing per-series artifact with fixed five-section template and hard Web-Format Rules (no file paths, no wide tables, KB-anchored quotes); DPR repositioned as downloadable full-provenance "agent context"; DOC11/DOC12 gates. (4) New canonical website/data standards (SITE_SPEC_PROTOCOL, SITE_BUILD_ORCHESTRATION, STUDY_PAGE_STANDARD, ANU_NAMING_STANDARD, EDUCATIONAL_DISCLAIMER_STANDARD, UNITS_VALIDATION_STANDARD, PANEL_CONSTRUCTION_RUBRIC) — these govern the downstream website build and are **not** shipped in this repository. (5) Canonical **"Two namespaces"** section added below — series-ID prefixes vs pipeline-stage prefixes are different vocabularies; site explainers must copy from it.
 >
 > **Changelog 2026-05-24 (v12.1).** Framework v12.0 → v12.1. Decision-doc folder reactivated for *new* canonical decisions (the 0001–0006 set remains archived/integrated into specs). Two new decisions added: **Decision 0007** — canonical verbatim-quote schema for research JSONs (records inside `entries[]` with `entry_type == "verbatim_quote"`; top-level `verbatim_quotes[]` and inline-legacy fields deprecated) — migrated across all 64 research JSONs of the reference replication in v1.1 Phase 1; and **Decision 0008** — `validation.reference_values` is year-keyed scalars only, non-year statistics split into a new companion field `validation.derived_statistics` (registry schema v2.3.0+). New framework-level capabilities promoted from the reference replication v1.1 + v1.2: `anu-doctor` standard scripts now ship at `tools/check_framework.py` and `check_project.py` as canonical wrappers (no longer per-project authoring); `extension_year_range` field convention codified (separate from `year_range` so book-period min/max stays stable when extension data is added); `artifacts.derived_no_l01` exemption flag for derived series that legitimately have no L01 loader; stock-form primary support for rate-of-profit series (`DIV-012` pattern — `construction: "stock_form"` allowed where the source measured a stock rather than a flow). check_framework continues to PASS on 21 active skill folders (19 + 2 redirect stubs). No skill-version bumps required — v12.1 is a spec/decisions-layer release.
 >
@@ -18,31 +18,31 @@
 
 ## What is the Anu Framework?
 
-The Anu Framework is a **19-active-skill framework (plus 2 deprecated redirect stubs = 21 skill folders) for agent-driven data construction, empirical research, and reproducible publication** that produces outputs reproducible without agents. It covers the full lifecycle from research through distribution, orchestrated by `anu-build` — a master skill that drives every other skill through a methodical 9-stage pipeline with computed construction order, mandatory gates, and a documentation cascade that enables reliable multi-agent handoffs.
+The Anu Framework is a **21-skill framework — 19 current pipeline skills plus 2 superseded-but-still-shipped skills — for agent-driven data construction, empirical research, and reproducible publication** that produces outputs reproducible without agents. It covers the full lifecycle from research through distribution, orchestrated by `anu-build` — a master skill that drives every other skill through a methodical 9-stage pipeline with computed construction order, mandatory gates, and a documentation cascade that enables reliable multi-agent handoffs.
 
 ---
 
-## 19 Active Skills
+## The 19 current pipeline skills
 
 | # | Skill | Version | Stage | Location | Purpose |
 |---|-------|---------|-------|----------|---------|
-| 1 | **Anu Research** | v3.0 | Stage 1 | `anu-research/SKILL.md` | Mine KB for quotes, references, methodology per series |
-| 2 | **Anu Adequacy** | v2.0 | Stage 2 (gate) | `anu-adequacy/SKILL.md` | Post-research statistical readiness gate |
+| 1 | **Anu Research** | v2.1 | Stage 1 | `anu-research/SKILL.md` | Mine KB for quotes, references, methodology per series |
+| 2 | **Anu Adequacy** | v1.2 | Stage 2 (gate) | `anu-adequacy/SKILL.md` | Post-research statistical readiness gate |
 | 3 | **Anu Ingestion** | v5.2 | Stage 3 | `anu-ingestion/SKILL.md` | Registry, DPRs, FPRs, decompositions, status taxonomy, Series ID Spec v2.2 (D/XS) |
-| 4 | **Anu Extension** | v4.0 | Stage 4 | `anu-extension/SKILL.md` | Extension methodology, EPRs, divergence register |
+| 4 | **Anu Extension** | v3.5 | Stage 4 | `anu-extension/SKILL.md` | Extension methodology, EPRs, divergence register |
 | 5 | **Anu Scaffold** | v2.1 | Stage 5 (sub) | `anu-scaffold/SKILL.md` | Generate L01/P02/V03 stubs from registry entries |
-| 6 | **Anu Replicator** | v4.0 | Stage 5 | `anu-replicator/SKILL.md` | L01/P02/V03 reproduction package |
-| 7 | **Anu Chopped** | v3.0 | Stage 6a | `anu-chopped/SKILL.md` | Machine-readable CSV format |
-| 8 | **Anu Extenbook** | v4.0 | Stage 6b | `anu-extenbook/SKILL.md` | Human-readable 4-sheet Excel workbooks |
-| 9 | **Anu Visualize** | v6.1 | Stage 7 | `anu-visualize/SKILL.md` | Interactive visualization (Plotly Dash / R Shiny) |
+| 6 | **Anu Replicator** | v3.1 | Stage 5 | `anu-replicator/SKILL.md` | L01/P02/V03 reproduction package |
+| 7 | **Anu Chopped** | v2.0 | Stage 6a | `anu-chopped/SKILL.md` | Machine-readable CSV format |
+| 8 | **Anu Extenbook** | v3.2 | Stage 6b | `anu-extenbook/SKILL.md` | Human-readable 4-sheet Excel workbooks |
+| 9 | **Anu Visualize** | v5.0 | Stage 7 | `anu-visualize/SKILL.md` | Interactive visualization (Plotly Dash / R Shiny) |
 | 10 | **Anu Publish** | v2.1 | Stage 8a | `anu-publish/SKILL.md` | GitHub replication channel + `web` export contract (P01–P15 gate) |
-| 11 | **Anu Drive** | v2.0 | Stage 8b | `anu-drive/SKILL.md` | Google Drive consumer channel |
-| 12 | **Anu Archive** | v2.0 | Stage 8c | `anu-archive/SKILL.md` | Audit-grade transparency channel |
-| 13 | **Anu Review** | v5.0 | Floating | `anu-review/SKILL.md` | Quality audit (14 dimensions + D13/D14 gates) |
+| 11 | **Anu Drive** | v1.1 | Stage 8b | `anu-drive/SKILL.md` | Google Drive consumer channel |
+| 12 | **Anu Archive** | v1.0 | Stage 8c | `anu-archive/SKILL.md` | Audit-grade transparency channel |
+| 13 | **Anu Review** | v4.1 | Floating | `anu-review/SKILL.md` | Quality audit (14 dimensions + D13/D14 gates) |
 | 14 | **Anu Docs** | v3.0 | Floating | `anu-docs/SKILL.md` | Per-series documentation (T1/T2/T3 tiers) + the Anu Explainer (web-facing) |
-| 15 | **Anu Variant** | v2.0 | Floating | `anu-variant/SKILL.md` | Methodology variant tracking (VPRs) |
-| 16 | **Anu Ledger** | v3.0 | Infrastructure | `anu-ledger/SKILL.md` | Artifact inventory + per-series stage tracking |
-| 17 | **Anu Architecture** | v3.0 | Infrastructure | `anu-architecture/SKILL.md` | Format standard (BEA/BLS/FRED cache schemas) |
+| 15 | **Anu Variant** | v1.4 | Floating | `anu-variant/SKILL.md` | Methodology variant tracking (VPRs) |
+| 16 | **Anu Ledger** | v2.2 | Infrastructure | `anu-ledger/SKILL.md` | Artifact inventory + per-series stage tracking |
+| 17 | **Anu Architecture** | v2.1 | Infrastructure | `anu-architecture/SKILL.md` | Format standard (BEA/BLS/FRED cache schemas) |
 | 18 | **Anu Doctor** | v2.3 | Infrastructure | `anu-doctor/SKILL.md` | Framework (D01–D15) + project (P01–P36) self-audit |
 | 19 | **Anu Build** | v1.3 | Orchestrator | `anu-build/SKILL.md` | **NEW** — Master orchestrator: 9-stage pipeline + cascade |
 
@@ -50,12 +50,20 @@ All skills are located under `skills/`. The authoritative per-skill version matr
 
 **Code is source of truth.** When framework executable code (`check_project.py`, `check_framework.py`, SKILL.md frontmatter `version:` fields, the schema validator) diverges from human-readable documentation, the code wins — docs get updated to match. anu-doctor's D-checks are the mechanical enforcement layer. There is no separate decision-log channel: decisions land directly in the canonical spec (`SERIES_REGISTRY_SCHEMA.md`, the affected `SKILL.md`, the framework rules file) with rationale in commit messages.
 
-### Deprecated skills (redirect stubs)
+### Superseded skills (2) — still shipped in full
 
-| Skill | Former Version | Redirect |
-|-------|---------------|----------|
-| anu-rebuild | v1.1 | → `anu-build` (mode=rebuild) |
-| anu-pipeline | v3.2 | → `anu-build` |
+`anu-pipeline` and `anu-rebuild` were merged into `anu-build` in v12.0. They are
+**not** redirect stubs in this release: both still ship complete instructions
+(291 and 539 lines, seven templates between them), neither mentions `anu-build`,
+`anu-ledger` still declares `requires: anu-pipeline`, and `anu-doctor` counts
+all 21 skills as active. Prefer `anu-build`. Reducing this pair to real stubs
+would delete working instructions and is an open maintainer decision — recorded
+in `SKILL_VERSION_MATRIX.md` under "Known inconsistency".
+
+| # | Skill | Version | Status | Location | Notes |
+|---|-------|---------|--------|----------|-------|
+| 20 | **Anu Pipeline** | v3.2 | Superseded | `anu-pipeline/SKILL.md` | Superseded by `anu-build` |
+| 21 | **Anu Rebuild** | v1.1 | Superseded | `anu-rebuild/SKILL.md` | Superseded by `anu-build` (mode=rebuild) |
 
 ### Retired skill folders (deleted in v12.0)
 
@@ -124,7 +132,7 @@ Every anu-build step produces exactly three writes:
 Plus at stage boundaries:
 4. **PIPELINE_STATE.json** — top-level orchestration state (updated)
 
-See [`ANU_BUILD_PROTOCOL.md`](ANU_BUILD_PROTOCOL.md) for the full multi-agent handoff specification.
+The full multi-agent handoff specification lives in `anu-build/SKILL.md`; a separate `ANU_BUILD_PROTOCOL.md` is referenced by older revisions but is not part of this repository.
 
 ### Data Integrity Constraints (MANDATORY)
 
@@ -234,9 +242,9 @@ Run `/anu-build status` at any point to see progress. Run `/anu-build handoff` t
 
 Empirical-paper replication projects under the Anu Framework — where Python
 output must agree with a published paper's tables/figures and/or a canonical
-Stata log — should adopt the **Paper Target Ledger Protocol**
-([`protocols/PAPER_TARGET_LEDGER_PROTOCOL.md`](protocols/PAPER_TARGET_LEDGER_PROTOCOL.md))
-during the contract-gate / W2.5-equivalent phase (roughly Stage 3 ingestion +
+Stata log — should adopt the **Paper Target Ledger Protocol** (summarized below; the
+standalone `PAPER_TARGET_LEDGER_PROTOCOL.md` document is not shipped in this
+repository) during the contract-gate / W2.5-equivalent phase (roughly Stage 3 ingestion +
 Stage 5 replicator, between data load and headline comparison).
 
 The protocol codifies five documented "target is the bug" failure modes from
@@ -265,10 +273,15 @@ extraction with no published table; pipeline contract-gates) remain valid.
 - [`SKILL_VERSION_MATRIX.md`](SKILL_VERSION_MATRIX.md) — per-skill version table
 - [`ANU_FRAMEWORK_GLOSSARY.md`](ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary
 - [`SERIES_REGISTRY_SCHEMA.md`](SERIES_REGISTRY_SCHEMA.md) — registry schema
-- [`SKILL_DEPENDENCY_GRAPH.md`](SKILL_DEPENDENCY_GRAPH.md) — skill dependency DAG
-- [`ANU_BUILD_PROTOCOL.md`](ANU_BUILD_PROTOCOL.md) — multi-agent handoff protocol
 - [`DATA_PROVENANCE_STANDARDS.md`](DATA_PROVENANCE_STANDARDS.md) — provenance chain spec
-- [`protocols/PAPER_TARGET_LEDGER_PROTOCOL.md`](protocols/PAPER_TARGET_LEDGER_PROTOCOL.md) — paper-target ledger discipline for replication projects
+- [`GETTING_STARTED.md`](GETTING_STARTED.md) — first-run guide
+
+Not shipped in this repository, though older revisions referenced them:
+`SKILL_DEPENDENCY_GRAPH.md`, `ANU_BUILD_PROTOCOL.md`,
+`protocols/PAPER_TARGET_LEDGER_PROTOCOL.md`, `docs/schemas/`, `docs/standards/`.
+The dependency graph is derivable from each skill's `requires:` frontmatter; the
+build protocol and the target-ledger discipline are described in
+`anu-build/SKILL.md` and in this document respectively.
 
 ---
 

@@ -26,7 +26,7 @@ Conventions: series IDs follow the prefix scheme declared in the registry's `pre
 | `prefix_scheme` | object | yes (v11.0+) | Declares which prefixes the project uses. Canonical: `{"primary": "D", "additional": "AD"}`. Projects may add a third prefix documented in `MIGRATION/PREFIX_SCHEME.md` if their data genuinely requires it (should be rare). |
 | `notation` | string | no | Documentation string describing the series-ID notation in use. |
 | `generated` | string (date) | no | ISO date `YYYY-MM-DD` the registry was generated. |
-| `architecture` | string | no | Free-text framework version label, e.g., `"Anu Framework v11.0"`. |
+| `architecture` | string | no | Free-text framework version label, e.g., `"Anu Framework v12.2"`. |
 | `drive_config` | object | no (recommended) | Distribution metadata consumed by `/anu-drive`. If absent, `anu-drive` synthesizes from top-level fields; explicit `drive_config` is preferred. |
 | `series` | object | yes | Map of series ID -> series object. Property names MUST match the project's declared `prefix_scheme` (canonical: `^(D\d{3}\|AD\d{3,4})(-[A-Z]\|-EXT\|-COMBINED)?$`). |
 | `figures` | object | no | Map of figure ID -> figure spec. Property names MUST match `^Fig\d+\.\d+[A-Z]?$`. |
@@ -48,7 +48,7 @@ Top-level skeleton:
   "series":   { "D001": { "...": "..." }, "AD1001": { "...": "..." } },
   "figures":  { "Fig2.1": { "...": "..." } },
   "sources":  { "BEA_1966_LTEG": { "...": "..." } },
-  "architecture": "Anu Framework v11.0"
+  "architecture": "Anu Framework v12.2"
 }
 ```
 

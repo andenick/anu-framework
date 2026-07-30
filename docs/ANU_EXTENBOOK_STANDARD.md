@@ -12,7 +12,7 @@ The Anu Extenbook Standard defines a rigorous framework for generating **series-
 |----------|-------|
 | Version | 1.0 |
 | Created | 2026-01-30 |
-| Part Of | Anu Framework v10.0 |
+| Part Of | Anu Framework v12.2 |
 | Complements | Anu Ingestion, Anu Extension, Anu Review, Anu Visualize |
 
 > **Note**: This is a summary doc. The `anu-extenbook` skill is at v3.2 — see `SKILL_VERSION_MATRIX.md` and `anu-extenbook/SKILL.md` for the authoritative current spec. "Anu Standard" was superseded by `anu-ingestion`; "Anu Shiny" was superseded by `anu-visualize`.

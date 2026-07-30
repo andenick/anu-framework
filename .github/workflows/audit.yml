@@ -13,5 +13,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: Prove the scrub deny-list is armed (negative control)
+        run: python skills/anu-publish/audit.py --self-test
       - name: Run pre-publication scrub audit (catches internal-reference leaks)
         run: python tools/audit_publish.py --strict

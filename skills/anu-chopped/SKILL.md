@@ -7,7 +7,7 @@ search-hints: chopped csv output machine readable data format metadata validate
 argument-hint: [action] [target]
 allowed-tools: Read, Write, Bash, Glob, Grep, Edit
 requires: anu-replicator
-part-of: Anu Framework v11.0
+part-of: Anu Framework v12.2
 ---
 
 # Anu Chopped Standard v2.0

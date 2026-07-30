@@ -4,7 +4,7 @@
 **Created**: January 28, 2026
 **Updated**: March 7, 2026
 **Skill Location**: `skills/anu-extension/SKILL.md`
-**Part Of**: Anu Framework v10.0
+**Part Of**: Anu Framework v12.2
 **Builds On**: Anu Ingestion v4.0, Anu Research v2.0
 **Note**: This is a summary doc. The `anu-extension` skill is at v3.4 — see `SKILL_VERSION_MATRIX.md` and `anu-extension/SKILL.md` for the authoritative current spec.
 
@@ -59,4 +59,4 @@ See `skills/anu-extension/SKILL.md` for the complete standard with templates, wo
 
 ---
 
-*Part of the Anu Framework v10.0 — Maximum Faithfulness Data Extension*
+*Part of the Anu Framework v12.2 — Maximum Faithfulness Data Extension*

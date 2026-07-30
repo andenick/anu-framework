@@ -7,7 +7,7 @@ search-hints: review audit quality dimensions score completeness assessment data
 argument-hint: [chapter] or [action] [target]
 allowed-tools: Read, Write, Bash, Glob, Grep, Edit
 requires: none
-part-of: Anu Framework v11.0
+part-of: Anu Framework v12.2
 ---
 
 # Anu Review Standard v4.1: Integration Quality Audit Framework
@@ -20,7 +20,7 @@ A systematic audit tool for reviewing how well data chapters/modules are integra
 
 ### Purpose
 
-The Anu Review validates compliance with the current Anu Framework v11.0 skills, including:
+The Anu Review validates compliance with the current Anu Framework v12.2 skills, including:
 - **Anu Ingestion v3.0** - Data provenance, absorption, and series decomposition
 - **Anu Extension v3.4** - Maximum faithfulness data extension
 - **Anu Visualize v5.0** - Visualization application integration (R Shiny + Plotly / Plotly Dash)
@@ -146,7 +146,7 @@ Uses the weights defined in the dimensions table above. When `ANU_LEDGER.json` e
 
 ## Dimension Checklists
 
-All checklists reference the Anu Framework v11.0 artifact structure. Tier 2 series (raw input tables) are exempt from D4, D5, D6, and are scored only on loading script existence.
+All checklists reference the Anu Framework v12.2 artifact structure. Tier 2 series (raw input tables) are exempt from D4, D5, D6, and are scored only on loading script existence.
 
 ### D0. v6.0 Artifacts (unweighted gate check)
 

@@ -136,4 +136,4 @@ The framework's own reference implementation is a large private replication proj
 
 ---
 
-*Part of the Anu Framework v10.0*
+*Part of the Anu Framework v12.2*

@@ -7,7 +7,7 @@ search-hints: extension extend series api fred bea bls modern data update batch 
 argument-hint: [action] [series_id]
 allowed-tools: Read, Write, Grep, Glob, LS, WebSearch, Shell
 requires: anu-ingestion, anu-research
-part-of: Anu Framework v11.0
+part-of: Anu Framework v12.2
 ---
 
 # Anu Extension Standard v3.5: Maximum Faithfulness Data Extension Framework
@@ -552,7 +552,7 @@ The Anu Extension Standard supports live API data pulls for extending series wit
 
 ### Extension Implementation
 
-In Anu Framework v11.0, extension logic is implemented inside **Anu Replicator P## processing scripts**, not in standalone extension scripts. The `series_registry.json` `extension` field defines the API source, splice method, and target end year. The P## script reads this config and executes the extension as part of the processing phase.
+Since Anu Framework v11.0, extension logic is implemented inside **Anu Replicator P## processing scripts**, not in standalone extension scripts. The `series_registry.json` `extension` field defines the API source, splice method, and target end year. The P## script reads this config and executes the extension as part of the processing phase.
 
 ### Year-Source Attribution
 
@@ -733,7 +733,7 @@ Use the project's own reference chapter (typically the first fully completed cha
 
 ## v2.0 Changes: Replicator Integration
 
-In Anu Framework v11.0, extension logic is **implemented inside Anu Replicator P## processing scripts**. This skill defines the *methodology* for faithful extension; the Replicator implements it in code.
+Since Anu Framework v11.0, extension logic is **implemented inside Anu Replicator P## processing scripts**. This skill defines the *methodology* for faithful extension; the Replicator implements it in code.
 
 Key changes:
 - Extension config now lives in `series_registry.json` under each series' `extension` field

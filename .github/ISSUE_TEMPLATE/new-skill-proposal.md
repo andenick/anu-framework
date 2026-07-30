@@ -8,7 +8,7 @@ labels: enhancement, new-skill
 
 **One-line purpose**:
 
-**What gap does it fill?** What's missing from the current 20 skills?
+**What gap does it fill?** What's missing from the current 21 skills (19 current + 2 superseded)?
 
 **Where does it fit in the pipeline?** Stage 1-8, floating, infrastructure, or meta-workflow?
 

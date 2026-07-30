@@ -7,7 +7,7 @@ search-hints: ledger manifest inventory artifacts health documentation audit ori
 argument-hint: [action] [chapter]
 allowed-tools: Read, Write, Grep, Glob, LS, Shell
 requires: anu-pipeline, anu-ingestion
-part-of: Anu Framework v11.0
+part-of: Anu Framework v12.2
 ---
 
 # Anu Ledger Standard v2.2

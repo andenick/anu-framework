@@ -22,7 +22,7 @@ Percent per year.
 
 ## Period
 
-1920–2024 (one year shorter than S001 — no growth observation for the first
+1920–2025 (one year shorter than S001 — no growth observation for the first
 year).
 
 ## Reference values (computed from FRED INDPRO; used for V02 validation)

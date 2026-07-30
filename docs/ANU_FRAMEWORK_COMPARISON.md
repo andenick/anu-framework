@@ -61,7 +61,7 @@ Like dbt's schema.yml, the series_registry.json drives all output formats. But A
 
 ---
 
-*Part of the Anu Framework v10.0*
+*Part of the Anu Framework v12.2*
 
 Sources:
 - [Project TIER](https://www.projecttier.org/)

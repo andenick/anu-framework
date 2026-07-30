@@ -1,8 +1,9 @@
 # Anu Framework
 
-**Version 12.2** · A **19-active-skill** framework (plus 2 deprecated redirect
-stubs) for **agent-driven data construction, empirical research, and
-reproducible publication** — designed so the outputs reproduce without agents.
+**Version 12.2** · A **21-skill** framework — 19 current pipeline skills plus 2
+superseded-but-still-shipped ones — for **agent-driven data construction,
+empirical research, and reproducible publication**, designed so the outputs
+reproduce without agents.
 
 The framework covers the full lifecycle, orchestrated by `anu-build`:
 
@@ -20,11 +21,12 @@ The framework covers the full lifecycle, orchestrated by `anu-build`:
   construction order, mandatory gates, multi-agent handoff cascade)
 
 The framework is self-auditing: `anu-doctor` checks framework invariants across
-all skills, and every change to a `SKILL.md` is gated by CI.
+all skills, and CI runs those checks on every push and pull request.
+**They do not currently pass** — see [Current self-audit state](#current-self-audit-state).
 
 ---
 
-## The 19 active skills
+## The 19 current pipeline skills
 
 See [`docs/SKILL_VERSION_MATRIX.md`](docs/SKILL_VERSION_MATRIX.md) for the
 authoritative table, or [`docs/ANU_FRAMEWORK_OVERVIEW.md`](docs/ANU_FRAMEWORK_OVERVIEW.md)
@@ -52,10 +54,15 @@ for the full architecture write-up.
 | Infra | [`anu-doctor`](skills/anu-doctor/) | Framework + project self-audit |
 | Orch | [`anu-build`](skills/anu-build/) | **Master orchestrator** — 9-stage pipeline + documentation cascade |
 
-**Deprecated (redirect stubs, not counted in the 19):**
-[`anu-pipeline`](skills/anu-pipeline/) → `anu-build`, and
-[`anu-rebuild`](skills/anu-rebuild/) → `anu-build` (mode=rebuild). Both were
-merged into `anu-build` in v12.0.
+**Superseded (2, still shipped in full):**
+[`anu-pipeline`](skills/anu-pipeline/) and [`anu-rebuild`](skills/anu-rebuild/)
+were merged into `anu-build` in v12.0. They are **not** redirect stubs in this
+release — both still ship complete instructions (291 and 539 lines, seven
+templates between them), neither mentions `anu-build`, `anu-ledger` still
+declares `requires: anu-pipeline`, and `anu-doctor` counts all 21 skills as
+active. Prefer `anu-build`; the pair is retained because removing it would
+delete working instructions. Tracked as an open decision in
+[`docs/SKILL_VERSION_MATRIX.md`](docs/SKILL_VERSION_MATRIX.md).
 
 ---
 
@@ -94,6 +101,36 @@ A minimal worked example ships at
 
 ---
 
+## Installing
+
+The two self-audit checkers are stdlib-only and need nothing. The packaging and
+variant generators need six third-party packages:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+Lower bounds only — nothing is pinned. See `requirements.txt` for which script
+needs which package.
+
+---
+
+## API keys — bring your own
+
+The framework ships **no** keys and reads none from any tracked file. Provide
+your own via the environment; copy [`.env.example`](.env.example) to `.env`
+(git-ignored) or export them in your shell.
+
+| Variable | What for | Where to get it |
+|---|---|---|
+| `FRED_API_KEY` | ALFRED/FRED vintage downloads in `anu-variant` (`vintage_downloader.py`, which also accepts `--api-key` and warns-and-continues if unset) | Free, instant: <https://fred.stlouisfed.org/docs/api/api_key.html> |
+| `ANU_SCRUB_PATTERNS` | *Optional.* Path to your private scrub deny-list overlay for `anu-publish/audit.py` | You write it — see [`skills/anu-publish/scrub_patterns.json`](skills/anu-publish/scrub_patterns.json) |
+
+No other key is read by any shipped script. If a project's `L##` loader needs a
+BEA or BLS key, that key belongs to the project, not to the framework.
+
+---
+
 ## Using the framework
 
 The skills are designed to be invoked by an AI agent (Claude Code, Cursor,
@@ -104,8 +141,10 @@ and prescribes its sub-commands.
 For human use:
 
 1. Read [`docs/GETTING_STARTED.md`](docs/GETTING_STARTED.md).
-2. Set up a project with [`anu-architecture`](skills/anu-architecture/) (or
-   `pip install anu-architecture` for the standalone version).
+2. Set up a project with [`anu-architecture`](skills/anu-architecture/) (or,
+   for the standalone version, clone
+   [github.com/andenick/anu-architecture](https://github.com/andenick/anu-architecture)
+   and `pip install -e .` — it is not on PyPI).
 3. Use [`anu-research`](skills/anu-research/) → [`anu-adequacy`](skills/anu-adequacy/) →
    [`anu-ingestion`](skills/anu-ingestion/) → [`anu-extension`](skills/anu-extension/) →
    [`anu-replicator`](skills/anu-replicator/) to construct data.
@@ -117,16 +156,31 @@ For human use:
 
 ## Self-audit
 
-Every change to the framework is gated by `anu-doctor`:
-
 ```bash
-python tools/check_framework.py
+python tools/check_framework.py      # framework invariants (D01-D19)
+python tools/audit_publish.py --strict   # pre-publication scrub audit
+python skills/anu-publish/audit.py --self-test   # prove the scrub gate is armed
 ```
 
 The D##-checks verify version consistency across the matrix/overview/frontmatter
 triangle, requires-graph acyclicity, headline-version match, evolution-log
 presence, canonical-doc existence, stage-map coherence, and stale-version-string
-detection. CI runs this on every PR.
+detection. CI runs the first two on every push and pull request.
+
+### Current self-audit state
+
+`tools/check_framework.py` **exits non-zero on `main`.** The version triangle
+(D03/D04/D05/D06) is green; what is not:
+
+| Check | Status | Why |
+|---|---|---|
+| D16 | 15 skills fail | Those `SKILL.md` files predate the v12.0 11-section template and are missing sections (`Stage Position`, `Inputs`, `Outputs`, `Acceptance Gates`, `Anti-Patterns`). Real documentation work, not a stamp. |
+| D17 | fails | `docs/schemas/skill_graph.json` is not in this repository. |
+| D18 | fails | `docs/schemas/anu_build_manifest.schema.json` is not in this repository. |
+| D19 | warns | Same missing `Stage Position` sections as D16. |
+
+These are listed rather than suppressed. A green badge earned by exempting the
+failing files would be worse than a red one.
 
 ---
 

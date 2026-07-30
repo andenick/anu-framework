@@ -355,8 +355,8 @@ Published manifests MUST pin the data repository version at construction time. B
 
 ## Canonical References
 
-- [`ANU_FRAMEWORK_GLOSSARY.md`](../../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary for all framework terms.
+- [`ANU_FRAMEWORK_GLOSSARY.md`](../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary for all framework terms.
 
 ---
 
-*Part of the Anu Framework v12.0 — Publication Pipeline*
+*Part of the Anu Framework v12.2 — Publication Pipeline*

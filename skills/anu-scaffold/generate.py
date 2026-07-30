@@ -20,7 +20,7 @@ contain series_registry.json. The generator picks templates from this skill's
 templates/ directory, or from <project_root>/code/_scaffold_templates/ if that
 override directory exists.
 
-Part of the Anu Framework v11.0 — see anu-scaffold/SKILL.md.
+Part of the Anu Framework v12.2 — see anu-scaffold/SKILL.md.
 """
 from __future__ import annotations
 

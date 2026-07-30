@@ -7,7 +7,7 @@ search-hints: "drive share google folder package consumer scholar distribution m
 argument-hint: "[generate|validate|update] [project_path]"
 allowed-tools: Read, Write, Bash, Glob, Grep, Edit
 requires: anu-replicator, anu-chopped, anu-extenbook
-part-of: Anu Framework v11.0
+part-of: Anu Framework v12.2
 ---
 
 # Anu Drive Standard v1.1
@@ -18,7 +18,7 @@ part-of: Anu Framework v11.0
 |----------|-------|
 | Skill Name | Anu Drive |
 | Version | 1.1 |
-| Part Of | Anu Framework v11.0 |
+| Part Of | Anu Framework v12.2 |
 | Created | 2026-05-12 |
 | Updated | 2026-05-14 — added the `generate_drive_package.py` generator script |
 | Purpose | Generate a self-contained, consumer-facing data distribution folder for sharing via Google Drive |

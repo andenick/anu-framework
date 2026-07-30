@@ -7,7 +7,7 @@ search-hints: "pipeline orchestrate stages workflow status progress multi-agent 
 allowed-tools: Read, Write, Bash, Glob, Grep, Edit
 argument-hint: "[action] [chapter]"
 requires: none
-part-of: Anu Framework v11.0
+part-of: Anu Framework v12.2
 ---
 
 # Anu Pipeline Standard v3.2

@@ -24,7 +24,7 @@ Usage (from any skill):
         rationale="Book defines S/Y = e/(1+e); predecessor's NIPA proxy violates the identity over the same accounting universe."
     )
 
-Part of the Anu Framework v11.0.
+Part of the Anu Framework v12.2.
 """
 from __future__ import annotations
 

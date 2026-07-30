@@ -192,7 +192,7 @@ When scaffolding an L## loader template for a data-repository source (content_ty
 
 ## Canonical References
 
-- [`ANU_FRAMEWORK_GLOSSARY.md`](../../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary for all framework terms.
+- [`ANU_FRAMEWORK_GLOSSARY.md`](../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary for all framework terms.
 
 ---
 

@@ -17,7 +17,7 @@ Source of truth: {project}/Technical/series_registry.json
 Source data:     {project}/Technical/ANU_REPLICATOR/data/final-data/
 Output:          {project}/Outputs/{PROJECT}_Drive_v{VERSION}/
 
-Part of the Anu Framework v11.0 — see anu-drive/SKILL.md.
+Part of the Anu Framework v12.2 — see anu-drive/SKILL.md.
 """
 from __future__ import annotations
 

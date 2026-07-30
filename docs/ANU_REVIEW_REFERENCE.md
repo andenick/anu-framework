@@ -3,7 +3,7 @@
 **Version:** 2.0
 **Status:** Active
 **Last Updated:** March 2026
-**Part of:** Anu Framework v10.0 (18 skills)
+**Part of:** Anu Framework v12.2 (21 skills — 19 current + 2 superseded)
 
 > **Note**: This reference doc covers the v2.0 12-dimension model. The `anu-review` skill is now at v4.1 and adds two PASS/FAIL gates: D13 (Data Authenticity) and D14 (Outward-Facing Intelligibility). See `SKILL_VERSION_MATRIX.md` and `anu-review/SKILL.md` for the authoritative current spec. References below to "Anu Standard" mean `anu-ingestion`; "Anu Shiny" means `anu-visualize`.
 
@@ -19,7 +19,7 @@
 6. [Commands](#commands)
 7. [Templates](#templates)
 8. [Validation Scripts](#validation-scripts)
-9. [Integration with Anu Framework](#integration-with-anu-suite)
+9. [Integration with Anu Framework](#integration-with-anu-framework)
 10. [Example Review](#example-review)
 11. [Best Practices](#best-practices)
 12. [Troubleshooting](#troubleshooting)
@@ -744,4 +744,4 @@ Action Items:
 
 ---
 
-*Anu Review reference (v2.0 model) | Part of the Anu Framework v10.0*
+*Anu Review reference (v2.0 model) | Part of the Anu Framework v12.2*

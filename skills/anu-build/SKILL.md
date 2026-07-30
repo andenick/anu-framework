@@ -1,7 +1,7 @@
 ---
 name: anu-build
 version: "1.3"
-description: Master orchestrator that drives every Anu Framework skill through a methodical 9-stage pipeline (Stage 0 Inventory through Stage 8 Distribution) with computed construction order, mandatory gates, and a 4-file documentation cascade. Replaces anu-rebuild and anu-pipeline. Canonical CLI implementation at `tools/anu_build.py` (project-agnostic, `--project <path>`).
+description: Master orchestrator that drives every Anu Framework skill through a methodical 9-stage pipeline (Stage 0 Inventory through Stage 8 Distribution) with computed construction order, mandatory gates, and a 4-file documentation cascade. Replaces anu-rebuild and anu-pipeline. Canonical CLI implementation at `skills/anu-build/build.py` (project-agnostic, `--project <path>`). NOTE: the shipped copy raises ModuleNotFoundError — its `lib/` helper package is not in this repository.
 when-to-use: Build, rebuild, or resume any Anu Framework data-construction project
 search-hints: build pipeline orchestrate rebuild resume stage gate cascade
 argument-hint: [command] [options]
@@ -237,7 +237,9 @@ Between every pair of adjacent stages:
 
 ## Commands
 
-The canonical CLI is `python tools/anu_build.py --project <path> <subcommand>`. Projects may ship a thin local shim (e.g. `Technical/build.py`) that imports `anu_build.main(default_project=...)` so users in the project directory can omit `--project`. The full v1.0 verb set (init / plan / run-stage / run-to-completion / audit / handoff) is reserved for orchestrator extensions; the implemented v1.2 subcommands are:
+The canonical CLI is `python skills/anu-build/build.py --project <path> <subcommand>`.
+
+> **Known gap.** The shipped `build.py` imports a `construction_graph` module from a `lib/` package that is not included in this repository, so it raises `ModuleNotFoundError` on any invocation. The subcommand table below documents the intended interface, not a working entry point. Use the individual skills until the helper package ships. Projects may ship a thin local shim (e.g. `Technical/build.py`) that imports `anu_build.main(default_project=...)` so users in the project directory can omit `--project`. The full v1.0 verb set (init / plan / run-stage / run-to-completion / audit / handoff) is reserved for orchestrator extensions; the implemented v1.2 subcommands are:
 
 | Command | CLI | Description |
 |---------|-----|-------------|
@@ -329,23 +331,24 @@ Stage 0 (Inventory) walks `inputs/data-repository/` and records every checkout. 
 - **v1.0** (May 2026) — Initial release. Consolidates anu-rebuild v1.1 and anu-pipeline v3.2 into a single orchestrator. 9-stage pipeline with computed construction order. 4-file documentation cascade. LLM read-order protocol. Part of Anu Framework v12.0.
 - **v1.1** (May 2026) — Added canonical project directory layout with all standard paths relative to `Technical/`. Added relative path convention requirement (no absolute paths). Documented `SUBSERIES_METADATA.json` as canonical name (replaces `SUBSOURCE_METADATA`). Added shared loader convention (`shared_*_loader.py` exempt from LPV triad).
 - **v1.3** (June 2026) — Anu Framework v12.2 web-readiness release: registered the Anu Explainer (anu-docs v3.0) in the cascade — explainers are REQUIRED before a Stage 8a `web`-profile publish (DOC11 gate). Headline/matrix/overview version stamps re-synced.
-- **v1.2** (May 2026) — Promoted a reference project's per-project `build.py` into a project-agnostic orchestrator at `tools/anu_build.py` taking `--project <path>`. Resolves all per-project paths from `<project>/Technical/`. Importable surface (`status`, `advance`, `validate`, `chopped`, `extenbooks`, `ledger`, `viz`, `review`, `main`, `BuildContext`, `resolve_context`). The reference project's `Technical/build.py` is now a thin shim that injects `default_project` so per-project UX is unchanged. Other Anu v12.0+ projects can adopt the same shim pattern (5 lines) or invoke `anu_build.py` directly.
+- **v1.2** (May 2026) — Promoted a reference project's per-project `build.py` into a project-agnostic orchestrator at `skills/anu-build/build.py` taking `--project <path>`. Resolves all per-project paths from `<project>/Technical/`. Importable surface (`status`, `advance`, `validate`, `chopped`, `extenbooks`, `ledger`, `viz`, `review`, `main`, `BuildContext`, `resolve_context`). The reference project's `Technical/build.py` is now a thin shim that injects `default_project` so per-project UX is unchanged. Other Anu v12.0+ projects can adopt the same shim pattern (5 lines) or invoke `anu_build.py` directly.
 
 ---
 
 ## Canonical References
 
-- [`ANU_FRAMEWORK_OVERVIEW.md`](../../../docs/ANU_FRAMEWORK_OVERVIEW.md) — framework architecture
-- [`ANU_FRAMEWORK_GLOSSARY.md`](../../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary
-- [`SERIES_REGISTRY_SCHEMA.md`](../../../docs/SERIES_REGISTRY_SCHEMA.md) — registry schema
-- [`SKILL_DEPENDENCY_GRAPH.md`](../../../docs/SKILL_DEPENDENCY_GRAPH.md) — skill dependency DAG
-- [`ANU_BUILD_PROTOCOL.md`](../../../docs/ANU_BUILD_PROTOCOL.md) — multi-agent handoff protocol
-- [`schemas/anu_build_manifest.schema.json`](../../../docs/schemas/anu_build_manifest.schema.json)
-- [`schemas/subseries_plan.schema.json`](../../../docs/schemas/subseries_plan.schema.json)
-- [`schemas/ledger_v12.schema.json`](../../../docs/schemas/ledger_v12.schema.json)
-- [`schemas/pipeline_state_v12.schema.json`](../../../docs/schemas/pipeline_state_v12.schema.json)
+- [`ANU_FRAMEWORK_OVERVIEW.md`](../../docs/ANU_FRAMEWORK_OVERVIEW.md) — framework architecture
+- [`ANU_FRAMEWORK_GLOSSARY.md`](../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary
+- [`SERIES_REGISTRY_SCHEMA.md`](../../docs/SERIES_REGISTRY_SCHEMA.md) — registry schema
+- [`SKILL_VERSION_MATRIX.md`](../../docs/SKILL_VERSION_MATRIX.md) — per-skill versions
+
+Referenced by older revisions but **not shipped in this repository**:
+`docs/SKILL_DEPENDENCY_GRAPH.md`, `docs/ANU_BUILD_PROTOCOL.md`, and the four
+`docs/schemas/*.schema.json` files (`anu_build_manifest`, `subseries_plan`,
+`ledger_v12`, `pipeline_state_v12`). The cascade file shapes are specified in
+prose in this SKILL.md; `anu-doctor` D17/D18 fail until the JSON schemas land.
 
 ---
 
-*Part of the Anu Framework v12.0 — Master Orchestrator*
+*Part of the Anu Framework v12.2 — Master Orchestrator*
 *Lineage: anu-rebuild v1.1 + anu-pipeline v3.2 → anu-build v1.0*

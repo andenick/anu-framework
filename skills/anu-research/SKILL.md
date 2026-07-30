@@ -7,7 +7,7 @@ search-hints: research mine quotes methodology footnote knowledge base series do
 argument-hint: [action] [series_id]
 allowed-tools: Read, Write, Bash, Glob, Grep, Edit
 requires: none
-part-of: Anu Framework v11.0
+part-of: Anu Framework v12.2
 ---
 
 # Anu Research Standard v2.1

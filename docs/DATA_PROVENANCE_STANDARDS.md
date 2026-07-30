@@ -260,11 +260,11 @@ The user's rule for outward-facing artifacts:
 - [[ANU_FRAMEWORK_GLOSSARY]] — canonical term definitions, including DPR / EPR / FPR / VPR entries.
 - [[SERIES_REGISTRY_SCHEMA]] — JSON Schema for the registry that drives all three record types.
 - [[SERIES_ID_SPECIFICATION]] — canonical series-ID notation (`S###`, `-A`, `-EXT`, etc.).
-- [[ANU_FRAMEWORK_OVERVIEW]] — the 16-skill framework these records support.
+- [[ANU_FRAMEWORK_OVERVIEW]] — the framework these records support.
 - `anu-ingestion/SKILL.md` — the skill that produces DPRs and FPRs.
 - `anu-extension/SKILL.md` — the skill that produces EPRs.
 - `anu-review/SKILL.md` — the audit framework that validates D5 (DPR coverage), D6 (EPR coverage), and figure mapping.
 
 ---
 
-*Part of Anu Framework v10.0. First published 2026-05-13.*
+*Part of Anu Framework v12.2. First published 2026-05-13.*

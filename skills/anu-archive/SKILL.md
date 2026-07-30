@@ -7,7 +7,7 @@ search-hints: "archive zenodo deposit audit transparency provenance manifest che
 argument-hint: "[generate|validate] [project_path]"
 allowed-tools: Read, Write, Bash, Glob, Grep, Edit
 requires: anu-replicator, anu-publish, anu-drive
-part-of: Anu Framework v11.0
+part-of: Anu Framework v12.2
 ---
 
 # Anu Archive Standard v1.0
@@ -18,7 +18,7 @@ part-of: Anu Framework v11.0
 |----------|-------|
 | Skill Name | Anu Archive |
 | Version | 1.0 |
-| Part Of | Anu Framework v11.0 |
+| Part Of | Anu Framework v12.2 |
 | Created | 2026-05-14 |
 | Purpose | Bundle the complete, audit-grade provenance trail of a project into one versioned, checksummed archive |
 
@@ -117,7 +117,7 @@ The generator walks a project's `Technical/` tree and pulls:
   "project": "my-replication",
   "archive_version": "1.0",
   "generated": "2026-05-14T00:00:00Z",
-  "framework_version": "Anu Framework v11.0",
+  "framework_version": "Anu Framework v12.2",
   "citation": {
     "title": "...",
     "authors": [{"family-names": "...", "given-names": "..."}],

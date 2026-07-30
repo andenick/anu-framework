@@ -13,7 +13,7 @@ Usage:
 
 Output: {project}/Outputs/{ProjectName}_Archive_v{VERSION}/  (+ .zip)
 
-Part of the Anu Framework v11.0 — see anu-archive/SKILL.md.
+Part of the Anu Framework v12.2 — see anu-archive/SKILL.md.
 """
 from __future__ import annotations
 
@@ -39,6 +39,20 @@ ABS_PATH_PATTERN = re.compile(r"(?:[A-Za-z]:[\\/]|/home/|/Users/|\\\\)")
 DEFAULT_KB_ROOT_REL = Path("Inputs") / "KB"
 KB_ROOT_REL = DEFAULT_KB_ROOT_REL
 TEXT_SUFFIXES = {".md", ".txt", ".json", ".py", ".csv", ".yml", ".yaml", ".cff", ".tex", ".r", ".R"}
+
+
+def framework_version() -> str:
+    """Framework version label, read from the repo-root VERSION file.
+
+    VERSION is the single version constant for the framework; documentation
+    footers and generated-package stamps must agree with it.
+    """
+    try:
+        v = (Path(__file__).resolve().parents[2] / "VERSION").read_text(
+            encoding="utf-8").strip()
+    except OSError:
+        v = "12.2"
+    return f"Anu Framework v{v}"
 
 
 def sha256_file(path: Path) -> str:
@@ -196,7 +210,7 @@ def _write_readme(archive_dir: Path, registry: dict, version: str) -> None:
         "",
         f"**Archive version:** {version}  ",
         f"**Generated:** {datetime.now(timezone.utc).strftime('%Y-%m-%d')}  ",
-        f"**Framework:** Anu Framework v11.0  ",
+        f"**Framework:** {framework_version()}  ",
         f"**License:** {cfg.get('license', '')}",
         "",
         "## What this is",
@@ -275,7 +289,7 @@ def _write_manifest(archive_dir: Path, project: Path, registry: dict, version: s
         "project": registry.get("project", "Project"),
         "archive_version": version,
         "generated": datetime.now(timezone.utc).isoformat(),
-        "framework_version": "Anu Framework v11.0",
+        "framework_version": framework_version(),
         "citation": {
             "title": cfg.get("project_title", ""),
             "authors": [{

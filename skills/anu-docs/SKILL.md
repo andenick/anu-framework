@@ -509,7 +509,7 @@ For per-series docs sourcing from the data repository, the Adequate-tier doc mus
 
 ## Canonical References
 
-- [`ANU_FRAMEWORK_GLOSSARY.md`](../../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary for all framework terms.
+- [`ANU_FRAMEWORK_GLOSSARY.md`](../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary for all framework terms.
 
 ---
 

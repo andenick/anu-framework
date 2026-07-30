@@ -298,7 +298,7 @@ Canonical reference: `docs/DATA_REPOSITORY_INTEGRATION.md`.
 
 ## Canonical References
 
-- [`ANU_FRAMEWORK_GLOSSARY.md`](../../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary for all framework terms.
+- [`ANU_FRAMEWORK_GLOSSARY.md`](../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary for all framework terms.
 
 ---
 

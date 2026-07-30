@@ -28,7 +28,7 @@ Profiles (each classic profile is a superset of the one before):
 Source of truth: {project}/Technical/series_registry.json
 Output:          {project}/Outputs/{Project}_Publish_v{VERSION}/
 
-Part of the Anu Framework v11.0 — see anu-publish/SKILL.md.
+Part of the Anu Framework v12.2 — see anu-publish/SKILL.md.
 """
 from __future__ import annotations
 
@@ -128,6 +128,20 @@ PROFILES = ("data-only", "data+pipeline", "data+pipeline+viz", "full", "web")
 # --------------------------------------------------------------------------
 # Filesystem helpers
 # --------------------------------------------------------------------------
+
+def framework_version() -> str:
+    """Framework version label, read from the repo-root VERSION file.
+
+    VERSION is the single version constant for the framework; documentation
+    footers and generated-package stamps must agree with it.
+    """
+    try:
+        v = (Path(__file__).resolve().parents[2] / "VERSION").read_text(
+            encoding="utf-8").strip()
+    except OSError:
+        v = "12.2"
+    return f"Anu Framework v{v}"
+
 
 def sha256_file(path: Path) -> str:
     """Return the hex SHA-256 digest of a file."""
@@ -423,7 +437,7 @@ def write_readme(export_dir: Path, registry: dict, version: str, profile: str,
         "",
         f"**Package version:** {version}  ",
         f"**Profile:** `{profile}`  ",
-        f"**Framework:** Anu Framework v11.0",
+        f"**Framework:** {framework_version()}",
         "",
     ]
 
@@ -836,7 +850,7 @@ def write_manifest(export_dir: Path, registry: dict, version: str,
         "publish_version": version,
         "profile": profile,
         "generated": datetime.now(timezone.utc).isoformat(),
-        "framework_version": "Anu Framework v11.0",
+        "framework_version": framework_version(),
         "citation": {
             "title": cfg.get("project_title", ""),
             "authors": [{

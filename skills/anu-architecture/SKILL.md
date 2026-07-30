@@ -7,7 +7,7 @@ search-hints: "anu-architecture architecture anudata data econometrics panel ana
 allowed-tools: Read, Write, Bash, Glob, Grep, Edit
 argument-hint: "[init|status|run|checklist] [project_path]"
 requires: anu-ingestion, anu-replicator
-part-of: Anu Framework v11.0
+part-of: Anu Framework v12.2
 ---
 
 # Anu Architecture v2.1
@@ -451,7 +451,7 @@ Source: [Institution Name]
 Series/Table: [Specific identifier]
 Public URL: [Direct link to data page]
 Description: [What this data is]
-Original Data: http://www.anwarshaikhecon.org/ (Shaikh's published appendix)
+Original Data: https://www.anwarshaikhecon.org/ (Shaikh's published appendix)
 ```
 
 ### API Key Management
@@ -631,6 +631,6 @@ This section tracks learnings from real-world usage of Anu Architecture to impro
 
 ---
 
-*Anu Architecture v2.1 — Part of the Anu Framework v11.0*
+*Anu Architecture v2.1 — Part of the Anu Framework v12.2*
 *Lineage: predecessor architecture v1.0 (2026-04-05) -> v1.1 (2026-04-06) -> AnuData v2.0 (2026-05-09) -> Anu Architecture v2.1 (2026-05-15)*
 *First application: an applied research project (2026-04-05)*

@@ -462,9 +462,9 @@ Must also update on completion: Regenerate Ledger (`/anu-ledger generate`). If `
 
 ### Canonical References
 
-- [`ANU_FRAMEWORK_GLOSSARY.md`](../../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary for all framework terms.
-- [`SERIES_REGISTRY_SCHEMA.md`](../../../docs/SERIES_REGISTRY_SCHEMA.md) — the formal `series_registry.json` schema.
-- [`DATA_PROVENANCE_STANDARDS.md`](../../../docs/DATA_PROVENANCE_STANDARDS.md) — DPR / EPR / FPR / VPR record specs.
+- [`ANU_FRAMEWORK_GLOSSARY.md`](../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary for all framework terms.
+- [`SERIES_REGISTRY_SCHEMA.md`](../../docs/SERIES_REGISTRY_SCHEMA.md) — the formal `series_registry.json` schema.
+- [`DATA_PROVENANCE_STANDARDS.md`](../../docs/DATA_PROVENANCE_STANDARDS.md) — DPR / EPR / FPR / VPR record specs.
 
 ## Data Repository Integration
 

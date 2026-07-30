@@ -68,7 +68,7 @@ Usage:
   python check_project.py --emit-matrix   # also write SERIES_CORRESPONDENCE_MATRIX.json
                                           # (off by default: the audit is read-only)
 
-Part of the Anu Framework v12.0 — see anu-doctor/SKILL.md.
+Part of the Anu Framework v12.2 — see anu-doctor/SKILL.md.
 
 Derived from the reference-replication build, where 10+ ad-hoc consistency cross-checks
 were done by hand. This skill formalizes them.

@@ -7,7 +7,7 @@ search-hints: extenbook excel workbook sheets data provenance research construct
 argument-hint: [action] [series_id]
 allowed-tools: Read, Write, Grep, Glob, LS, Shell
 requires: anu-ingestion, anu-research
-part-of: Anu Framework v11.0
+part-of: Anu Framework v12.2
 ---
 
 # Anu Extenbook Standard v3.2
@@ -18,7 +18,7 @@ part-of: Anu Framework v11.0
 |----------|-------|
 | Skill Name | Anu Extenbook |
 | Version | 3.2 |
-| Part Of | Anu Framework v11.0 |
+| Part Of | Anu Framework v12.2 |
 | Created | 2026-01-30 |
 | Updated | 2026-03-07 |
 | Purpose | Generate series-level Excel workbooks showing complete data construction |

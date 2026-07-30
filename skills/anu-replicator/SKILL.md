@@ -7,7 +7,7 @@ search-hints: replicator reproduce package loading processing script bundle repr
 argument-hint: [action] [target]
 allowed-tools: Read, Write, Grep, Glob, LS, Shell
 requires: anu-ingestion, anu-research, anu-extension
-part-of: Anu Framework v11.0
+part-of: Anu Framework v12.2
 ---
 
 # Anu Replicator Standard v3.1
@@ -52,7 +52,7 @@ Series/Table: [Identifier]
 Public URL: [Direct link]
 API: [Name] (free key: [registration URL])
 Fallback: [Manual download instructions]
-Original Data: http://www.anwarshaikhecon.org/
+Original Data: https://www.anwarshaikhecon.org/
 """
 ```
 

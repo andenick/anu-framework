@@ -1,0 +1,26 @@
+# Anu Framework — Python dependencies for the shipped executable surface.
+#
+#   python -m pip install -r requirements.txt
+#
+# Lower bounds only: the framework does not pin, so it composes with whatever
+# your project already uses.
+#
+# Nothing here is needed for the two self-audit checkers
+# (skills/anu-doctor/check_framework.py and check_project.py, and their
+# tools/ wrappers) — those are stdlib-only.
+#
+# Which script needs what:
+#   pandas    anu-drive/generate_drive_package.py, anu-publish/generate_publish_package.py,
+#             anu-variant/{generate_comparison,variant_registry,vintage_downloader}.py
+#   numpy     anu-variant/generate_comparison.py
+#   pyarrow   anu-publish/generate_publish_package.py  (DataFrame.to_parquet)
+#   openpyxl  anu-drive/generate_drive_package.py      (pd.ExcelWriter engine)
+#   requests  anu-variant/vintage_downloader.py        (ALFRED/FRED vintages)
+#   tabulate  anu-variant/generate_comparison.py       (DataFrame.to_markdown)
+
+pandas>=1.5
+numpy>=1.23
+pyarrow>=10.0
+openpyxl>=3.1
+requests>=2.28
+tabulate>=0.9

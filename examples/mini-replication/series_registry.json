@@ -3,8 +3,7 @@
   "project": "mini-replication",
   "prefix_scheme": {
     "primary": "S",
-    "external": "ES",
-    "analytical": "AS"
+    "extra": "XS"
   },
   "series": {
     "S001": {
@@ -16,39 +15,68 @@
       "units": "index_2017=100",
       "frequency": "annual",
       "period_start": 1919,
-      "period_end": 2024,
+      "period_end": 2025,
       "loading_script": "L01",
       "processing_script": "P01",
       "validation_script": "V01",
-      "status": "validated_book_and_extension",
+      "status": "validated",
       "extension": null,
       "reference_values": {
         "1929": 7.6,
         "1950": 15.8,
         "2017": 100.0,
         "2023": 100.8
-      }
+      },
+      "display_name": "US Industrial Production Index",
+      "publish": true,
+      "triage": {
+        "verdict": "publish",
+        "reason": "worked example; both series trace to a single public FRED source",
+        "date": "2026-07-30"
+      },
+      "chapter": 0,
+      "year_range": [
+        1919,
+        2025
+      ],
+      "subseries": {}
     },
     "S002": {
       "name": "INDPRO annual growth rate",
       "content_type": "time_series",
       "construction": "formula",
-      "formula": "S002[t] = (S001[t] - S001[t-1]) / S001[t-1]",
-      "components": ["S001"],
+      "formula": "S002[t] = 100 * (S001[t] - S001[t-1]) / S001[t-1]",
+      "components": [
+        "S001"
+      ],
       "units": "percent",
       "frequency": "annual",
       "period_start": 1920,
-      "period_end": 2024,
+      "period_end": 2025,
       "loading_script": null,
       "processing_script": "P02",
       "validation_script": "V02",
-      "status": "validated_book_and_extension",
+      "status": "validated",
       "extension": null,
       "reference_values": {
         "2009": -11.43,
         "2010": 5.57,
         "2020": -7.09
-      }
+      },
+      "display_name": "US Industrial Production Index, annual growth",
+      "publish": true,
+      "triage": {
+        "verdict": "publish",
+        "reason": "worked example; both series trace to a single public FRED source",
+        "date": "2026-07-30"
+      },
+      "chapter": 0,
+      "year_range": [
+        1920,
+        2025
+      ],
+      "subseries": {}
     }
-  }
+  },
+  "architecture": "Anu Framework v12.2"
 }

@@ -7,7 +7,7 @@ search-hints: "variant methodology alternative approach construction comparison 
 allowed-tools: Read, Write, Bash, Glob, Grep, Edit
 argument-hint: "[action] [series_id]"
 requires: none
-part-of: Anu Framework v11.0
+part-of: Anu Framework v12.2
 ---
 
 # Anu Variant Standard v1.4
@@ -18,7 +18,7 @@ part-of: Anu Framework v11.0
 |----------|-------|
 | Skill Name | Anu Variant |
 | Version | 1.4 |
-| Part Of | Anu Framework v11.0 |
+| Part Of | Anu Framework v12.2 |
 | Created | 2026-02-26 |
 | Purpose | Track multiple methodological variants with unique IDs and full provenance |
 

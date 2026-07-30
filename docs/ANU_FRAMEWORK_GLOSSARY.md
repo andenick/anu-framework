@@ -12,7 +12,7 @@
 Every term used across the Anu Framework — agent skills, internal artifacts, outward-facing packages — is defined exactly once here. When a skill, doc, or review mentions a term, it should match this glossary's definition without restatement. Cross-references use `[[double-bracket]]` notation. Acronyms point to their expansions.
 
 **Related canonical documents:**
-- [`SERIES_ID_SPECIFICATION.md`](./SERIES_ID_SPECIFICATION.md) — canonical series identifier grammar
+- `anu-ingestion/SKILL.md` (Series ID Spec) — canonical series identifier grammar
 - [`ANU_FRAMEWORK_OVERVIEW.md`](./ANU_FRAMEWORK_OVERVIEW.md) — framework architecture and skill map
 - [`DATA_PROVENANCE_STANDARDS.md`](./DATA_PROVENANCE_STANDARDS.md) — provenance record specifications (sister doc)
 
@@ -21,7 +21,7 @@ Every term used across the Anu Framework — agent skills, internal artifacts, o
 ## 1. Framework & Architecture
 
 ### Anu Framework
-**Definition:** A 20-skill, multi-stage data-construction framework for replicating published economic series and extending them with public-API data under strict faithfulness rules.
+**Definition:** A 21-skill (19 current + 2 superseded), multi-stage data-construction framework for replicating published economic series and extending them with public-API data under strict faithfulness rules.
 **Example:** the framework's reference replication project is the reference implementation for Anu Framework v11.
 **Related:** [[Anu Architecture]] [[Anu Replicator]] [[Anu Pipeline]]
 
@@ -426,7 +426,7 @@ See [[D14 Outward-Facing Intelligibility]] and [[Anu Publish]] for enforcement.
 
 ## Cross-References
 
-- [`SERIES_ID_SPECIFICATION.md`](./SERIES_ID_SPECIFICATION.md) — canonical grammar for every series ID in this glossary
+- `anu-ingestion/SKILL.md` (Series ID Spec) — canonical grammar for every series ID in this glossary
 - [`ANU_FRAMEWORK_OVERVIEW.md`](./ANU_FRAMEWORK_OVERVIEW.md) — skill catalog, stage diagram, and architectural rationale
 - [`DATA_PROVENANCE_STANDARDS.md`](./DATA_PROVENANCE_STANDARDS.md) — full specification of DPR, EPR, FPR, VPR field structures (sister document)
 

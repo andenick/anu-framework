@@ -27,7 +27,7 @@ Index, 2017 = 100.
 
 ## Period
 
-1919–2024 (depending on FRED's current vintage).
+1919–2025, complete calendar years only (partial years are dropped by P01; depending on FRED's current vintage).
 
 ## Reference values (from FRED, used for V01 validation)
 
