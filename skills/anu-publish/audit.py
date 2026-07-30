@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """anu-publish audit — Pre-publication scrub auditor.
 
-Walks the project tree, applies `.publish_ignore` exclusion rules, then greps
-every remaining text file for internal references that must NOT leak into the
-public release. Reports findings per-file with line numbers; exit non-zero
+Walks the project tree, applies any `.publish_ignore` exclusion rules, then
+greps every remaining text file for internal references that must NOT leak into
+the public release. Reports findings per-file with line numbers; exit non-zero
 on findings (zero on clean).
 
 This is the canonical implementation of `/anu-publish audit`. It runs BEFORE
@@ -38,13 +38,15 @@ treated as a hard error, and `--self-test` runs the effective patterns against
 built-in positive and negative fixtures. Run it in CI alongside the audit —
 per GATE_DESIGN §6(c), a gate that cannot fail is not a gate.
 
-The `.publish_ignore` file uses fnmatch glob syntax, one pattern per line.
-Trailing '/' marks a directory pattern (and its subtree). Keep it to the single
-narrow self-exemption below: exempting the files that actually carry leaks turns
-the gate into decoration.
+An optional `.publish_ignore` at the project root uses fnmatch glob syntax, one
+pattern per line; a trailing '/' marks a directory subtree. THIS REPOSITORY
+SHIPS NONE, deliberately — exempting the files that actually carry leaks turns
+the gate into decoration. Per GATE_DESIGN §6(a), any exemption you do add should
+record a reason, an owner and a review-by date.
 
-False-positive exclusions (hard-coded, narrow):
-  - This audit script itself, which carries the self-test fixtures.
+Self-exemptions (hard-coded, narrow — GATE_DESIGN §6(b)):
+  - this audit script, which carries the self-test fixtures;
+  - the deny-list files, which carry the patterns.
 
 Usage:
   python audit.py                       # report findings (exit non-zero if any)

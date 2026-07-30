@@ -17,4 +17,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
-          body_path: CHANGELOG.md
+          # Root CHANGELOG.md is a pointer; the real changelog lives in docs/.
+          body_path: docs/ANU_FRAMEWORK_CHANGELOG.md
