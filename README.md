@@ -179,6 +179,13 @@ detection. CI runs the first two on every push and pull request.
 | D18 | fails | `docs/schemas/anu_build_manifest.schema.json` is not in this repository. |
 | D19 | warns | Same missing `Stage Position` sections as D16. |
 
+`tools/audit_publish.py --strict` also **exits non-zero**, with 2 FAIL findings,
+both in `docs/ANU_FRAMEWORK_IMPROVEMENTS_RFC.md` — an internal engineering RFC
+that quotes absolute workspace paths verbatim. It previously reported clean only
+because `.publish_ignore` exempted that file (and ten others, including every
+file that carried a leak). That exemption list has been deleted, so the number
+you see now is the real one.
+
 These are listed rather than suppressed. A green badge earned by exempting the
 failing files would be worse than a red one.
 

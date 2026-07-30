@@ -41,7 +41,7 @@ Stage 8a — DISTRIBUTION (Publish)
 | Chopped CSVs | `Technical/ANU_REPLICATOR/data/final-data/chopped/` | Yes |
 | Extenbooks | `Technical/ANU_REPLICATOR/data/final-data/extenbooks/` | Yes (for `data+pipeline+viz` and `full` profiles) |
 | Per-series provenance docs | `Technical/docs/series/*_DPR.md`, `*_EPR.md`, `*_DECOMPOSITION.md` | Yes (for `full` profile) |
-| .publish_ignore | `{project_root}/.publish_ignore` | No |
+| .publish_ignore (optional; **not shipped by this repo**) | `{project_root}/.publish_ignore` | No |
 | Visualization app | `Technical/ShinyApp/` or `Technical/ANU_VIZ/` | No (for `data+pipeline+viz` profile) |
 
 ## Outputs
@@ -60,7 +60,7 @@ Stage 8a — DISTRIBUTION (Publish)
 
 This skill ships two executables alongside this SKILL.md:
 
-**`audit.py`** — canonical implementation of `/anu-publish audit`. Walks the project tree, applies `.publish_ignore` exclusion rules, greps every remaining text file for internal references. Exit non-zero on findings. Runs BEFORE `package` so agents identify leaks early.
+**`audit.py`** — canonical implementation of `/anu-publish audit`. Walks the project tree, applies any `.publish_ignore` exclusion rules, greps every remaining text file for internal references. Exit non-zero on findings. Runs BEFORE `package` so agents identify leaks early.
 
 ```bash
 python audit.py                       # report findings (exit non-zero if any)
@@ -79,7 +79,7 @@ Writing an overlay: anchor private tool names so they cannot collide with a surn
 
 Because a scrubber that matches nothing reports CLEAN, an empty effective deny-list is a hard error (exit 2), and `python audit.py --self-test` runs the effective patterns against positive and negative fixtures. Run it in CI beside the audit - a gate that cannot fail is not a gate.
 
-The `.publish_ignore` file at the project root excludes internal coordination artifacts (one fnmatch glob per line; trailing `/` marks directory subtrees). Default excludes typically include `MIGRATION/`, internal plan docs, and runtime JSON files.
+An optional `.publish_ignore` at the project root excludes internal coordination artifacts (one fnmatch glob per line; trailing `/` marks directory subtrees). **This repository ships none**, deliberately: an exemption list is the easiest way to make a leak gate report clean while the leaks are still there. `audit.py` hard-codes exactly one self-exemption — itself and its deny-list — and everything else must actually be fixed. Per GATE_DESIGN §6(a), any exemption you do add should record a reason, an owner and a review-by date.
 
 **`generate_publish_package.py`** — canonical implementation of `/anu-publish package` and `/anu-publish validate`. Assembles the export, scrubs it, writes the manifest, runs the pre-publication gate in one pass.
 
@@ -119,7 +119,7 @@ Scan the project and produce an `AUDIT_REPORT.md`:
 - Flag any hardcoded API keys in scripts (e.g., `FRED_API_KEY = "abc123"`)
 
 ### 1B. Path Sanitization
-- Grep for absolute paths (`D:/`, `C:/`, `/home/`, `\\`)
+- Grep for absolute machine paths (drive letters, home directories, UNC shares)
 - Run the scrub audit with your organization deny-list overlay armed (`audit.py --patterns`)
 - Grep for personal identifiers: email addresses, usernames
 - All `lib/paths.py` references should be relative (via `Path(__file__).resolve().parent`)
@@ -193,7 +193,7 @@ Pre-publication gate — the `generate_publish_package.py` generator runs checks
 | P07_ENTRY_POINT | FAIL (pipeline profiles) | `replicate.py` runnable entry point present |
 | P08_REQUIREMENTS | FAIL (pipeline profiles) | `requirements.txt` present |
 | P09_NO_SECRETS | FAIL | No API keys, tokens, or passwords in any text file |
-| P10_NO_ABSOLUTE_PATHS | **FAIL** (v2.1; was WARN) | No `D:/`, `C:/`, `/home/`, `/Users/`, or UNC paths — workspace paths shipped to the public web while this was WARN |
+| P10_NO_ABSOLUTE_PATHS | **FAIL** (v2.1; was WARN) | No absolute machine paths of any form — drive-letter, home-directory or UNC — after workspace paths shipped to the public web while this was WARN |
 | P11_NO_INTERNAL_REFS | **FAIL** (v2.1; was WARN) - **WARN "not enforced"** when no organization deny-list is configured | No references matching the organization deny-list overlay (`$ANU_SCRUB_PATTERNS` or `<project>/.anu_scrub_patterns.json`). Ships empty, so an unconfigured gate is visibly unarmed rather than silently green |
 | P12_NO_BUILD_ARTIFACTS | FAIL | No `__pycache__/`, internal staging dirs (`inputs_bundled/`, `SalvagedInputs/`), or `api_keys.env`/`.env` leaked into the export |
 | P13_DICTIONARY_PRESENT | FAIL (`web`) | `data_dictionary.csv` present — mandatory for every public dataset per `ANU_NAMING_STANDARD.md` |
