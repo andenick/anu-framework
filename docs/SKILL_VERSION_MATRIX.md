@@ -36,8 +36,8 @@ stubs, they contain complete instructions, and `anu-ledger` still declares
 | 17 | anu-architecture | 2.1 | Current | Infrastructure | anu-ingestion, anu-replicator | Format standard; BEA/BLS/FRED cache schemas |
 | 18 | anu-doctor | 2.3 | Current | Infrastructure | none | Framework (D01-D19) + project (P01-P39) self-audit |
 | 19 | anu-build | 1.3 | Current | Orchestrator | anu-research, anu-adequacy, anu-ingestion, anu-extension, anu-replicator, anu-chopped, anu-extenbook, anu-visualize, anu-review, anu-docs, anu-variant, anu-ledger, anu-architecture, anu-publish, anu-drive, anu-archive, anu-doctor, anu-scaffold | Master orchestrator: 9-stage pipeline + 4-file cascade |
-| 20 | anu-pipeline | 3.2 | Superseded | Superseded | none | Superseded by anu-build; still ships full instructions |
-| 21 | anu-rebuild | 1.1 | Superseded | Superseded | anu-doctor, anu-ingestion, anu-publish, anu-pipeline, anu-scaffold | Superseded by anu-build (mode=rebuild); still ships full instructions |
+| 20 | anu-pipeline | 3.2 | Superseded | (was Orchestrator) | none | Superseded by anu-build; still ships full instructions |
+| 21 | anu-rebuild | 1.1 | Superseded | (was Rebuild meta-skill) | anu-doctor, anu-ingestion, anu-publish, anu-pipeline, anu-scaffold | Superseded by anu-build (mode=rebuild); still ships full instructions |
 
 All 21 declare `part-of: Anu Framework v12.2`.
 
