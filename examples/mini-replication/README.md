@@ -64,6 +64,5 @@ This is the *minimum* exercise of the Anu Framework that demonstrates:
 - The Chopped CSV output format
 - Per-series provenance records (DPRs)
 
-For the full reference implementation (64 series, 100% PASS, three
-distribution channels), see the Shaikh-Tonak replication notes in
-[`docs/LESSONS_LEARNED_RMWND_2026.md`](../../docs/LESSONS_LEARNED_RMWND_2026.md).
+The full reference implementation of this pipeline covers 64 series at 100%
+PASS across three distribution channels.

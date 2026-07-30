@@ -538,8 +538,6 @@ The rebuild is correctly executed when:
 
 ## Canonical references
 
-- [`LESSONS_LEARNED_RMWND_2026.md`](../../docs/LESSONS_LEARNED_RMWND_2026.md) — experience report this runbook is derived from
-- [`ANU_FRAMEWORK_IMPROVEMENTS_RFC.md`](../../docs/ANU_FRAMEWORK_IMPROVEMENTS_RFC.md) — the 12 friction-point remediations
 - [`ANU_FRAMEWORK_GLOSSARY.md`](../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary
 
 ---

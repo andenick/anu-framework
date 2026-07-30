@@ -2,7 +2,6 @@
 
 **Status**: RFC — proposed new skill, target framework v11.0
 **Eventual location**: `skills/anu-rebuild/SKILL.md`
-**Companion docs**: [`LESSONS_LEARNED_RMWND_2026.md`](LESSONS_LEARNED_RMWND_2026.md), [`ANU_FRAMEWORK_IMPROVEMENTS_RFC.md`](ANU_FRAMEWORK_IMPROVEMENTS_RFC.md)
 **Derived from**: the 21-commit reference-replication rebuild (May 2026, 64 series, 100% PASS, 12-15 focused sessions)
 
 This document is the full SKILL.md specification for a new framework skill that formalizes the rebuild workflow I converged on during the reference-replication build. When approved and implemented, this document will become `skills/anu-rebuild/SKILL.md` and the contents below will be its body.
@@ -33,7 +32,7 @@ part-of: Anu Framework v11.0
 
 `anu-rebuild` wraps the salvage-and-port workflow for taking an existing data construction project (typically a predecessor pipeline or an academic replication that lives outside the Anu Framework) and producing a fresh, Anu-Framework-native implementation.
 
-It is **the meta-skill that orchestrates the other 19 skills** through a 6-wave + closeout cadence proven to take a 60-series replication from blank scaffold to 100% PASS distribution-ready in **~12-15 focused sessions** (reference-replication baseline). With the friction-point remediations in [`ANU_FRAMEWORK_IMPROVEMENTS_RFC.md`](ANU_FRAMEWORK_IMPROVEMENTS_RFC.md) absorbed, the target drops to **~7-10 sessions**.
+It is **the meta-skill that orchestrates the other 19 skills** through a 6-wave + closeout cadence proven to take a 60-series replication from blank scaffold to 100% PASS distribution-ready in **~12-15 focused sessions** (reference-replication baseline). With the friction-point remediations absorbed, the target drops to **~7-10 sessions**.
 
 The skill is general: it works on any large data-construction predecessor regardless of domain. The reference-replication rebuild was economic data; the same workflow applies to capital-markets, sectoral-employment, environmental-accounts, or any other domain where you have a predecessor project + book/source documents + the intention to reauthor under audit-grade discipline.
 
@@ -353,8 +352,6 @@ The skill is correctly implemented and useful when:
 
 ## Canonical references
 
-- [`LESSONS_LEARNED_RMWND_2026.md`](LESSONS_LEARNED_RMWND_2026.md) — the experience report this skill is derived from
-- [`ANU_FRAMEWORK_IMPROVEMENTS_RFC.md`](ANU_FRAMEWORK_IMPROVEMENTS_RFC.md) — the 12 friction-point remediations this skill composes
 - [`ANU_FRAMEWORK_GLOSSARY.md`](ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary for all framework terms
 
 ---

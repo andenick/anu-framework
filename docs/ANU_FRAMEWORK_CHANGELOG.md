@@ -8,7 +8,7 @@ The authoritative current state is always [`ANU_FRAMEWORK_OVERVIEW.md`](ANU_FRAM
 
 ## 2026-05-15 — v11.0: reference-replication rebuild absorption
 
-The 21-commit Shaikh & Tonak reference-replication rebuild — a public-facing replication package taken from blank scaffold to 64/64 PASS with `git push` to GitHub — surfaced 12 friction points the framework had no answer for. v11.0 absorbs them. RFCs at [`LESSONS_LEARNED_RMWND_2026.md`](LESSONS_LEARNED_RMWND_2026.md), [`ANU_FRAMEWORK_IMPROVEMENTS_RFC.md`](ANU_FRAMEWORK_IMPROVEMENTS_RFC.md), [`ANU_REBUILD_META_SKILL.md`](ANU_REBUILD_META_SKILL.md).
+The 21-commit Shaikh & Tonak reference-replication rebuild — a public-facing replication package taken from blank scaffold to 64/64 PASS with `git push` to GitHub — surfaced 12 friction points the framework had no answer for. v11.0 absorbs them., [`ANU_REBUILD_META_SKILL.md`](ANU_REBUILD_META_SKILL.md).
 
 ### Skill renamed
 
@@ -37,8 +37,6 @@ The 21-commit Shaikh & Tonak reference-replication rebuild — a public-facing r
 
 ### Canonical docs added
 
-- `LESSONS_LEARNED_RMWND_2026.md` — what worked, what hurt, build cost analysis, counterfactuals (~3000 words).
-- `ANU_FRAMEWORK_IMPROVEMENTS_RFC.md` — 12 friction points with severity, evidence, proposed change, code sketch, acceptance criteria (~6000 words).
 - `ANU_REBUILD_META_SKILL.md` — full SKILL.md spec for the new anu-rebuild skill (~2500 words).
 
 ---

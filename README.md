@@ -92,9 +92,7 @@ Full statement: [`docs/ANU_FRAMEWORK_OVERVIEW.md`](docs/ANU_FRAMEWORK_OVERVIEW.m
 
 The Shaikh & Tonak (1994) replication built the framework: 64 series, 100%
 PASS, three distribution channels, 21 commits. The 12 friction points
-surfaced during that build drove the v11.0 absorption — see
-[`docs/LESSONS_LEARNED_RMWND_2026.md`](docs/LESSONS_LEARNED_RMWND_2026.md)
-and [`docs/ANU_FRAMEWORK_IMPROVEMENTS_RFC.md`](docs/ANU_FRAMEWORK_IMPROVEMENTS_RFC.md).
+surfaced during that build drove the v11.0 absorption.
 
 A minimal worked example ships at
 [`examples/mini-replication/`](examples/mini-replication/).
@@ -179,12 +177,12 @@ detection. CI runs the first two on every push and pull request.
 | D18 | fails | `docs/schemas/anu_build_manifest.schema.json` is not in this repository. |
 | D19 | warns | Same missing `Stage Position` sections as D16. |
 
-`tools/audit_publish.py --strict` also **exits non-zero**, with 2 FAIL findings,
-both in `docs/ANU_FRAMEWORK_IMPROVEMENTS_RFC.md` — an internal engineering RFC
-that quotes absolute workspace paths verbatim. It previously reported clean only
-because `.publish_ignore` exempted that file (and ten others, including every
-file that carried a leak). That exemption list has been deleted, so the number
-you see now is the real one.
+`tools/audit_publish.py --strict` reports **clean**. It previously reported clean
+for the wrong reason — `.publish_ignore` exempted eleven files, including every
+file that carried a leak. That exemption list has been deleted and the two
+internal documents that carried the remaining findings (an engineering RFC and a
+build post-mortem, both of which quoted absolute workspace paths verbatim) have
+been withdrawn from the package, so the result you see now is the real one.
 
 These are listed rather than suppressed. A green badge earned by exempting the
 failing files would be worse than a red one.
