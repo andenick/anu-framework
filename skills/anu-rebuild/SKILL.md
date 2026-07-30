@@ -335,7 +335,7 @@ python <framework>/skills/anu-publish/audit.py --project Outputs/<bundle>/ --str
 ```bash
 cd Outputs/<project>_Publish_v1.0/
 git init -b main && git add -A && git commit -m "Initial public release v1.0"
-gh repo create andenick/<descriptive-slug> --public --source=. --remote=origin --push
+gh repo create <your-org>/<descriptive-slug> --public --source=. --remote=origin --push
 git tag v1.0.0 && git push --tags
 ```
 
@@ -343,7 +343,7 @@ git tag v1.0.0 && git push --tags
 
 ### Step D.5 — Drive folder upload
 
-Copy `Outputs/<project>_Drive_v1.0/` to your shared cloud folder (e.g., `<cloud-drive>/Shared/Heterodata/`). Cloud sync propagates.
+Copy `Outputs/<project>_Drive_v1.0/` to your shared cloud folder (e.g., `<cloud-drive>/Shared/<your-org>/`). Cloud sync propagates.
 
 ### Step D.6 — Archive
 
@@ -428,7 +428,7 @@ Public output folders use descriptive slugs (`measuring-wealth-of-nations-replic
 
 The predecessor's `data/final/*.csv` are reference benchmarks at most. Re-derive every value from documented sources.
 
-**Real example**: ST2's `T507.csv` carried a NIPA-proxy surplus ratio of 0.5698 at 1948. The book identity S/Y = e/(1+e) yields 0.6296. The rebuild's S507 was re-derived; the divergence was caught and logged.
+**Real example**: a predecessor project's `T507.csv` carried a NIPA-proxy surplus ratio of 0.5698 at 1948. The book identity S/Y = e/(1+e) yields 0.6296. The rebuild's S507 was re-derived; the divergence was caught and logged.
 
 ### Do not skip per-wave review
 

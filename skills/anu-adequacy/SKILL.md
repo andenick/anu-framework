@@ -344,7 +344,7 @@ Anu Review (v3.7+) includes D0 as an unweighted gate check:
 
 ## Version History
 
-- **v1.0** (March 2026) - Initial release. 5-layer assessment framework. Learned from ST2 and the reference project gap analysis.
+- **v1.0** (March 2026) - Initial release. 5-layer assessment framework. Learned from predecessor-project and reference-implementation gap analysis.
 - **v1.1** (March 2026) - Added Anu Framework Context section; integrated with full suite awareness
 - **v1.2** (April 2026) - Version bump for Anu Framework v11.0 alignment; noted validation phase integration
 

@@ -31,7 +31,7 @@ part-of: Anu Framework v11.0
 
 ## 1. Purpose
 
-`anu-rebuild` wraps the salvage-and-port workflow for taking an existing data construction project (typically a predecessor like ST2 or an academic replication that lives outside the Anu Framework) and producing a fresh, Anu-Framework-native implementation.
+`anu-rebuild` wraps the salvage-and-port workflow for taking an existing data construction project (typically a predecessor pipeline or an academic replication that lives outside the Anu Framework) and producing a fresh, Anu-Framework-native implementation.
 
 It is **the meta-skill that orchestrates the other 19 skills** through a 6-wave + closeout cadence proven to take a 60-series replication from blank scaffold to 100% PASS distribution-ready in **~12-15 focused sessions** (reference-replication baseline). With the friction-point remediations in [`ANU_FRAMEWORK_IMPROVEMENTS_RFC.md`](ANU_FRAMEWORK_IMPROVEMENTS_RFC.md) absorbed, the target drops to **~7-10 sessions**.
 
@@ -50,7 +50,7 @@ Invoke `anu-rebuild` when **all four** of these conditions hold:
 
 ### Examples that DO fit
 
-- ST2 (T###/N#### naming, hardcoded internal paths, multi-phase pipeline but no Anu skill alignment) → the reference replication
+- a predecessor pipeline (T###/N#### naming, hardcoded internal paths, multi-phase but no Anu skill alignment) → the reference replication
 - A heterodox-economics replication that lives in a Jupyter notebook → fresh `Technical/` project
 - An academic data package with no per-series provenance → series_registry.json + 64 DPRs
 
@@ -242,7 +242,7 @@ Things `anu-rebuild` explicitly prohibits or warns against, all observed in pred
 
 The predecessor's `data/final/*.csv` are reference benchmarks at most. Re-derive every value from the documented source (book table, BEA API cache, external study CSV). Copying outputs creates silent dependencies; if the predecessor had a bug, your rebuild inherits it.
 
-**Real example**: ST2's `T507.csv` carried the NIPA-proxy surplus ratio with values like 0.5698 at 1948. The book itself implies S/Y = e/(1+e) = 0.6296 (algebraic identity). The reference replication's S507 was re-derived from S505 and S504; the divergence was caught and documented. Had I copied ST2's T507.csv, the bug would have shipped.
+**Real example**: a predecessor pipeline's `T507.csv` carried the NIPA-proxy surplus ratio with values like 0.5698 at 1948. The book itself implies S/Y = e/(1+e) = 0.6296 (algebraic identity). The reference replication's S507 was re-derived from S505 and S504; the divergence was caught and documented. Had the predecessor's T507.csv been copied verbatim, the bug would have shipped.
 
 ### 6.2 Do not skip per-wave review
 

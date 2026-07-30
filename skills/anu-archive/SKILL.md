@@ -114,7 +114,7 @@ The generator walks a project's `Technical/` tree and pulls:
 
 ```json
 {
-  "project": "the reference project",
+  "project": "my-replication",
   "archive_version": "1.0",
   "generated": "2026-05-14T00:00:00Z",
   "framework_version": "Anu Framework v11.0",

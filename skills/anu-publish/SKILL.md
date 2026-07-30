@@ -99,7 +99,7 @@ It reads `{project}/Technical/series_registry.json` for `drive_config` metadata 
 | `data+pipeline` *(default)* | Above + replicator code: `loading/`, `processing/`, `lib/`, `config/`, `validation/`, `replicate.py`, `requirements.txt` | Researchers who want to reproduce |
 | `data+pipeline+viz` | Above + the visualization app under `visualization/` | Full interactive experience |
 | `full` | Above + per-series provenance docs (`docs/series/*_DPR.md`, `*_EPR.md`, `*_DECOMPOSITION.md`) | Maximum transparency |
-| `web` | **Not a superset** — the formal Anu→website export contract consumed by vizsite-family `build_cache.py`: publish-filtered `series_registry.json`, `chopped/` CSVs, `parquet/` per-series files, generated `data_dictionary.csv`, `docs/explainers/*_EXPLAINER.md`, scrubbed `docs/series/*_DPR.md`, `MIGRATION/crosswalk.csv` (if present), `WEB_MANIFEST.json` | Websites + the future Robin API (single source of truth for public naming and downloads) |
+| `web` | **Not a superset** — the formal Anu→website export contract consumed by vizsite-family `build_cache.py`: publish-filtered `series_registry.json`, `chopped/` CSVs, `parquet/` per-series files, generated `data_dictionary.csv`, `docs/explainers/*_EXPLAINER.md`, scrubbed `docs/series/*_DPR.md`, `MIGRATION/crosswalk.csv` (if present), `WEB_MANIFEST.json` | Websites + any downstream data API (single source of truth for public naming and downloads) |
 
 ### The `web` profile contract
 

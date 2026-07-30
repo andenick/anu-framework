@@ -20,8 +20,8 @@ import sys
 from pathlib import Path
 
 SKILLS_DIR = Path(__file__).resolve().parent.parent          # the skills directory
-DRUCK_DIR = SKILLS_DIR.parent.parent                          # the framework repo root
-DOCS_DIR = DRUCK_DIR / "docs"
+REPO_ROOT = SKILLS_DIR.parent                                # the framework repo root
+DOCS_DIR = REPO_ROOT / "docs"
 OVERVIEW = DOCS_DIR / "ANU_FRAMEWORK_OVERVIEW.md"
 MATRIX = DOCS_DIR / "SKILL_VERSION_MATRIX.md"
 
@@ -253,7 +253,7 @@ def run_checks() -> Report:
     # appears inside a Version History block — those are honest references
     # to project-level scripts, not skill-ship claims.
     LINE_QUALIFIERS = ("e.g.", "project-specific", "project-provided",
-                       "in the cd2 project", "project's", "a script",
+                       "project's", "a script",
                        "etc.", "etc)", "such as", "for example", "are scripts")
     # A file-level disclaimer contextualizes every script mention in that file.
     FILE_DISCLAIMERS = ("project-provided", "does not ship a generator",

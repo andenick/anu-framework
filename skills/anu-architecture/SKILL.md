@@ -12,7 +12,7 @@ part-of: Anu Framework v11.0
 
 # Anu Architecture v2.1
 
-*Lineage: NickyData v1.1 -> AnuData Architecture v2.0 (May 2026) -> Anu Architecture v2.1 (May 2026 — renamed for framework-name consistency).*
+*Lineage: predecessor architecture v1.1 -> AnuData Architecture v2.0 (May 2026) -> Anu Architecture v2.1 (May 2026 — renamed for framework-name consistency).*
 
 ## Description
 
@@ -27,8 +27,8 @@ Anu Architecture is a standardized, self-contained architecture for bespoke econ
 5. **Audit Trail**: Every transformation, parameter choice, and model run is logged in structured JSON.
 6. **Exploration Preservation**: Exploratory work feeds `data/scratch/` (ephemeral); conclusions go to DECISION_LOG.md. E## scripts are never deleted — they are the permanent record of the research process.
 7. **No Synthetic Data**: Every value in every CSV must come from a real, documented source. If data is unavailable, the series is `data_unavailable` — never filled with trends, noise, or estimates. Missing data is a gap to be resolved, not a hole to be papered over. `np.random` in a data construction script is always wrong.
-8. **Public Reproducibility**: Every L## script must either call a public API or include a comment with the public download URL. No private data paths (private data repositories, internal databases) in the pipeline. If data comes from a non-API source, the L## header must include a `PUBLIC SOURCE:` line with the URL where anyone can obtain this data. Learned from the reference project: had to retroactively strip all private data references from 40+ scripts.
-9. **Source Specification Before Code**: Before writing any L## or P## script, produce a Source Specification listing: variable name, source agency, table/series ID, units, frequency, URL, and date range. This is the contract the code must fulfill. Learned from the reference project: building extensions first then checking the Knowledge Base produced a 21% error rate.
+8. **Public Reproducibility**: Every L## script must either call a public API or include a comment with the public download URL. No private data paths (private data repositories, internal databases) in the pipeline. If data comes from a non-API source, the L## header must include a `PUBLIC SOURCE:` line with the URL where anyone can obtain this data. Learned from the reference implementation: had to retroactively strip all private data references from 40+ scripts.
+9. **Source Specification Before Code**: Before writing any L## or P## script, produce a Source Specification listing: variable name, source agency, table/series ID, units, frequency, URL, and date range. This is the contract the code must fulfill. Learned from the reference implementation: building extensions first then checking the Knowledge Base produced a 21% error rate.
 10. **No Proxies Without Justification**: If the exact source is unavailable, document why and what proxy is used. Proxies must be flagged in project_registry.json with `"proxy": true` and a justification. CPI is not PPI. Earnings is not compensation. Yield is not total return. Every concept substitution degrades faithfulness.
 
 ## When to Use
@@ -326,7 +326,7 @@ outputs/analysis/ (results)
     | O## (LAST -- formats for publication)
 outputs/deliverables/ (tables, figures, reports)
     | manual promote
-Project Outputs/YYYY.MM.DD Description/ (Arcanum convention)
+Project Outputs/YYYY.MM.DD Description/ (dated-output convention)
 ```
 
 **Primary data format**: Apache Parquet (fast, compact, preserves types). CSV only for `data/user-inputs/` (human-editable) and final deliverables when CSV is the target format.
@@ -352,7 +352,7 @@ Adjustments are written to `data/adjusted-final-data/` — **never** to `final-d
 Structured entries recording every design decision:
 
 ```markdown
-## <decision-ref>: Decision Title (YYYY-MM-DD)
+## <DECISION-ID>: Decision Title (YYYY-MM-DD)
 
 **Decision**: What was decided.
 
@@ -383,7 +383,7 @@ Agents and humans check items off as they complete them.
 
 When deliverables are ready for the project's root `Outputs/` folder:
 1. O## scripts generate publication-ready files to `outputs/deliverables/`
-2. Manual copy to `Outputs/YYYY.MM.DD Description/` (Arcanum date convention)
+2. Manual copy to `Outputs/YYYY.MM.DD Description/` (dated-output convention)
 3. Decision recorded in DECISION_LOG.md
 
 ---
@@ -410,7 +410,7 @@ Each XX00 orchestrator auto-discovers scripts by glob pattern (e.g., `list.files
 
 - Anu Architecture lives in `Technical/AnuArchitecture/` (inside the framework-standard project structure)
 - Source data read from `Inputs/` (read-only, never modified)
-- Published outputs promoted to `Outputs/` (Arcanum date convention)
+- Published outputs promoted to `Outputs/` (dated-output convention)
 - **Self-contained**: The entire Anu Architecture folder can be zipped and given to a reviewer
 
 ---
@@ -613,9 +613,9 @@ This section tracks learnings from real-world usage of Anu Architecture to impro
 
 ### Learning L002 (2026-05-09, Anu Framework Integration)
 
-**Context**: Renamed from NickyData to AnuData Architecture and integrated as a first-class Anu Framework skill.
+**Context**: Renamed from its predecessor to AnuData Architecture and integrated as a first-class Anu Framework skill.
 
-**Rationale**: NickyData was architecturally parallel to the Anu Framework but treated as a separate system. Integration makes the full data construction lifecycle — from replication (anu-replicator) through original research — a unified framework. This also positions the architecture for open-source release as a standalone adoptable framework.
+**Rationale**: The predecessor architecture was architecturally parallel to the Anu Framework but treated as a separate system. Integration makes the full data construction lifecycle — from replication (anu-replicator) through original research — a unified framework. This also positions the architecture for open-source release as a standalone adoptable framework.
 
 ### Learning L003 (2026-05-15, Framework-Name Consistency)
 
@@ -632,5 +632,5 @@ This section tracks learnings from real-world usage of Anu Architecture to impro
 ---
 
 *Anu Architecture v2.1 — Part of the Anu Framework v11.0*
-*Lineage: NickyData v1.0 (2026-04-05) -> NickyData v1.1 (2026-04-06) -> AnuData v2.0 (2026-05-09) -> Anu Architecture v2.1 (2026-05-15)*
+*Lineage: predecessor architecture v1.0 (2026-04-05) -> v1.1 (2026-04-06) -> AnuData v2.0 (2026-05-09) -> Anu Architecture v2.1 (2026-05-15)*
 *First application: an applied research project (2026-04-05)*

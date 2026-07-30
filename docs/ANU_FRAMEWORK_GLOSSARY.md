@@ -22,12 +22,12 @@ Every term used across the Anu Framework — agent skills, internal artifacts, o
 
 ### Anu Framework
 **Definition:** A 20-skill, multi-stage data-construction framework for replicating published economic series and extending them with public-API data under strict faithfulness rules.
-**Example:** a reference Shaikh-replication project is the reference project for Anu Framework v11.
+**Example:** the framework's reference replication project is the reference implementation for Anu Framework v11.
 **Related:** [[Anu Architecture]] [[Anu Replicator]] [[Anu Pipeline]]
 
 ### Anu Pipeline
 **Definition:** The master orchestrator that sequences 19 Anu skills through 8 stages (Adequacy through Publish) with quality review gates between stages.
-**Example:** Running `/anu-pipeline status` on the reference project reports which series are at which stage.
+**Example:** Running `/anu-pipeline status` on the reference implementation reports which series are at which stage.
 **Related:** [[Anu Framework]] [[Quality Gate]] [[Anu Ledger]]
 
 ### Anu Architecture
@@ -37,7 +37,7 @@ Every term used across the Anu Framework — agent skills, internal artifacts, o
 
 ### Anu Replicator
 **Definition:** A versioned, self-contained Python replication package with four phases (L## / P## / V## / M##) reproducible without agent intervention via a single `replicate.py` orchestrator.
-**Example:** `<project>/Technical/replicator/` reproduces all 40+ the reference project series end-to-end.
+**Example:** `<project>/Technical/replicator/` reproduces all 40+ of that project's series end-to-end.
 **Related:** [[Anu Architecture]] [[L## Loading]] [[P## Processing]]
 
 ### Pipeline Stage
@@ -135,7 +135,7 @@ Every term used across the Anu Framework — agent skills, internal artifacts, o
 ### FPR
 **Full name:** Figure Provenance Record
 **Definition:** Per-figure provenance document mapping a published book figure to the constructed series, subseries, and replication script that reproduce it.
-**Example:** A the reference project FPR links Shaikh's Figure 2.1 to S001 plotted from `reference-replicator/data/chopped/S001.csv`.
+**Example:** A reference-implementation FPR links Shaikh's Figure 2.1 to S001 plotted from `reference-replicator/data/chopped/S001.csv`.
 **Related:** [[DPR]] [[Anu Ingestion]]
 
 ### VPR
@@ -175,7 +175,7 @@ Every term used across the Anu Framework — agent skills, internal artifacts, o
 
 ### Proxy
 **Definition:** A substitute series used when the exact original source is unavailable; must be flagged `"proxy": true` in the registry with a proxy-justification field. Wrong-concept proxies (CPI for PPI) are prohibited.
-**Example:** Twelve of 58 the reference project's extensions were retroactively flagged for proxy violations and remediated.
+**Example:** Twelve of 58 of the reference implementation's extensions were retroactively flagged for proxy violations and remediated.
 **Related:** [[Concept Match Justification]] [[Faithfulness]]
 
 ### Decomposition
@@ -276,7 +276,7 @@ Every term used across the Anu Framework — agent skills, internal artifacts, o
 
 ### Drive Package
 **Definition:** Consumer-facing Google Drive folder (Anu Drive) bundling a master multi-sheet workbook, individual Extenbooks, a LaTeX-compiled methodology PDF, and a plain-text README — zero-setup for non-technical scholars.
-**Example:** `CD2_Drive_v1.0/` hands a colleague all 40+ series without GitHub or Python.
+**Example:** `my-replication_Drive_v1.0/` hands a colleague all 40+ series without GitHub or Python.
 **Related:** [[Replicator Package]] [[Extenbook]]
 
 ### Replicator Package
@@ -358,7 +358,7 @@ Every term used across the Anu Framework — agent skills, internal artifacts, o
 ### IO
 **Full name:** Input-Output
 **Definition:** Cross-sectional accounting framework describing inter-industry flows; classified `content_type: "cross_sectional"` and therefore not extended via API.
-**Example:** BEA's 71-industry IO tables enter the reference project as point-in-time snapshots, never extended.
+**Example:** BEA's 71-industry IO tables enter the reference implementation as point-in-time snapshots, never extended.
 **Related:** [[Content Type]]
 
 ---

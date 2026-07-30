@@ -233,7 +233,7 @@ class Report:
 # --------------------------------------------------------------------------
 
 def scan_text_file(path: Path) -> dict:
-    """Scan a single text file for secrets, absolute paths, Arcanum refs.
+    """Scan a single text file for secrets, absolute paths, internal refs.
 
     Returns a dict with boolean flags and the first offending snippet for
     each category.
@@ -554,7 +554,6 @@ def assemble_export(project: Path, registry: dict, version: str,
 
     replicator = first_existing(
         project / "Technical" / f"{project_name.lower()}-replicator",
-        project / "Technical" / "cd2-replicator",
         project / "Technical" / "ANU_REPLICATOR",
     )
     final_data = project / "Technical" / "ANU_REPLICATOR" / "data" / "final-data"

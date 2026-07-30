@@ -27,30 +27,31 @@ import sys
 from pathlib import Path
 
 
-# V4: Standard regex for S###, S###-A, S###-EXT, S###-COMBINED
-COLUMN_ID_REGEX = re.compile(r"^S\d{3}(-[A-Z]|-EXT|-COMBINED)?$")
+# V4: canonical column IDs per Series ID Spec v2.2 — `D###` (primary) and
+# `XS###`/`XS####` (extra series). `S###` is the widely-used primary alias
+# and stays accepted. Optional subseries suffix: -A..-Z, -EXT, -COMBINED.
+SERIES_ID_BODY = r"(?:[DS]\d{3}|XS\d{3,4})"
+COLUMN_ID_REGEX = re.compile(rf"^{SERIES_ID_BODY}(-[A-Z]|-EXT|-COMBINED)?$")
 
-# S017 wide table: multi-letter subseries (S017AA, S017AB, ... S017GX)
-# Relax V4 for columns beyond S017-Z
-S017_MULTI_LETTER_REGEX = re.compile(r"^S017[A-Z]{2,}$")
-
-
-def _is_s017_wide_table(row2: list[str]) -> bool:
-    """True if this file appears to be S017 wide table (has S017-A or similar)."""
-    for cell in row2:
-        if cell and cell.startswith("S017"):
-            return True
-    return False
+# Wide tables carry multi-letter subseries columns (e.g. D017AA, D017AB, ...)
+# once a series runs past a single -Z suffix. Detected from the header, not
+# hardwired to any one series ID.
+MULTI_LETTER_REGEX = re.compile(rf"^{SERIES_ID_BODY}[A-Z]{{2,}}$")
 
 
-def _valid_column_id(cell: str, is_s017_wide: bool) -> bool:
-    """Check if column ID is valid. Relax for S017 beyond S017-Z."""
+def _is_wide_table(row2: list[str]) -> bool:
+    """True if any Row 2 column ID uses the multi-letter wide-table form."""
+    return any(cell and MULTI_LETTER_REGEX.match(cell.strip()) for cell in row2)
+
+
+def _valid_column_id(cell: str, is_wide_table: bool) -> bool:
+    """Check if column ID is valid. Relax for wide-table multi-letter columns."""
     if not cell or not cell.strip():
         return True  # Empty cells (e.g. Year col in metadata) are ok for V4
     cell = cell.strip()
     if COLUMN_ID_REGEX.match(cell):
         return True
-    if is_s017_wide and S017_MULTI_LETTER_REGEX.match(cell):
+    if is_wide_table and MULTI_LETTER_REGEX.match(cell):
         return True
     return False
 

@@ -31,7 +31,7 @@ class DPRValidationResult:
 # Required sections in a DPR file
 REQUIRED_SECTIONS = [
     ("Quick Reference", r"##\s*Quick Reference|^\|.*\|.*\|"),
-    ("Context/Quotes", r"##\s*(Context|Theoretical|Shaikh)|>\s*[\"']"),
+    ("Context/Quotes", r"##\s*(Context|Theoretical|Source Text)|>\s*[\"']"),
     ("Subsources", r"##\s*Subsources|S\d{3}[A-Z]"),
     ("Transformation Chain", r"##\s*Transformation|T\d{3}"),
     ("Validation Record", r"##\s*Validation|validated|verified"),

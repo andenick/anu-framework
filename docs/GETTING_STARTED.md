@@ -132,7 +132,7 @@ Scrub API keys, remove internal paths, generate README/LICENSE/CITATION.cff, val
 
 ## Reference Implementation
 
-**the reference project** (Capitalism Data v2) is the reference implementation — 113 series, 97 scripts, 71 extensions. See `<project>/` in the Arcanum workspace.
+The framework's own reference implementation is a large private replication project and is not distributed publicly. For a runnable worked example, see [`examples/mini-replication/`](../examples/mini-replication/).
 
 ---
 

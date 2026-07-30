@@ -60,7 +60,7 @@ SERIES_CONFIG = {
         #     "type": "historical",
         #     "api": None,
         #     "period": (1860, 1919),
-        #     "file": "Inputs/ShaikhChoppedTables/${CHOPPED_FILE}",
+        #     "file": "Inputs/<chopped-tables-dir>/${CHOPPED_FILE}",
         #     "sheet": "${SHEET_NAME}",
         #     "column": "${COLUMN_NAME}",
         #     "transform": None,
@@ -73,7 +73,7 @@ SERIES_CONFIG = {
         #     "type": "shaikh_original",
         #     "api": None,
         #     "period": (1919, 2010),
-        #     "file": "Outputs/ShinyApp/data/ShaikhAbsorbed/chapter_${CHAPTER}_data.csv",
+        #     "file": "Outputs/<viz-app>/data/<absorbed-source>/chapter_${CHAPTER}_data.csv",
         #     "column": "${COLUMN_NAME}",
         #     "transform": None,
         #     "notes": "Shaikh's baseline data through 2010"
@@ -119,7 +119,7 @@ SERIES_CONFIG = {
     },
     
     # Output configuration
-    "output_file": "Outputs/ShinyApp/data/ShaikhAbsorbed/extended/${SERIES_ID}_extended.csv",
+    "output_file": "Outputs/<viz-app>/data/<absorbed-source>/extended/${SERIES_ID}_extended.csv",
 }
 
 

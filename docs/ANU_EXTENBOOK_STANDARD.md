@@ -140,7 +140,7 @@ Anu_Extenbook_S###.xlsx
 ## Output Directory Structure
 
 ```
-Projects/Capitalism Data/Outputs/Anu_Extenbooks/
+<project>/Outputs/Anu_Extenbooks/
 ├── Chapter_02/
 │   ├── Anu_Extenbook_S001.xlsx
 │   ├── Anu_Extenbook_S002.xlsx
@@ -164,7 +164,7 @@ Before generating an Anu Extenbook, ensure:
 2. **EPR File Exists** (for extended series): `docs/series/S###_EPR.md`
 3. **Subsource Catalog Entry**: In `catalogs/SERIES_SUBSOURCES.json`
 4. **Series Catalog Entry**: In `catalogs/DEFINITIVE_SERIES_CATALOG.json`
-5. **Shaikh Absorbed Data**: `data/ShaikhAbsorbed/chapter_##_data.csv`
+5. **Absorbed source data**: `data/<absorbed-source>/chapter_##_data.csv`
 
 ---
 
@@ -313,7 +313,7 @@ For each generated Anu Extenbook:
 **Error**: No data appears in Sheet 1
 
 **Solution**:
-1. Verify `data/ShaikhAbsorbed/chapter_##_data.csv` exists
+1. Verify `data/<absorbed-source>/chapter_##_data.csv` exists
 2. Run absorption for that chapter
 
 ### Splice Point Mismatch
@@ -369,7 +369,7 @@ Templates location: `skills/anu-extenbook/templates/`
 
 ---
 
-## Integration with Arcanum Workflow
+## Integration with the pipeline
 
 ### In /readystart
 
@@ -401,7 +401,7 @@ Reference Anu Extenbooks during chapter reviews to validate data construction.
 | Rules File | `.cursor/rules/anu-extenbook.md` |
 | Data Template | `skills/anu-extenbook/templates/EXTENBOOK_DATA_TEMPLATE.md` |
 | Provenance Template | `skills/anu-extenbook/templates/EXTENBOOK_PROVENANCE_TEMPLATE.md` |
-| Generation Script | `Projects/Capitalism Data/Technical/scripts/create_anu_extenbooks.py` |
+| Generation Script | `<project>/Technical/scripts/create_anu_extenbooks.py` |
 
 ---
 

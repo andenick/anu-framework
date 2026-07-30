@@ -444,7 +444,7 @@ D0 (Pre-Pipeline Adequacy) is reported separately as a PASS/FAIL gate and does n
 ### Advanced Usage
 
 ```bash
-/anu-review full Capitalism Data # Review entire project
+/anu-review full <project>       # Review entire project
 /anu-review compare 2 5          # Compare Chapters 2 and 5
 /anu-review gaps 2               # Show only gaps for Chapter 2
 /anu-review score 2              # Show only score for Chapter 2

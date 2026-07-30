@@ -33,6 +33,11 @@ SECRET_PATTERNS = [
     re.compile(r"(?i)bearer\s+[A-Za-z0-9_\-\.]{20,}"),
 ]
 ABS_PATH_PATTERN = re.compile(r"(?:[A-Za-z]:[\\/]|/home/|/Users/|\\\\)")
+
+# Knowledge-base checkout root, relative to the project. Override with
+# --kb-root; no organization-specific directory name is baked in.
+DEFAULT_KB_ROOT_REL = Path("Inputs") / "KB"
+KB_ROOT_REL = DEFAULT_KB_ROOT_REL
 TEXT_SUFFIXES = {".md", ".txt", ".json", ".py", ".csv", ".yml", ".yaml", ".cff", ".tex", ".r", ".R"}
 
 
@@ -138,7 +143,7 @@ def build_archive(project: Path, version: str) -> tuple[Path, dict]:
                        archive_dir / "provenance" / "series")
     docs_figures = project / "Technical" / "docs" / "figures"
     n_fig = copy_glob(docs_figures, ["*_FPR.md"], archive_dir / "provenance" / "figures")
-    kb_src = project / "Inputs" / "Robert" / "KB"
+    kb_src = project / KB_ROOT_REL
     n_kb = copy_tree(kb_src, archive_dir / "provenance" / "knowledge_base")
     copy_file(registry_path, archive_dir / "provenance" / "registry.json")
     print(f"  provenance/  {n_prov} series records, {n_fig} figure records, {n_kb} KB files")
@@ -405,7 +410,12 @@ def main() -> int:
     parser.add_argument("project_root", help="Path to the project root")
     parser.add_argument("--version", help="Archive version (e.g. 1.0)")
     parser.add_argument("--no-zip", action="store_true", help="Skip .zip packaging")
+    parser.add_argument("--kb-root", default=str(DEFAULT_KB_ROOT_REL),
+                        help="Knowledge-base root relative to the project "
+                             f"(default: {DEFAULT_KB_ROOT_REL.as_posix()})")
     args = parser.parse_args()
+    global KB_ROOT_REL
+    KB_ROOT_REL = Path(args.kb_root)
 
     project = Path(args.project_root).resolve()
     registry_path = project / "Technical" / "series_registry.json"

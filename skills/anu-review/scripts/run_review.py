@@ -358,6 +358,37 @@ def check_knowledge_base(
     )
 
 
+
+DEFAULT_REVIEW_LAYOUT = {
+    "viz_app_root": "Technical/ShinyApp",
+    "anu_app_root": "Technical/AnuShinyApp",
+    "absorbed_data_dir": "absorbed",
+}
+
+
+def load_review_layout(project_root) -> dict:
+    """Return the project's review layout, defaults merged with the registry.
+
+    Reads `review_layout` from <project>/Technical/series_registry.json (falling
+    back to <project>/series_registry.json). Keys: viz_app_root, anu_app_root,
+    absorbed_data_dir.
+    """
+    layout = dict(DEFAULT_REVIEW_LAYOUT)
+    for candidate in (Path(project_root) / "Technical" / "series_registry.json",
+                      Path(project_root) / "series_registry.json"):
+        if not candidate.exists():
+            continue
+        try:
+            reg = json.loads(candidate.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        declared = reg.get("review_layout")
+        if isinstance(declared, dict):
+            layout.update({k: v for k, v in declared.items() if isinstance(v, str)})
+        break
+    return layout
+
+
 def run_chapter_review(
     chapter_num: int,
     project_root: Path,
@@ -373,11 +404,14 @@ def run_chapter_review(
         chapter_title: Title of the chapter
         series_ids: List of series IDs (if None, will attempt to detect)
     """
-    # Set up paths
-    shiny_app_root = project_root / "Technical" / "ShinyApp"
-    anu_app_root = project_root / "Technical" / "AnuShinyApp"
+    # Set up paths. Layout is read from the registry's `review_layout` block
+    # (the repo's declared single source of truth), with neutral defaults —
+    # nothing here is hardwired to one project's directory names.
+    layout = load_review_layout(project_root)
+    shiny_app_root = project_root / layout["viz_app_root"]
+    anu_app_root = project_root / layout["anu_app_root"]
     docs_dir = shiny_app_root / "docs" / "series"
-    data_dir = shiny_app_root / "data" / "ShaikhAbsorbed"
+    data_dir = shiny_app_root / "data" / layout["absorbed_data_dir"]
     catalog_path = data_dir / "catalogs" / "FIGURE_SERIES_CATALOG.json"
     data_loader_path = anu_app_root / "R" / "data_loader.R"
     chart_builder_path = anu_app_root / "R" / "chart_builder.R"

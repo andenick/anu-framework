@@ -101,6 +101,6 @@ Wealth of Nations* (1994) — 64 series, the first project built end-to-end on
 
 ---
 
-*Originally drafted 2026-05-09 during the NickyData → AnuData Architecture
+*Originally drafted 2026-05-09 during the predecessor-architecture → AnuData Architecture
 integration (AnuData → Anu Architecture rename 2026-05-15); updated 2026-06-10 to
 describe the shipped v12.2 repository.*

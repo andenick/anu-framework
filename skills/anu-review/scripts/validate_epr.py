@@ -107,14 +107,14 @@ def validate_epr_file(epr_path: Path) -> EPRValidationResult:
         issues.append("Missing agent understanding statement")
     
     book_context = bool(re.search(
-        r"##\s*Book Context|>\s*[\"'].+[\"']|Shaikh.*quote",
+        r"##\s*Book Context|>\s*[\"'].+[\"']|author.*quote",
         content, re.IGNORECASE
     ))
     if not book_context:
         issues.append("Missing book context with quotes")
     
     original_methodology = bool(re.search(
-        r"##\s*Original Methodology|original.*method|Shaikh.*construct",
+        r"##\s*Original Methodology|original.*method|author.*construct",
         content, re.IGNORECASE
     ))
     if not original_methodology:

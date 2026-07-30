@@ -11,7 +11,7 @@ Downloads and catalogs historical data vintages from:
   - Philadelphia Fed RTDSM — Real-Time Data Set for Macroeconomists
 
 Follows the pattern established in:
-  Projects/Capitalism Data/Technical/scripts/alfred_vintages/
+  <project>/Technical/scripts/alfred_vintages/
 
 Usage:
   python vintage_downloader.py --series GDP CPIAUCSL --source alfred \

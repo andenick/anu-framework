@@ -31,14 +31,22 @@ except ImportError:
 sys.path.insert(0, str(Path(__file__).parent))
 from variant_registry import VariantRegistry
 
+# Period keys tried first when a variant declares several output files.
+# Any other declared key is still tried, in declaration order.
+PREFERRED_PERIOD_KEYS = ("full_period", "book_period")
+
 
 def load_variant_data(registry: VariantRegistry, metric: str, project_root: Path) -> dict:
     """Load output CSVs for all variants of a metric. Returns {variant_id: DataFrame}."""
     variants = registry.get_metric_variants(metric)
     data = {}
     for v in variants:
-        # Try full_period first, then book_period
-        for key in ["full_period", "moos_period", "book_period"]:
+        # Preferred period keys first, then whatever else the variant declares.
+        # Period vocabulary is per-project — read it, do not hardcode it.
+        declared = list(v.output_files.keys())
+        keys = [k for k in PREFERRED_PERIOD_KEYS if k in declared]
+        keys += [k for k in declared if k not in keys]
+        for key in keys:
             rel_path = v.output_files.get(key)
             if rel_path:
                 full_path = project_root / rel_path
@@ -68,11 +76,12 @@ def build_comparison_csv(variant_data: dict, output_path: Path) -> pd.DataFrame:
             yr_data = df[df["year"] == year]
             if not yr_data.empty:
                 r = yr_data.iloc[0]
-                row[f"{vid}_nsw"] = r.get("NSW", np.nan)
-                row[f"{vid}_nsw_gdp"] = r.get("NSW_GDP_ratio", np.nan)
-                for col in ["E1", "E2", "T1", "T2", "LS"]:
-                    if col in r:
-                        row[f"{vid}_{col}"] = r[col]
+                # Carry every non-year column the variant emits. Column
+                # vocabulary is per-project — do not hardcode series names.
+                for col in df.columns:
+                    if col == "year":
+                        continue
+                    row[f"{vid}_{col}"] = r.get(col, np.nan)
         rows.append(row)
 
     comp_df = pd.DataFrame(rows)

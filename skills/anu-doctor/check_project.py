@@ -45,16 +45,28 @@ The 38 P##-checks (P01-P39; P11 is a skipped number) — severity in parens:
   P34 (WARN)  Top-level figures are referenced by at least one series
   P35 (WARN)  PROJECT_INDEX.md exists at project root
   P36 (FAIL)  Extension binary invariant: subseries with -EXT iff extension block populated
-  P37 (FAIL)  Every Inputs/Robin/[SOURCE]/ has a valid PROVENANCE.md (schema)
-  P38 (FAIL)  Every Inputs/Robin/ checkout's file SHA-256s match PROVENANCE
-              (strict — re-hashes every file; slow on large checkouts)
-  P39 (WARN)  No code hardcodes <internal-tool>/DATA/ paths (read via Inputs/Robin/ instead)
+  P37 (FAIL)  Every Inputs/<data-repository>/[SOURCE]/ checkout has a valid
+              PROVENANCE.md (schema + files present)
+  P38 (FAIL)  Every Inputs/<data-repository>/ checkout's file SHA-256s match
+              PROVENANCE (strict — re-hashes every file; slow on large checkouts)
+  P39 (WARN)  No code hardcodes absolute paths into the canonical data store
+              (reads go through Inputs/<data-repository>/ checkouts instead)
+
+P37/P38 need a data-repository loader module exposing validate_checkout() plus
+exception classes named *CheckoutError / *SchemaError / *DriftError; point
+$ANU_DATA_REPOSITORY_LOADER at it, or place it at
+<Inputs/data-repository>/PACKAGES/python/loader.py. Without
+one the two checks WARN-skip rather than silently passing. The checkout
+directory name defaults to "data-repository" and is overridable with
+$ANU_DATA_REPOSITORY_DIR.
 
 Usage:
   python check_project.py                 # audit cwd
   python check_project.py --project PATH  # audit a different project
   python check_project.py --check P01,P02 # run a subset of checks
   python check_project.py --strict        # fail on WARN-severity hits too
+  python check_project.py --emit-matrix   # also write SERIES_CORRESPONDENCE_MATRIX.json
+                                          # (off by default: the audit is read-only)
 
 Part of the Anu Framework v12.0 — see anu-doctor/SKILL.md.
 
@@ -66,9 +78,13 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 import re
 import sys
 from pathlib import Path
+
+# Set by --emit-matrix. The audit is read-only unless explicitly asked to write.
+EMIT_MATRIX = False
 
 
 # Standardized status enum (anu-ingestion v4.1).
@@ -955,15 +971,19 @@ def check_P23_correspondence_matrix(project: Path, reg: dict, res: Result) -> No
             if m["completeness"] < 1.0
             and not (series.get(sid, {}).get("status") or "").startswith("data_unavailable")]
 
-    out_path = project / "SERIES_CORRESPONDENCE_MATRIX.json"
-    try:
-        out_path.write_text(
-            json.dumps({"series": matrix, "summary_completeness": avg_completeness},
-                       indent=2, ensure_ascii=False),
-            encoding="utf-8",
-        )
-    except Exception:
-        pass
+    # An audit is read-only by default. Writing into the tree under audit makes
+    # the tool unsafe against a clean checkout or in CI, so the matrix is only
+    # emitted when explicitly asked for (--emit-matrix).
+    if EMIT_MATRIX:
+        out_path = project / "SERIES_CORRESPONDENCE_MATRIX.json"
+        try:
+            out_path.write_text(
+                json.dumps({"series": matrix, "summary_completeness": avg_completeness},
+                           indent=2, ensure_ascii=False),
+                encoding="utf-8",
+            )
+        except Exception:
+            pass
 
     res.add("P23", "WARN", not gaps,
             f"{len(gaps)} series with incomplete artifacts "
@@ -1484,7 +1504,7 @@ def check_P32_validator_registry_match(project: Path, reg: dict, res: Result) ->
         res.add("P32", "FAIL", True, "V03_validators/ absent (skipped)", [])
         return
     bench_re = re.compile(
-        r"(?:BENCHMARKS|REFERENCE_VALUES|EXPECTED|CD2_SPOTCHECK)\s*[:=]\s*\{([^}]+)\}",
+        r"(?:BENCHMARKS|REFERENCE_VALUES|EXPECTED|SPOTCHECK)\s*[:=]\s*\{([^}]+)\}",
         re.DOTALL,
     )
     year_val_re = re.compile(r"(?:[\"\']?)(\d{4})(?:[\"\']?)\s*:\s*([\-\d.eE+]+)")
@@ -1620,127 +1640,190 @@ def check_P36_extension_binary_invariant(project: Path, reg: dict, res: Result) 
             bad[:10])
 
 
-def _find_project_inputs_robin(project: Path) -> Path | None:
-    """Locate `Inputs/Robin/` relative to the project root.
+# --------------------------------------------------------------------------
+# P37-P39 — data-repository checkout integrity
+#
+# A "data repository" is a versioned canonical store of source data that
+# projects consume through per-source checkouts under Inputs/<data-repository>/,
+# each carrying a PROVENANCE.md that records the source files and their
+# SHA-256s. The directory name, and the loader module that knows how to
+# validate a checkout, are both configuration — no organization's layout is
+# hard-coded here.
+# --------------------------------------------------------------------------
+
+DATA_REPOSITORY_DIRNAME = os.environ.get("ANU_DATA_REPOSITORY_DIR",
+                                         "data-repository")
+DATA_REPOSITORY_LOADER_ENV = "ANU_DATA_REPOSITORY_LOADER"
+# How far above the project root to look for a sibling Inputs/<data-repository>/
+# before giving up. Bounded so the walk can never wander into a parent workspace.
+DATA_REPOSITORY_SEARCH_DEPTH = 5
+
+
+def _find_data_repository(project: Path) -> Path | None:
+    """Locate `Inputs/<data-repository>/` at or above the project root.
 
     Anu projects can live at the project root itself, under Technical/, or
-    nested deeper (e.g., Project/Technical/AnuData/). Walk up until we find
-    a sibling Inputs/Robin/, stopping at the workspace root.
+    nested deeper. Walk up a BOUNDED number of levels looking for the checkout
+    directory; stop at a repository boundary (.git) or the filesystem root.
     """
-    # Workspace root resolved from this script's location, not hardcoded:
-    # this checker lives in skills/anu-doctor/ within the workspace.
-    workspace = Path(__file__).resolve().parents[5]
     cur = project.resolve()
-    while cur != workspace and cur.parent != cur:
-        candidate = cur / "Inputs" / "Robin"
-        if candidate.exists() and candidate.is_dir():
+    for _ in range(DATA_REPOSITORY_SEARCH_DEPTH + 1):
+        candidate = cur / "Inputs" / DATA_REPOSITORY_DIRNAME
+        if candidate.is_dir():
             return candidate
+        if (cur / ".git").exists() or cur.parent == cur:
+            break
         cur = cur.parent
     return None
 
 
-def check_P37_robin_checkouts(project: Path, reg: dict, res: Result) -> None:
-    """Every `Inputs/Robin/[SOURCE]/` has a valid PROVENANCE.md (schema + files present).
+def _load_data_repository_loader(repo_dir: Path):
+    """Import the data-repository loader module, or return None.
 
-    Calls the canonical robin_loader.validate_checkout() for each source. Does NOT
-    re-hash files (P38 is the strict-hash variant). FAIL severity because broken
+    Resolution order: $ANU_DATA_REPOSITORY_LOADER, then
+    <Inputs/data-repository>/PACKAGES/python/loader.py.
+    """
+    import importlib.util
+
+    candidates = []
+    env_loader = os.environ.get(DATA_REPOSITORY_LOADER_ENV)
+    if env_loader:
+        candidates.append(Path(env_loader))
+    candidates.append(repo_dir / "PACKAGES" / "python" / "loader.py")
+
+    for loader_path in candidates:
+        if not loader_path.exists():
+            continue
+        spec = importlib.util.spec_from_file_location(
+            "anu_data_repository_loader", loader_path)
+        if spec is None or spec.loader is None:
+            continue
+        mod = importlib.util.module_from_spec(spec)
+        try:
+            spec.loader.exec_module(mod)
+        except Exception:
+            continue
+        if hasattr(mod, "validate_checkout"):
+            return mod
+    return None
+
+
+def _loader_errors(mod, *keywords):
+    """Collect the loader's exception classes whose names contain a keyword.
+
+    Loader modules name their own exception types; matching on the shape of the
+    name ("...DriftError", "...SchemaError") keeps this checker free of any
+    organization's class names while still classifying failures correctly.
+    """
+    out = []
+    for attr in dir(mod):
+        obj = getattr(mod, attr, None)
+        if (isinstance(obj, type) and issubclass(obj, BaseException)
+                and any(k.lower() in attr.lower() for k in keywords)):
+            out.append(obj)
+    return tuple(out) or (Exception,)
+
+
+def check_P37_data_repository_checkouts(project: Path, reg: dict, res: Result) -> None:
+    """Every `Inputs/<data-repository>/[SOURCE]/` has a valid PROVENANCE.md.
+
+    Calls the loader's validate_checkout() for each source. Does NOT re-hash
+    files (P38 is the strict-hash variant). FAIL severity because broken
     PROVENANCE indicates a contract violation.
     """
-    robin_dir = _find_project_inputs_robin(project)
-    if robin_dir is None:
+    repo_dir = _find_data_repository(project)
+    if repo_dir is None:
         res.add("P37", "FAIL", True,
-                "no Inputs/Robin/ folder (project consumes no Robin sources)",
-                [])
+                f"no Inputs/{DATA_REPOSITORY_DIRNAME}/ folder "
+                "(project consumes no data-repository sources)", [])
         return
 
-    # Import robin_loader from Robin's canonical location
-    import importlib.util
-    loader_path = (Path(__file__).resolve().parents[5]
-                   / "Council" / "Robin" / "PACKAGES" / "python" / "robin_loader.py")
-    if not loader_path.exists():
+    mod = _load_data_repository_loader(repo_dir)
+    if mod is None:
         res.add("P37", "WARN", True,
-                f"robin_loader not found at {loader_path} - skipping",
-                [])
+                "no data-repository loader found "
+                f"(set ${DATA_REPOSITORY_LOADER_ENV}) - skipping", [])
         return
-    spec = importlib.util.spec_from_file_location("robin_loader", loader_path)
-    if spec is None or spec.loader is None:
-        res.add("P37", "WARN", True, "could not load robin_loader spec", [])
-        return
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
+    schema_errors = _loader_errors(mod, "CheckoutError", "SchemaError")
 
     issues = []
     n_ok = 0
-    for d in sorted(robin_dir.iterdir()):
+    for d in sorted(repo_dir.iterdir()):
         if not d.is_dir():
             continue
         try:
             mod.validate_checkout(d, strict=False, verify_hashes=False)
             n_ok += 1
-        except (mod.RobinCheckoutError, mod.RobinSchemaError) as e:
+        except schema_errors as e:
             issues.append(f"{d.name}: {type(e).__name__}: {str(e)[:120]}")
         except Exception as e:  # pragma: no cover - defensive
             issues.append(f"{d.name}: unexpected: {type(e).__name__}: {str(e)[:120]}")
 
     res.add("P37", "FAIL", not issues,
-            f"{n_ok} Robin checkout(s) valid" if not issues
-            else f"{len(issues)} Robin checkout schema problem(s) ({n_ok} OK)",
+            f"{n_ok} checkout(s) valid" if not issues
+            else f"{len(issues)} checkout schema problem(s) ({n_ok} OK)",
             issues[:10])
 
 
-def check_P38_robin_hash_drift(project: Path, reg: dict, res: Result) -> None:
-    """Every Robin checkout's file SHA-256s match the values recorded in PROVENANCE.md.
+def check_P38_data_repository_hash_drift(project: Path, reg: dict, res: Result) -> None:
+    """Every checkout's file SHA-256s match the values recorded in PROVENANCE.md.
 
-    Strict variant of P37 — actually re-hashes every file. Slow on large checkouts.
-    Run with `--check P38` selectively before publication. FAIL severity.
+    Strict variant of P37 — actually re-hashes every file. Slow on large
+    checkouts. Run with `--check P38` selectively before publication.
     """
-    robin_dir = _find_project_inputs_robin(project)
-    if robin_dir is None:
-        res.add("P38", "FAIL", True, "no Inputs/Robin/ folder (skip)", [])
+    repo_dir = _find_data_repository(project)
+    if repo_dir is None:
+        res.add("P38", "FAIL", True,
+                f"no Inputs/{DATA_REPOSITORY_DIRNAME}/ folder (skip)", [])
         return
 
-    import importlib.util
-    loader_path = (Path(__file__).resolve().parents[5]
-                   / "Council" / "Robin" / "PACKAGES" / "python" / "robin_loader.py")
-    if not loader_path.exists():
-        res.add("P38", "WARN", True, "robin_loader not found - skipped", [])
+    mod = _load_data_repository_loader(repo_dir)
+    if mod is None:
+        res.add("P38", "WARN", True,
+                "no data-repository loader found "
+                f"(set ${DATA_REPOSITORY_LOADER_ENV}) - skipping", [])
         return
-    spec = importlib.util.spec_from_file_location("robin_loader", loader_path)
-    if spec is None or spec.loader is None:
-        res.add("P38", "WARN", True, "could not load robin_loader spec", [])
-        return
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
+    drift_errors = _loader_errors(mod, "DriftError")
+    schema_errors = _loader_errors(mod, "CheckoutError", "SchemaError")
 
     issues = []
     n_pass = 0
-    for d in sorted(robin_dir.iterdir()):
+    for d in sorted(repo_dir.iterdir()):
         if not d.is_dir():
             continue
         try:
             mod.validate_checkout(d, strict=False, verify_hashes=True)
             n_pass += 1
-        except mod.RobinDriftError as e:
+        except drift_errors as e:
             issues.append(f"{d.name}: DRIFT: {str(e)[:160]}")
-        except (mod.RobinCheckoutError, mod.RobinSchemaError):
+        except schema_errors:
             # already caught by P37 — don't double-report
             continue
         except Exception as e:  # pragma: no cover
             issues.append(f"{d.name}: unexpected: {type(e).__name__}: {str(e)[:120]}")
 
     res.add("P38", "FAIL", not issues,
-            f"{n_pass} Robin checkout(s) hash-match" if not issues
+            f"{n_pass} checkout(s) hash-match" if not issues
             else f"{len(issues)} hash drift(s) ({n_pass} OK)",
             issues[:10])
 
 
-def check_P39_no_hardcoded_robin_data_paths(project: Path, reg: dict, res: Result) -> None:
-    """Code under project does not hardcode `<internal-tool>/DATA/` paths.
+# Absolute machine path pointing into a canonical store: drive-letter, POSIX
+# home or UNC form, anywhere upstream of a DATA/ segment. Override with
+# $ANU_DATA_REPOSITORY_CANONICAL_RE for a store-specific pattern.
+_DEFAULT_CANONICAL_STORE_RE = (
+    r"(?:(?<![A-Za-z0-9])[A-Za-z]:[\\/]|/home/|/Users/|\\\\)"
+    r"[^\s\"\']*[\\/]DATA[\\/]"
+)
 
-    Projects should read through `Inputs/Robin/[SOURCE]/` checkouts. Direct reads
-    of the canonical store skip PROVENANCE / drift detection. WARN severity
-    because some scripts intentionally reference the canonical path in comments
-    or fallback logic (e.g., a private data layer's checkout-with-fallback pattern).
+
+def check_P39_no_hardcoded_canonical_paths(project: Path, reg: dict, res: Result) -> None:
+    """Code under project does not hardcode absolute canonical-store paths.
+
+    Projects should read through `Inputs/<data-repository>/[SOURCE]/` checkouts.
+    Direct reads of the canonical store skip PROVENANCE / drift detection. WARN
+    severity because some scripts intentionally reference the canonical path in
+    comments or checkout-with-fallback logic.
     """
     code_dirs = [project / "code", project / "scripts", project / "src"]
     code_dirs = [d for d in code_dirs if d.exists()]
@@ -1748,8 +1831,15 @@ def check_P39_no_hardcoded_robin_data_paths(project: Path, reg: dict, res: Resul
         res.add("P39", "WARN", True, "no code/scripts/src/ — skipped", [])
         return
 
+    try:
+        pat = re.compile(os.environ.get("ANU_DATA_REPOSITORY_CANONICAL_RE",
+                                        _DEFAULT_CANONICAL_STORE_RE))
+    except re.error as exc:
+        res.add("P39", "WARN", True,
+                f"bad $ANU_DATA_REPOSITORY_CANONICAL_RE ({exc}) — skipped", [])
+        return
+
     hits = []
-    pat = re.compile(r"(?:Council[/\\]Robin[/\\]DATA|Arcanum[/\\]Council[/\\]Robin[/\\]DATA)")
     for cd in code_dirs:
         for f in cd.rglob("*.py"):
             try:
@@ -1760,8 +1850,8 @@ def check_P39_no_hardcoded_robin_data_paths(project: Path, reg: dict, res: Resul
                 if pat.search(line):
                     hits.append(f"{f.relative_to(project)}:{i}: {line.strip()[:100]}")
     res.add("P39", "WARN", not hits,
-            f"{len(hits)} hardcoded <internal-tool>/DATA reference(s) in code" if hits
-            else "no hardcoded Robin canonical paths in code",
+            f"{len(hits)} hardcoded canonical-store reference(s) in code" if hits
+            else "no hardcoded canonical-store paths in code",
             hits[:10])
 
 
@@ -1801,9 +1891,9 @@ CHECKS = {
     "P34": check_P34_orphan_figures,
     "P35": check_P35_project_index,
     "P36": check_P36_extension_binary_invariant,
-    "P37": check_P37_robin_checkouts,
-    "P38": check_P38_robin_hash_drift,
-    "P39": check_P39_no_hardcoded_robin_data_paths,
+    "P37": check_P37_data_repository_checkouts,
+    "P38": check_P38_data_repository_hash_drift,
+    "P39": check_P39_no_hardcoded_canonical_paths,
 }
 
 
@@ -1857,7 +1947,12 @@ def main() -> int:
     p.add_argument("--check", default=",".join(CHECKS.keys()),
                    help="Comma-separated list of P##-checks to run (default: all)")
     p.add_argument("--strict", action="store_true", help="Fail on WARN-severity hits too")
+    p.add_argument("--emit-matrix", action="store_true",
+                   help="Write SERIES_CORRESPONDENCE_MATRIX.json into the audited "
+                        "project (P23). Off by default — the audit is read-only.")
     args = p.parse_args()
+    global EMIT_MATRIX
+    EMIT_MATRIX = args.emit_matrix
     checks = [c.strip() for c in args.check.split(",") if c.strip()]
     return run(Path(args.project).resolve(), checks, args.strict)
 

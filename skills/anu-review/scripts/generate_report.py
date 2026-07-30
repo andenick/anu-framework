@@ -224,7 +224,7 @@ def generate_checklist(
         elif dim_key == "mapping":
             lines.append("- [ ] CH[X]_SERIES_MAPPING defined")
             lines.append("- [ ] All series included")
-            lines.append("- [ ] Shaikh findings documented")
+            lines.append("- [ ] Source-text findings documented")
         elif dim_key == "charts":
             lines.append("- [ ] Helper functions defined")
             lines.append("- [ ] Specialized builders exist (if needed)")
