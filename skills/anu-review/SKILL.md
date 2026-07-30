@@ -92,7 +92,7 @@ Any synthetic series = automatic INCOMPLETE certification for the project.
 D14 audits every artifact an external party actually receives — the GitHub repo (`anu-publish`), the Drive package (`anu-drive`), the comprehensive archive (`anu-archive`), the methodology PDF, the codebook, and any project README/CITATION. The rule: external surfaces refer to content by its **public name**.
 
 - [ ] The project's short identifier (e.g. a codename) is expanded at first use or absent
-- [ ] No internal infrastructure names leak (Council-member names, internal tool names, internal directory names)
+- [ ] No internal infrastructure names leak (your organization's internal tool, directory and project names)
 - [ ] Public data sources are cited by their public name and URL (FRED, BEA, BLS, OECD — not internal import folders)
 - [ ] Internal acronyms (DPR, EPR, FPR, KB, L##/P##/V##, tier labels, wave labels) are either defined inline or absent from external surfaces
 - [ ] The Knowledge Base / PDF extraction method, where mentioned, is honestly disclosed as the extraction method with the caveat that extraction errors are possible

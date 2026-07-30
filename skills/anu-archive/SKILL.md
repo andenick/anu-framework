@@ -162,7 +162,7 @@ Every file in the archive (except `MANIFEST.json` and `CHECKSUMS.txt` themselves
 | A07 | Every series in the registry has a decomposition in `provenance/series/` | WARN |
 | A08 | Every figure referenced by any series has an FPR in `provenance/figures/` | WARN |
 | A09 | No secrets — no API keys, tokens, or passwords in any text file | FAIL |
-| A10 | No absolute machine paths (`D:/`, `C:/`, `/home/`, `\\`) in any text file | WARN |
+| A10 | No absolute machine paths (drive letters, home directories, UNC shares) in any text file | WARN |
 | A11 | `code/` contains a runnable entry point (`replicate.py` or equivalent) | FAIL |
 | A12 | `data/` contains the master workbook and at least one per-series workbook | FAIL |
 | A13 | `reference/glossary.md` is present and non-empty | WARN |

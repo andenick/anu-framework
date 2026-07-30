@@ -1,0 +1,31 @@
+{
+  "$schema_note": "Deny-list consumed by anu-publish/audit.py and generate_publish_package.py. Each entry is {pattern, label}; `pattern` is a Python `re` regular expression applied line-by-line to every text file in the project.",
+  "$policy_note": "This shipped file deliberately contains only ORGANIZATION-NEUTRAL patterns — the CLASSES of reference that leak (absolute local paths, home directories, UNC shares, email addresses, decision-log codes). It intentionally does NOT enumerate any organization's private directory names, tool names, project codenames or usernames: a published deny-list of private names is itself a disclosure of those names. Put your own organization-specific names in a private overlay file (see $overlay_note) that you do not commit.",
+  "$overlay_note": "audit.py merges an optional overlay on top of this file. Resolution order: --patterns <file>  >  $ANU_SCRUB_PATTERNS  >  <project>/.anu_scrub_patterns.json (untracked by convention; already in this repo's .gitignore)  >  this file alone. The overlay uses the same {fail: [], warn: []} shape and is ADDITIVE — it extends, never replaces, the neutral defaults. Verify your overlay actually loaded with `python audit.py --self-test`, which fails loudly when the effective deny-list is empty or stops matching its fixtures.",
+
+  "fail": [
+    {
+      "pattern": "(?<![A-Za-z0-9])[A-Za-z]:[\\\\/]",
+      "label": "absolute Windows path (drive letter)"
+    },
+    {
+      "pattern": "(?:^|[\\s\"'`(\\[])(?:/home|/Users)/[A-Za-z0-9._-]+",
+      "label": "absolute POSIX home directory path"
+    },
+    {
+      "pattern": "\\\\\\\\[A-Za-z0-9._-]+\\\\",
+      "label": "UNC network share path"
+    },
+    {
+      "pattern": "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}",
+      "label": "email address"
+    }
+  ],
+
+  "warn": [
+    {
+      "pattern": "\\bDEC-[A-Z0-9]+\\b",
+      "label": "internal decision-log code"
+    }
+  ]
+}

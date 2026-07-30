@@ -11,6 +11,11 @@ FRAMEWORK_AUDIT.json
 PROJECT_AUDIT.json
 tools/_check_framework_shim.py
 
+# Private scrub deny-list overlay for anu-publish/audit.py.
+# Organization-specific directory/tool/project/user names go here and are
+# never committed: a published deny-list of private names discloses them.
+.anu_scrub_patterns.json
+
 # IDEs
 .vscode/
 .idea/

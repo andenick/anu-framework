@@ -81,7 +81,7 @@ Anu Drive is **Stage 8b** — one of three sibling distribution channels. Anu Pu
 3. **Machine-readable**: The master CSV can be imported into R, Python, Stata, or Excel with one command
 4. **Explorable**: Curious scholars can drill into individual Extenbooks to see full construction
 5. **Programmatic**: Everything is generated from `series_registry.json` — no manual assembly
-6. **Scrubbed**: No API keys, no absolute paths, no internal Arcanum references
+6. **Scrubbed**: No API keys, no absolute paths, no organization-internal references
 
 ---
 
@@ -248,9 +248,9 @@ Each Extenbook retains its full 4-sheet structure:
 ### Scrubbing
 
 Before copying, verify that no Extenbook contains:
-- Absolute paths (D:/, C:/, /home/)
+- Absolute machine paths (drive letters, home directories, UNC shares)
 - API keys or tokens
-- Internal Arcanum references (Robin, Council, freenic)
+- Hits against the organization deny-list (see `anu-publish/audit.py`)
 
 The Provenance sheet's "References" section (Rows 87-95) may contain internal paths — these should be stripped or replaced with relative references within the Drive package.
 
@@ -720,7 +720,7 @@ S013,Corporate Rate of Profit,Net operating surplus divided by net capital stock
 | Subseries (S001-A, S001-B) | Internal construction detail — scholar only sees final series |
 | Construction steps | Documented in methodology PDF and Extenbooks |
 | API keys or URLs | Security — documented in methodology PDF Appendix A |
-| Internal file paths | Scrubbing rule — no Arcanum references |
+| Internal file paths | Scrubbing rule — no organization-internal references |
 
 ---
 
@@ -956,8 +956,8 @@ If `extension` exists in the registry entry:
 | Methodology PDF integrity | D05 | PDF opens, has TOC, has one section per series, has all four appendices | FAIL |
 | README accuracy | D06 | README file listing matches actual folder contents | WARN |
 | No secrets | D07 | No API keys, tokens, or passwords in any file (grep for common patterns) | FAIL |
-| No absolute paths | D08 | No `D:/`, `C:/`, `/home/`, `\\` paths in any text file | FAIL |
-| No Arcanum references | D09 | No "Robin", "Council", "Arcanum", "freenic" in any file | FAIL |
+| No absolute paths | D08 | No drive-letter, home-directory or UNC paths in any text file | FAIL |
+| No internal references | D09 | No hits against the organization deny-list overlay in any file | FAIL |
 | CSV/XLSX consistency | D10 | CSV and XLSX Sheet 1 contain identical data (value-level check) | FAIL |
 | Year formatting | D11 | Year column contains integers only (no 2,013.00 formatting) | FAIL |
 | No empty series | D12 | No series column in the master file is entirely blank | WARN |

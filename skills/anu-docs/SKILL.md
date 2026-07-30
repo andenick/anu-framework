@@ -77,7 +77,7 @@ Anu Docs owns the last row. Every other artifact feeds into it.
 1. **Registry-driven**: All structural content (construction steps, subseries, extensions) is generated from `series_registry.json` — never hardcoded
 2. **Research-enriched**: Methodology descriptions and author quotes come from `S###_research.json` — enrichment means improving research JSONs, not editing docs directly
 3. **Tier-progressive**: Documentation quality improves incrementally (T1 -> T2 -> T3) as more source material becomes available
-4. **Scrub-safe**: Generated docs never contain internal paths, API keys, or Arcanum-specific references
+4. **Scrub-safe**: Generated docs never contain absolute machine paths, API keys, or organization-internal references
 5. **Regenerable**: Any doc can be regenerated from its source artifacts without loss
 
 ---
@@ -399,7 +399,7 @@ Each per-series doc is scored on 6 dimensions (total 100 points):
 
 | Score | Criteria |
 |-------|----------|
-| 0 | Contains absolute paths, API keys, or Arcanum-internal references |
+| 0 | Contains absolute paths, API keys, or organization-internal references |
 | 10 | Clean — no internal references detected |
 
 ### Project-Level Score
@@ -422,7 +422,7 @@ Project Doc Score = mean(all series scores)
 |------|----|-------------|----------|
 | Template conformance | DOC01 | Doc has all REQUIRED sections (What This Measures, Construction, Data Sources, Extension, Code) | FAIL |
 | Placeholder detection | DOC02 | "What This Measures" does not start with "Construction steps from registry" or "Data sources:" | WARN |
-| Scrub compliance | DOC03 | No absolute paths, API keys, Arcanum/Robin/<internal-tool>/freenic references | FAIL |
+| Scrub compliance | DOC03 | No absolute paths, no API keys, no hits against the organization deny-list (`anu-publish/audit.py`) | FAIL |
 | Link integrity | DOC04 | Code section links point to existing files | WARN |
 | Research JSON exists | DOC05 | Corresponding `S###_research.json` exists | WARN |
 | Research JSON quality | DOC06 | Research JSON has `researcher != "auto-generated"` | WARN |

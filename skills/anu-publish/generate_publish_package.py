@@ -35,6 +35,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import shutil
 import sys
@@ -64,10 +65,49 @@ SECRET_PATTERNS = [
 # `s:` inside `https://` (any URL scheme) false-positives as a drive letter.
 ABS_PATH_PATTERN = re.compile(
     r"(?:(?<![A-Za-z0-9])[A-Za-z]:[\\/]|/home/|/Users/|\\\\[A-Za-z])")
-# "Arcanum Research" is the deliberate public brand (site footers, READMEs);
-# every other arcanum/internal-infrastructure reference is a leak.
-ARCANUM_REF_PATTERN = re.compile(
-    r"(?i)\b(arcanum(?!\s+research)|council/druck|\bfreenic\b|\bRobin\b|andenick)")
+# Organization-specific deny-list (P11). Deliberately EMPTY in the published
+# framework: a hard-coded list of an organization's private directory names,
+# tool names, project codenames and usernames is itself a disclosure of those
+# names. Configure your own in a private overlay that you do not commit —
+# `<project>/.anu_scrub_patterns.json` or $ANU_SCRUB_PATTERNS, same
+# `{"fail": [{"pattern", "label"}, ...]}` shape as
+# `skills/anu-publish/scrub_patterns.json`. Guidance for writing one:
+#   - anchor with \b so a private tool name does not collide with a surname;
+#   - carve out any string that is a deliberate PUBLIC brand.
+# When this list is empty, P11 reports WARN ("not enforced") rather than PASS,
+# so an unconfigured gate is visible instead of silently green.
+ORG_SCRUB_OVERLAY_FILENAME = ".anu_scrub_patterns.json"
+ORG_SCRUB_ENV_VAR = "ANU_SCRUB_PATTERNS"
+
+
+def load_org_ref_patterns(project: Path) -> list[re.Pattern]:
+    """Load the private organization deny-list, if one is configured."""
+    candidates = []
+    env_overlay = os.environ.get(ORG_SCRUB_ENV_VAR)
+    if env_overlay:
+        candidates.append(Path(env_overlay))
+    candidates.append(project / ORG_SCRUB_OVERLAY_FILENAME)
+    out: list[re.Pattern] = []
+    for cand in candidates:
+        if not cand.exists():
+            continue
+        try:
+            data = json.loads(cand.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"  WARN: could not read scrub overlay {cand}: {exc}")
+            continue
+        for entry in data.get("fail", []) or []:
+            pat = entry.get("pattern") if isinstance(entry, dict) else None
+            if not pat:
+                continue
+            try:
+                out.append(re.compile(pat))
+            except re.error as exc:
+                print(f"  WARN: bad regex in {cand}: {pat} — {exc}")
+    return out
+
+
+ORG_REF_PATTERNS: list[re.Pattern] = []
 
 # Internal staging/salvage directories that must never ship in any export.
 INTERNAL_DIR_NAMES = {"inputs_bundled", "SalvagedInputs"}
@@ -201,7 +241,7 @@ def scan_text_file(path: Path) -> dict:
     result = {
         "secret": False, "secret_snippet": "",
         "abs_path": False, "abs_path_snippet": "",
-        "arcanum_ref": False, "arcanum_ref_snippet": "",
+        "org_ref": False, "org_ref_snippet": "",
     }
     try:
         text = path.read_text(encoding="utf-8", errors="ignore")
@@ -219,10 +259,12 @@ def scan_text_file(path: Path) -> dict:
         # Capture a little context around the match for the report.
         start = max(0, m.start() - 10)
         result["abs_path_snippet"] = text[start:m.start() + 40].replace("\n", " ")
-    m = ARCANUM_REF_PATTERN.search(text)
-    if m:
-        result["arcanum_ref"] = True
-        result["arcanum_ref_snippet"] = m.group(0)
+    for pat in ORG_REF_PATTERNS:
+        m = pat.search(text)
+        if m:
+            result["org_ref"] = True
+            result["org_ref_snippet"] = m.group(0)
+            break
     return result
 
 
@@ -231,7 +273,7 @@ def scrub_export(export_dir: Path) -> dict:
 
     Returns a dict of category -> list of {path, snippet} hits.
     """
-    hits: dict[str, list[dict]] = {"secrets": [], "abs_paths": [], "arcanum_refs": []}
+    hits: dict[str, list[dict]] = {"secrets": [], "abs_paths": [], "org_refs": []}
     for item in sorted(export_dir.rglob("*")):
         if not item.is_file():
             continue
@@ -243,8 +285,8 @@ def scrub_export(export_dir: Path) -> dict:
             hits["secrets"].append({"path": rel, "snippet": scan["secret_snippet"]})
         if scan["abs_path"]:
             hits["abs_paths"].append({"path": rel, "snippet": scan["abs_path_snippet"]})
-        if scan["arcanum_ref"]:
-            hits["arcanum_refs"].append({"path": rel, "snippet": scan["arcanum_ref_snippet"]})
+        if scan["org_ref"]:
+            hits["org_refs"].append({"path": rel, "snippet": scan["org_ref_snippet"]})
     return hits
 
 
@@ -917,12 +959,20 @@ def validate_export(export_dir: Path, profile: str, scrub_hits: dict,
                else f"{n_paths} file(s) with absolute paths: "
                     + ", ".join(h["path"] for h in scrub_hits["abs_paths"][:5]))
 
-    # P11 — NO_ARCANUM_REFS (FAIL since v2.1)
-    n_arc = len(scrub_hits["arcanum_refs"])
-    report.add("P11_NO_ARCANUM_REFS", "FAIL", n_arc == 0,
-               "no internal Arcanum references" if n_arc == 0
-               else f"{n_arc} file(s) with internal references: "
-                    + ", ".join(h["path"] for h in scrub_hits["arcanum_refs"][:5]))
+    # P11 — NO_INTERNAL_REFS (FAIL since v2.1). Reports WARN "not enforced"
+    # when no organization deny-list is configured, so an unarmed gate is
+    # visible rather than silently green (GATE_DESIGN §6(c)).
+    n_org = len(scrub_hits["org_refs"])
+    if not ORG_REF_PATTERNS:
+        report.add("P11_NO_INTERNAL_REFS", "WARN", False,
+                   "NOT ENFORCED — no organization deny-list configured; set "
+                   f"${ORG_SCRUB_ENV_VAR} or add {ORG_SCRUB_OVERLAY_FILENAME} "
+                   "to the project root")
+    else:
+        report.add("P11_NO_INTERNAL_REFS", "FAIL", n_org == 0,
+                   "no organization-internal references" if n_org == 0
+                   else f"{n_org} file(s) with internal references: "
+                        + ", ".join(h["path"] for h in scrub_hits["org_refs"][:5]))
 
     # P12 — NO_PYCACHE / no excluded or internal artifacts leaked into export.
     # v2.2: also flag stray compiled files (*.pyc outside __pycache__) and
@@ -1012,7 +1062,7 @@ def write_audit(export_dir: Path, registry: dict, version: str, profile: str,
         "scrub": {
             "secrets": scrub_hits["secrets"],
             "absolute_paths": scrub_hits["abs_paths"],
-            "arcanum_references": scrub_hits["arcanum_refs"],
+            "internal_references": scrub_hits["org_refs"],
         },
         "validation": {
             "checks": report.checks,
@@ -1043,6 +1093,15 @@ def main() -> int:
     args = parser.parse_args()
 
     project = Path(args.project_root).resolve()
+
+    # Arm the P11 organization deny-list from the private overlay, if any.
+    global ORG_REF_PATTERNS
+    ORG_REF_PATTERNS = load_org_ref_patterns(project)
+    if not ORG_REF_PATTERNS:
+        print(f"  NOTE: no organization deny-list found "
+              f"(${ORG_SCRUB_ENV_VAR} or {ORG_SCRUB_OVERLAY_FILENAME}); "
+              f"P11_NO_INTERNAL_REFS will report WARN, not PASS.")
+
     registry_path = project / "Technical" / "series_registry.json"
     if not registry_path.exists():
         print(f"ERROR: registry not found at {registry_path}", file=sys.stderr)
@@ -1070,7 +1129,7 @@ def main() -> int:
     scrub_hits = scrub_export(export_dir)
     print(f"  secrets: {len(scrub_hits['secrets'])}  "
           f"absolute paths: {len(scrub_hits['abs_paths'])}  "
-          f"arcanum refs: {len(scrub_hits['arcanum_refs'])}")
+          f"internal refs: {len(scrub_hits['org_refs'])}")
 
     manifest = write_manifest(export_dir, registry, version, args.profile)
     print(f"  MANIFEST: {manifest['file_count']} files, "

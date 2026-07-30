@@ -10,63 +10,182 @@ This is the canonical implementation of `/anu-publish audit`. It runs BEFORE
 `anu-publish package` so agents can identify and remediate leaks early
 (catching them during package would require a re-run after fixes).
 
-Scrub patterns flag the categories of internal reference seen in real
-Arcanum projects:
+Where the deny-list comes from
+------------------------------
+The patterns are DATA, not source. They live in `scrub_patterns.json` next to
+this script, in the shape `{"fail": [{"pattern", "label"}, ...], "warn": [...]}`.
 
-  <workspace>            — hard-coded workspace path
-  /Council/             — internal infrastructure directory
-  \\bDruck\\b           — internal performance-monitoring tool name
-  \\bRobin/             — internal data-acquisition tool name (NOT the
-                          person-name "Robin", which appears as a citation
-                          surname). The pattern requires '/' suffix so
-                          "Robin Cherry et al." doesn't false-positive.
-  DEC-[A-Z0-9]+         — internal decision-log codes inherited from
-                          predecessor projects (e.g. ST2's DEC-014 marker)
+The shipped `scrub_patterns.json` is deliberately organization-neutral: it
+matches the *classes* of reference that leak — absolute Windows drive paths,
+POSIX home directories, UNC shares, email addresses, decision-log codes. It
+does not enumerate any organization's private directory names, tool names,
+project codenames or usernames, because a published deny-list of private names
+is itself a disclosure of those names.
+
+Add your own organization-specific names in a private overlay file that you do
+not commit. Resolution order (each step wins over the next):
+
+  1. --patterns <file>
+  2. $ANU_SCRUB_PATTERNS
+  3. <project>/.anu_scrub_patterns.json
+  4. scrub_patterns.json shipped beside this script
+
+Steps 1-3 are ADDITIVE overlays: they extend the neutral defaults rather than
+replacing them, so a malformed overlay can never silently disarm the gate.
+
+Because a scrubber that matches nothing reports CLEAN, the empty deny-list is
+treated as a hard error, and `--self-test` runs the effective patterns against
+built-in positive and negative fixtures. Run it in CI alongside the audit —
+per GATE_DESIGN §6(c), a gate that cannot fail is not a gate.
 
 The `.publish_ignore` file uses fnmatch glob syntax, one pattern per line.
-Trailing '/' marks a directory pattern (and its subtree).
+Trailing '/' marks a directory pattern (and its subtree). Keep it to the single
+narrow self-exemption below: exempting the files that actually carry leaks turns
+the gate into decoration.
 
-False-positive exclusions:
-  - The audit script itself (contains the patterns in its docstring)
-  - docs/chapters/*_REVIEW_REPORT.json (review reports document the policy)
-  - MIGRATION/divergences_from_ST2.md (legacy doc that names patterns)
+False-positive exclusions (hard-coded, narrow):
+  - This audit script itself, which carries the self-test fixtures.
 
 Usage:
   python audit.py                       # report findings (exit non-zero if any)
   python audit.py --strict              # additionally fail on WARN-severity hits
   python audit.py --report json         # machine-readable JSON output
   python audit.py --project <path>      # audit a different project root
+  python audit.py --patterns <file>     # additional deny-list overlay
+  python audit.py --self-test           # prove the deny-list is armed
 
-Part of the Anu Framework v11.0 — see anu-publish/SKILL.md.
-
-Derived from the reference-replication build's publish-scrub audit script.
+Part of the Anu Framework v12.2 — see anu-publish/SKILL.md.
 """
 from __future__ import annotations
 
 import argparse
 import fnmatch
 import json
+import os
 import re
 import sys
 from pathlib import Path
 
 
-# Patterns that flag real internal references.
-# Severity FAIL — must be scrubbed before publication.
-# Severity WARN — review before publication (some may be intentional in
-# documentation that explicitly explains the framework boundary).
-SCRUB_PATTERNS_FAIL = [
-    (re.compile(r"D:[/\\]Arcanum"),         "<workspace> path"),
-    (re.compile(r"C:[/\\]Users"),           "C:/Users path"),
-    (re.compile(r"E:[/\\]Storage"),         "<external> path"),
-    (re.compile(r"/Council/|\\Council\\"),   "/Council/ directory"),
-    (re.compile(r"\bDruck\b"),               "Druck tool name"),
-    (re.compile(r"\bRobin/|\bRobin\\"),     "Robin/ tool directory"),
-    (re.compile(r"\bandenick\b"),            "workstation/GitHub username"),
+DEFAULT_PATTERN_FILE = Path(__file__).resolve().parent / "scrub_patterns.json"
+OVERLAY_FILENAME = ".anu_scrub_patterns.json"
+OVERLAY_ENV_VAR = "ANU_SCRUB_PATTERNS"
+
+# Fixtures for --self-test. They live here, in the one file the audit exempts
+# from itself, so that no fixture line can be mistaken for a real finding.
+SELF_TEST_MUST_FLAG = [
+    'OUTPUT = "D:/Workspace/Project/Outputs"',
+    r'path = "C:\Users\someone\Documents"',
+    "cache = /home/someone/.cache/anu",
+    r"share = \\fileserver\team\data",
+    "maintainer: someone@example.org",
 ]
-SCRUB_PATTERNS_WARN = [
-    (re.compile(r"DEC-[A-Z0-9]+"),           "DEC-XXX internal decision code"),
+SELF_TEST_MUST_NOT_FLAG = [
+    "See https://fred.stlouisfed.org/docs/api/api_key.html",
+    "from pathlib import Path",
+    'registry = json.load(open("series_registry.json"))',
+    "| S001 | Industrial production | index_2017=100 |",
 ]
+
+
+class PatternConfigError(RuntimeError):
+    """The effective deny-list is missing, malformed, or empty."""
+
+
+def _compile_entries(entries: object, source: Path, key: str
+                     ) -> list[tuple[re.Pattern, str]]:
+    if entries is None:
+        return []
+    if not isinstance(entries, list):
+        raise PatternConfigError(f"{source}: '{key}' must be a list")
+    out = []
+    for i, entry in enumerate(entries):
+        if not isinstance(entry, dict) or "pattern" not in entry:
+            raise PatternConfigError(
+                f"{source}: {key}[{i}] must be an object with a 'pattern' key")
+        label = entry.get("label") or entry["pattern"]
+        try:
+            out.append((re.compile(entry["pattern"]), label))
+        except re.error as exc:
+            raise PatternConfigError(
+                f"{source}: {key}[{i}] is not a valid regex — {exc}") from exc
+    return out
+
+
+def _read_pattern_file(path: Path) -> tuple[list, list]:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise PatternConfigError(f"{path}: not valid JSON — {exc}") from exc
+    if not isinstance(data, dict):
+        raise PatternConfigError(f"{path}: top level must be an object")
+    return (_compile_entries(data.get("fail"), path, "fail"),
+            _compile_entries(data.get("warn"), path, "warn"))
+
+
+def load_scrub_patterns(project_root: Path, overlay: Path | None = None
+                        ) -> tuple[list, list, list[str]]:
+    """Return (fail_patterns, warn_patterns, sources).
+
+    The shipped neutral defaults are always loaded. Organization-specific
+    overlays are merged ON TOP of them, never in place of them, so a missing or
+    mistyped overlay path degrades to "fewer patterns", never to "no patterns" —
+    and an empty effective deny-list raises instead of reporting CLEAN.
+    """
+    if not DEFAULT_PATTERN_FILE.exists():
+        raise PatternConfigError(
+            f"deny-list not found at {DEFAULT_PATTERN_FILE} — refusing to run "
+            "an unarmed scrub audit")
+    fail, warn = _read_pattern_file(DEFAULT_PATTERN_FILE)
+    sources = [str(DEFAULT_PATTERN_FILE)]
+
+    candidates: list[Path] = []
+    if overlay is not None:
+        candidates.append(overlay)
+    env_overlay = os.environ.get(OVERLAY_ENV_VAR)
+    if env_overlay:
+        candidates.append(Path(env_overlay))
+    candidates.append(project_root / OVERLAY_FILENAME)
+
+    for cand in candidates:
+        if not cand.exists():
+            if overlay is not None and cand == overlay:
+                raise PatternConfigError(f"--patterns file not found: {cand}")
+            continue
+        extra_fail, extra_warn = _read_pattern_file(cand)
+        fail.extend(extra_fail)
+        warn.extend(extra_warn)
+        sources.append(str(cand))
+
+    if not fail and not warn:
+        raise PatternConfigError(
+            "effective deny-list is empty — a scrub audit that matches nothing "
+            "would report CLEAN for every project. Fix the pattern file(s): "
+            + ", ".join(sources))
+    return fail, warn, sources
+
+
+def self_test(fail_patterns: list, warn_patterns: list) -> int:
+    """Prove the deny-list can actually fail. Returns a process exit code."""
+    all_patterns = list(fail_patterns) + list(warn_patterns)
+    problems: list[str] = []
+    for line in SELF_TEST_MUST_FLAG:
+        if not any(pat.search(line) for pat, _ in all_patterns):
+            problems.append(f"NOT FLAGGED (should be): {line!r}")
+    for line in SELF_TEST_MUST_NOT_FLAG:
+        hit = next((name for pat, name in all_patterns if pat.search(line)), None)
+        if hit:
+            problems.append(f"FALSE POSITIVE [{hit}]: {line!r}")
+    if problems:
+        print("    [anu-publish audit] SELF-TEST FAILED — the deny-list is not "
+              "behaving as specified:")
+        for p in problems:
+            print(f"      {p}")
+        return 1
+    print(f"    [anu-publish audit] SELF-TEST PASSED — {len(all_patterns)} "
+          f"pattern(s) armed; {len(SELF_TEST_MUST_FLAG)} positive and "
+          f"{len(SELF_TEST_MUST_NOT_FLAG)} negative fixtures behave correctly.")
+    return 0
 
 
 def load_ignore_patterns(project_root: Path) -> list[str]:
@@ -81,29 +200,21 @@ def load_ignore_patterns(project_root: Path) -> list[str]:
     return out
 
 
-# Files that legitimately describe the scrub policy itself; flagging them
-# would create false positives. Configurable per project.
 ALWAYS_SKIP = (
     ".git/", "__pycache__/", ".venv/", "venv/", "data/raw/",
-)
-
-POLICY_DESCRIBING_FILES = (
-    # Files that describe / document the scrub policy. They reference the
-    # very patterns we audit for; flagging them would be circular.
 )
 
 
 def is_ignored(rel_path: str, patterns: list[str]) -> bool:
     if any(rel_path.startswith(s) for s in ALWAYS_SKIP):
         return True
-    # The audit script itself
-    if rel_path.endswith("anu-publish/audit.py") or rel_path.endswith("code/S00_setup/S06_publish_scrub_audit.py"):
-        return True
-    # Chapter REVIEW reports document the scrub policy by definition
-    if "docs/chapters/" in rel_path and rel_path.endswith("_REVIEW_REPORT.json"):
-        return True
-    # MIGRATION/divergences_*.md describe predecessor branding
-    if rel_path.startswith("MIGRATION/divergences_"):
+    # The ONE narrow self-exemption (GATE_DESIGN §6(b)): the gate itself and the
+    # deny-list it is defined by necessarily contain matching lines (this script
+    # carries the self-test fixtures; the pattern files carry the patterns).
+    # Nothing else is exempt — a file that carries a real leak must fail.
+    if (rel_path.endswith("anu-publish/audit.py")
+            or rel_path.endswith("anu-publish/scrub_patterns.json")
+            or rel_path.endswith(OVERLAY_FILENAME)):
         return True
     # Apply .publish_ignore patterns
     for pat in patterns:
@@ -116,7 +227,8 @@ def is_ignored(rel_path: str, patterns: list[str]) -> bool:
     return False
 
 
-def scan_file(path: Path) -> list[tuple[int, str, str, str]]:
+def scan_file(path: Path, fail_patterns: list, warn_patterns: list
+              ) -> list[tuple[int, str, str, str]]:
     """Return [(line_no, severity, pattern_name, line_content_trimmed), ...]."""
     findings = []
     try:
@@ -124,12 +236,12 @@ def scan_file(path: Path) -> list[tuple[int, str, str, str]]:
     except Exception:
         return findings
     for lineno, line in enumerate(text.splitlines(), 1):
-        for pat, name in SCRUB_PATTERNS_FAIL:
+        for pat, name in fail_patterns:
             if pat.search(line):
                 findings.append((lineno, "FAIL", name, line.strip()[:120]))
                 break
         else:
-            for pat, name in SCRUB_PATTERNS_WARN:
+            for pat, name in warn_patterns:
                 if pat.search(line):
                     findings.append((lineno, "WARN", name, line.strip()[:120]))
                     break
@@ -145,8 +257,8 @@ TEXT_EXTENSIONS = {
 
 
 # Codename-shaped folder names. Distribution bundles should use descriptive
-# slugs (e.g. `measuring-wealth-of-nations-replication_Drive_v1.0`), not
-# project codenames (e.g. `CD2_Drive_v2.0`, `AS2_Drive_v1.0`, `RSCD_Drive_v1.0`).
+# slugs (e.g. `measuring-wealth-of-nations-replication_Drive_v1.0`), not opaque
+# internal project codenames (e.g. `XY2_Drive_v2.0`).
 # WARN-severity — historical bundles get flagged for renaming.
 CODENAME_FOLDER_RE = re.compile(r"(?:^|/)[A-Z]{2,4}\d*_(?:Drive|Publish|Archive)_v")
 
@@ -169,7 +281,8 @@ def scan_folder_names(project_root: Path, patterns: list[str]) -> list[tuple[str
     return findings
 
 
-def run(project_root: Path, strict: bool, report_format: str) -> int:
+def run(project_root: Path, strict: bool, report_format: str,
+        fail_patterns: list, warn_patterns: list, sources: list[str]) -> int:
     patterns = load_ignore_patterns(project_root)
     total_scanned = 0
     findings_by_file: dict[str, list] = {}
@@ -183,7 +296,7 @@ def run(project_root: Path, strict: bool, report_format: str) -> int:
         if path.suffix not in TEXT_EXTENSIONS:
             continue
         total_scanned += 1
-        f = scan_file(path)
+        f = scan_file(path, fail_patterns, warn_patterns)
         if f:
             findings_by_file[rel] = f
 
@@ -196,6 +309,8 @@ def run(project_root: Path, strict: bool, report_format: str) -> int:
 
     if report_format == "json":
         out = {
+            "pattern_sources": sources,
+            "patterns_armed": len(fail_patterns) + len(warn_patterns),
             "files_scanned": total_scanned,
             "files_with_findings": len(findings_by_file),
             "fail_count": n_fail,
@@ -210,6 +325,9 @@ def run(project_root: Path, strict: bool, report_format: str) -> int:
         }
         print(json.dumps(out, indent=2))
     else:
+        print(f"    [anu-publish audit] Deny-list: "
+              f"{len(fail_patterns)} FAIL + {len(warn_patterns)} WARN pattern(s) "
+              f"from {len(sources)} source(s): {', '.join(sources)}")
         print(f"    [anu-publish audit] Scanned {total_scanned} text files (excluding .publish_ignore)")
         if not findings_by_file and not folder_findings:
             print(f"    [anu-publish audit] CLEAN — zero internal references in public-eligible files.")
@@ -242,8 +360,27 @@ def main() -> int:
     p.add_argument("--project", default=".", help="Project root (default: cwd)")
     p.add_argument("--strict", action="store_true", help="Fail on WARN-severity hits too")
     p.add_argument("--report", default="text", choices=["text", "json"])
+    p.add_argument("--patterns", default=None,
+                   help="Additional deny-list overlay (JSON); merged ON TOP of "
+                        "the shipped neutral defaults")
+    p.add_argument("--self-test", action="store_true",
+                   help="Prove the effective deny-list matches its fixtures, "
+                        "then exit (run this in CI beside the audit)")
     args = p.parse_args()
-    return run(Path(args.project).resolve(), args.strict, args.report)
+
+    project_root = Path(args.project).resolve()
+    try:
+        fail_patterns, warn_patterns, sources = load_scrub_patterns(
+            project_root, Path(args.patterns) if args.patterns else None)
+    except PatternConfigError as exc:
+        print(f"    [anu-publish audit] DENY-LIST ERROR: {exc}", file=sys.stderr)
+        return 2
+
+    if args.self_test:
+        return self_test(fail_patterns, warn_patterns)
+
+    return run(project_root, args.strict, args.report,
+               fail_patterns, warn_patterns, sources)
 
 
 if __name__ == "__main__":

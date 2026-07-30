@@ -1,7 +1,7 @@
 ---
 name: anu-publish
 version: "2.1"
-description: "Publication pipeline that transforms internal Anu Framework projects into clean, publishable artifacts. Handles scrubbing (API keys, internal paths, framework-internal references via .publish_ignore; path/Arcanum leaks are FAIL-severity), packaging (data-only, data+pipeline, data+pipeline+viz, full, plus the web profile — the formal Anu→website export contract with parquet + data_dictionary + WEB_MANIFEST), validation (pre-publication gate P01-P15), and formatting (README, CITATION.cff, LICENSE). Ships generate_publish_package.py and audit.py."
+description: "Publication pipeline that transforms internal Anu Framework projects into clean, publishable artifacts. Handles scrubbing (API keys, absolute machine paths, organization-internal references via a configurable deny-list; absolute-path and internal-reference leaks are FAIL-severity), packaging (data-only, data+pipeline, data+pipeline+viz, full, plus the web profile — the formal Anu→website export contract with parquet + data_dictionary + WEB_MANIFEST), validation (pre-publication gate P01-P15), and formatting (README, CITATION.cff, LICENSE). Ships generate_publish_package.py and audit.py."
 when-to-use: "User wants to prepare a data project for public release, scrub sensitive data from a repo, validate a package for publication, or generate publication artifacts (CITATION.cff, LICENSE)"
 search-hints: "publish release package scrub validate public repo github export citation license audit publish-ignore"
 allowed-tools: Read, Write, Bash, Glob, Grep, Edit
@@ -24,7 +24,7 @@ Transform an internal Anu Framework project into a clean, publishable artifact. 
 
 A project may ship any subset. `anu-archive` typically runs last, mirroring the Publish repo into its `code/` directory and the Drive package into its `data/` directory.
 
-**Core Principle**: Every published value must be reproducible. A researcher who clones the exported repo, installs dependencies, provides their own (free) API keys, and runs the pipeline must get the same results. No internal tools, private databases, or Arcanum infrastructure should be required. No placeholders, no approximations, no frozen values, no synthetic data.
+**Core Principle**: Every published value must be reproducible. A researcher who clones the exported repo, installs dependencies, provides their own (free) API keys, and runs the pipeline must get the same results. No internal tools, private databases, or organization-specific infrastructure should be required. No placeholders, no approximations, no frozen values, no synthetic data.
 
 ## Stage Position
 
@@ -69,7 +69,15 @@ python audit.py --report json         # machine-readable
 python audit.py --project <path>      # audit a different project root
 ```
 
-Scrub patterns (FAIL-severity): `<workspace>`, `C:/Users`, `<external>`, `/Council/`, `\bDruck\b`, `\bRobin/`, `\bandenick\b`. Scrub patterns (WARN-severity): `DEC-[A-Z0-9]+` (internal decision codes inherited from predecessors).
+The deny-list is **data, not source**. It lives in `scrub_patterns.json` beside the script, shaped `{"fail": [{"pattern", "label"}, ...], "warn": [...]}`.
+
+The shipped `scrub_patterns.json` is deliberately **organization-neutral**: it matches the *classes* of reference that leak - absolute drive-letter paths, POSIX home directories, UNC shares, email addresses, decision-log codes. It names no organization's private directories, tools, project codenames or usernames, because **a published deny-list of private names is itself a disclosure of those names**.
+
+Put your own organization's names in a private overlay you do **not** commit. Resolution order, each winning over the next: `--patterns <file>` -> `$ANU_SCRUB_PATTERNS` -> `<project>/.anu_scrub_patterns.json` -> the shipped defaults. Overlays are **additive** - they extend the neutral defaults, never replace them, so a mistyped overlay path degrades to *fewer* patterns, never to *none*.
+
+Writing an overlay: anchor private tool names so they cannot collide with a surname in a citation, and carve out any string that is a deliberate public brand.
+
+Because a scrubber that matches nothing reports CLEAN, an empty effective deny-list is a hard error (exit 2), and `python audit.py --self-test` runs the effective patterns against positive and negative fixtures. Run it in CI beside the audit - a gate that cannot fail is not a gate.
 
 The `.publish_ignore` file at the project root excludes internal coordination artifacts (one fnmatch glob per line; trailing `/` marks directory subtrees). Default excludes typically include `MIGRATION/`, internal plan docs, and runtime JSON files.
 
@@ -112,7 +120,7 @@ Scan the project and produce an `AUDIT_REPORT.md`:
 
 ### 1B. Path Sanitization
 - Grep for absolute paths (`D:/`, `C:/`, `/home/`, `\\`)
-- Grep for Arcanum-specific references: `Robin`, `freenic`, `Council/`, `Arcanum`
+- Run the scrub audit with your organization deny-list overlay armed (`audit.py --patterns`)
 - Grep for personal identifiers: email addresses, usernames
 - All `lib/paths.py` references should be relative (via `Path(__file__).resolve().parent`)
 
@@ -163,9 +171,9 @@ If not already present, generate:
 - **CHANGELOG.md** — from git log or PROGRESS_LOG.md
 - **.gitignore** — standard exclusions
 
-### 2D. Decouple from Arcanum
+### 2D. Decouple from the internal workspace
 
-- Replace any remaining Arcanum path references with relative paths
+- Replace any remaining workspace path references with relative paths
 - Remove `.claude/`, `.codex/`, `.cursor/` directories
 - Remove HANDOFF_*.md files (internal workflow)
 - Remove PROGRESS_LOG.md (replaced by CHANGELOG.md)
@@ -186,7 +194,7 @@ Pre-publication gate — the `generate_publish_package.py` generator runs checks
 | P08_REQUIREMENTS | FAIL (pipeline profiles) | `requirements.txt` present |
 | P09_NO_SECRETS | FAIL | No API keys, tokens, or passwords in any text file |
 | P10_NO_ABSOLUTE_PATHS | **FAIL** (v2.1; was WARN) | No `D:/`, `C:/`, `/home/`, `/Users/`, or UNC paths — workspace paths shipped to the public web while this was WARN |
-| P11_NO_ARCANUM_REFS | **FAIL** (v2.1; was WARN) | No references to Arcanum, <internal-tool>, freenic, Robin, andenick |
+| P11_NO_INTERNAL_REFS | **FAIL** (v2.1; was WARN) - **WARN "not enforced"** when no organization deny-list is configured | No references matching the organization deny-list overlay (`$ANU_SCRUB_PATTERNS` or `<project>/.anu_scrub_patterns.json`). Ships empty, so an unconfigured gate is visibly unarmed rather than silently green |
 | P12_NO_BUILD_ARTIFACTS | FAIL | No `__pycache__/`, internal staging dirs (`inputs_bundled/`, `SalvagedInputs/`), or `api_keys.env`/`.env` leaked into the export |
 | P13_DICTIONARY_PRESENT | FAIL (`web`) | `data_dictionary.csv` present — mandatory for every public dataset per `ANU_NAMING_STANDARD.md` |
 | P14_UNITS_DECLARED | FAIL | Every published series + subseries declares units; `mixed_*` unit strings banned (declare per-subseries units — `UNITS_VALIDATION_STANDARD.md`) |
@@ -322,7 +330,7 @@ references:
 | # | DO NOT | Consequence |
 |---|--------|-------------|
 | 1 | Ship `api_keys.env` or `.env` files with real values | Secret leak; always ship `.env.example` only |
-| 2 | Leave absolute paths (`<workspace>`, `C:/Users/...`) in exported code | Breaks on any other machine; use `pathlib` relative resolution |
+| 2 | Leave absolute machine paths (drive letters, home directories, UNC shares) in exported code | Breaks on any other machine; use `pathlib` relative resolution |
 | 3 | Include `__pycache__/`, `.git/`, `.claude/`, `.codex/` in the export | Bloat and internal artifacts; the generator excludes these automatically |
 | 4 | Claim >80% completion without a passing P01-P12 gate | The gate is the objective measure; subjective estimates are unreliable |
 | 5 | Skip the audit phase and go straight to packaging | Audit catches secrets and internal references before they reach the export |
@@ -341,7 +349,7 @@ Published manifests MUST pin the data repository version at construction time. B
 | 1.1 | 2026-05-14 | Added the `generate_publish_package.py` executable generator; renumbered the validation gate as P01-P12 to mirror the generator's static checks |
 | 1.2 | 2026-05-15 | Added `audit.py` as canonical pre-publication scrub implementation; formalized `.publish_ignore` exclusion manifest with documented FAIL/WARN scrub pattern set. Friction-Point-4 absorbed from the reference-replication build experience. |
 | 2.0 | 2026-05-16 | Rewritten to Anu Framework v12.0 common template. Added Stage Position (Stage 8a — DISTRIBUTION Publish), machine-listed Inputs/Outputs tables, Acceptance Gates, Documentation Cascade Writes (STEP_LOG + NARRATIVE + LEDGER), Anti-Patterns table. All substantive content preserved including audit phases, packaging profiles, P01-P12 gate, and templates. |
-| 2.1 | 2026-06-10 | Scrub hardening + the web export contract. **P10 (absolute paths) and P11 (Arcanum refs) promoted WARN→FAIL** (workspace paths had shipped to the public web under WARN). audit.py FAIL patterns extended (C:/Users, <external>, andenick). P12 now also rejects internal staging dirs (`inputs_bundled/`, `SalvagedInputs/`). New **`web` packaging profile** — publish-filtered registry + chopped CSV + parquet + generated `data_dictionary.csv` + explainers + scrubbed DPRs + `WEB_MANIFEST.json` (downloads contract: CSV + parquet only). New gates: P13 DICTIONARY_PRESENT (web), P14 UNITS_DECLARED (no `mixed_*` units), P15 NO_UNPUBLISHED_SERIES (web). |
+| 2.1 | 2026-06-10 | Scrub hardening + the web export contract. **P10 (absolute paths) and P11 (internal refs) promoted WARN→FAIL** (workspace paths had shipped to the public web under WARN). audit.py FAIL pattern coverage extended to every absolute-path form. P12 now also rejects internal staging dirs (`inputs_bundled/`, `SalvagedInputs/`). New **`web` packaging profile** — publish-filtered registry + chopped CSV + parquet + generated `data_dictionary.csv` + explainers + scrubbed DPRs + `WEB_MANIFEST.json` (downloads contract: CSV + parquet only). New gates: P13 DICTIONARY_PRESENT (web), P14 UNITS_DECLARED (no `mixed_*` units), P15 NO_UNPUBLISHED_SERIES (web). |
 
 ---
 
