@@ -153,7 +153,7 @@ All checklists reference the Anu Framework v12.2 artifact structure. Tier 2 seri
 The following v6.0 artifacts are checked as a gate condition. Absence does not reduce the weighted score but is reported prominently:
 
 - [ ] **Validation phase completeness**: `VALIDATION_REPORT.json` exists with V01-V08 results; no FAIL status on critical checks (V01 reference values, V04 completeness, V08 hash integrity)
-- [ ] **Decision log presence**: `DECISION_LOG.md` exists with <decision-ref> format entries for any non-trivial methodological decisions
+- [ ] **Decision log presence**: `DECISION_LOG.md` exists with `<DECISION-ID>` entries (any stable scheme, e.g. `ADR-0007`) for any non-trivial methodological decisions
 - [ ] **Assumptions documentation**: `ASSUMPTIONS.md` exists with ASM-D (data), ASM-M (methodological), ASM-R (replication) categories documented
 - [ ] **Provenance index quality**: `provenance_index.json` exists with `by_source`, `by_api`, and `by_series` sections; all series in scope have lineage chains
 - [ ] **Manual adjustment manifest**: If M## scripts exist, `ADJUSTMENT_MANIFEST.json` documents all adjustments with justifications and decision references
@@ -517,7 +517,7 @@ The D12 Documentation dimension should reference the Ledger's `coverage` percent
 - **v3.5** (March 2026) - Generalized: labeled the reference-implementation file locations as example; fixed Plotly Dash references to R Shiny + Plotly
 - **v3.6** (March 2026) - Added Q5b (Component data visible) for ratio/rate series with Concurrent Series (CS) architecture: checks CS columns in chopped CSV, `is_component` entries in SUBSOURCE_METADATA, and "Show Components" dual-axis rendering
 - **v3.7** (March 2026) - Minor refinements
-- **v4.0** (April 2026) - Added D0 v6.0 gate check: validation phase completeness (V01-V08), decision log presence (<decision-ref>), assumptions documentation (ASM-D/M/R), provenance index quality (by_source/by_api/by_series), manual adjustment manifest verification
+- **v4.0** (April 2026) - Added D0 v6.0 gate check: validation phase completeness (V01-V08), decision log presence (`<DECISION-ID>`), assumptions documentation (ASM-D/M/R), provenance index quality (by_source/by_api/by_series), manual adjustment manifest verification
 - **v4.1** (May 2026) - Formalized **D14 Outward-Facing Intelligibility** as a gate (introduced ad-hoc in the reference implementation's Session 28-30 reviews): audits externally-distributed artifacts for undefined internal jargon across the three distribution channels (anu-publish, anu-drive, anu-archive). Clarified that D1–D12 are the weighted dimensions (sum 100%) and D13/D14 are gates scored separately. Refreshed skill cross-references to Anu Framework v10.0.
 
 ---

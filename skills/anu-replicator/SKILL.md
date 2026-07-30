@@ -203,7 +203,7 @@ Every manual adjustment MUST be documented in `config/ADJUSTMENT_MANIFEST.json`:
       "series_affected": ["S001"],
       "description": "Correct splice discontinuity at 1947",
       "justification": "Original author applied manual correction per appendix note",
-      "decision_ref": "<decision-ref>"
+      "decision_ref": "<DECISION-ID>"
     }
   ]
 }
@@ -314,7 +314,7 @@ ANU_REPLICATOR_v2.0.0/
 |   +-- provenance_index.json           # Provenance index (by_source, by_api, by_series with lineage chains)
 +--
 +-- docs/
-    +-- DECISION_LOG.md                 # <decision-ref> format decision records
+    +-- DECISION_LOG.md                 # <DECISION-ID> decision records (e.g. ADR-0007)
     +-- ASSUMPTIONS.md                  # ASM-D/M/R category assumption records
 ```
 

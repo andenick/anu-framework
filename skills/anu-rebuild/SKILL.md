@@ -10,6 +10,15 @@ requires: anu-doctor, anu-ingestion, anu-publish, anu-pipeline, anu-scaffold
 part-of: Anu Framework v12.2
 ---
 
+> **Before you start.** The shell blocks below use `$ANU_FRAMEWORK` for the
+> path to your clone of this repository, and `<angle-bracket>` tokens for
+> values you substitute yourself. Set the variable once and the commands are
+> copy-pasteable:
+>
+> ```bash
+> export ANU_FRAMEWORK=/path/to/anu-framework    # Windows: $env:ANU_FRAMEWORK="..."
+> ```
+
 # Anu Rebuild Standard v1.1
 
 ## Overview
@@ -161,11 +170,11 @@ git commit -m "Wave 0: scaffold + salvaged inputs + initial crosswalk"
 
 ```bash
 # Framework still consistent
-python <framework>/skills/anu-doctor/check_framework.py
+python "$ANU_FRAMEWORK"/skills/anu-doctor/check_framework.py
 
 # Project state check — expect some FAILs (no DPRs, no L01/P02/V03 yet);
 # the ones that MUST pass at this stage:
-python <framework>/skills/anu-doctor/check_project.py --project .
+python "$ANU_FRAMEWORK"/skills/anu-doctor/check_project.py --project .
 ```
 
 **Acceptance criteria** (each must be true before declaring Wave 0 complete):
@@ -243,7 +252,7 @@ Update `series_registry.json` extension block per series.
 Use `anu-scaffold` to render L01/P02/V03 script stubs:
 
 ```bash
-python <framework>/skills/anu-scaffold/generate.py --cohort <cohort_name>
+python "$ANU_FRAMEWORK"/skills/anu-scaffold/generate.py --cohort <cohort_name>
 ```
 
 This is the **only** mechanical generator the agent invokes during construction. It renders templated stubs with `# TODO:` markers. The agent fills the TODOs in.
@@ -286,7 +295,7 @@ If < 85% or D13/D14 RED: the cohort isn't ready for closeout. Address findings, 
 ### Step W.12 — Closeout commit
 
 ```bash
-python <framework>/skills/anu-doctor/check_project.py --project .   # must be CLEAN for the cohort scope
+python "$ANU_FRAMEWORK"/skills/anu-doctor/check_project.py --project .   # must be CLEAN for the cohort scope
 git add -A
 git commit -m "Wave <N>: <cohort_name> closeout — <count> series PASS, review <score>%"
 ```
@@ -307,7 +316,7 @@ When all cohorts are complete:
 ### Step D.1 — Pre-publication scrub audit
 
 ```bash
-python <framework>/skills/anu-publish/audit.py --project . --strict
+python "$ANU_FRAMEWORK"/skills/anu-publish/audit.py --project . --strict
 ```
 
 Must report CLEAN. Iterate until zero internal-reference leaks. Common findings: hardcoded local paths, internal codenames in comments, decision-log references that mention internal tooling.
@@ -319,15 +328,15 @@ Follow `anu-review/SKILL.md` for a whole-project audit. ≥ 85% with D13 + D14 G
 ### Step D.3 — Generate three distribution channels
 
 ```bash
-python <framework>/skills/anu-publish/generate_publish_package.py .   # GitHub-ready
-python <framework>/skills/anu-drive/generate_drive_package.py .       # Drive bundle
-python <framework>/skills/anu-archive/generate_archive_package.py .   # Audit archive
+python "$ANU_FRAMEWORK"/skills/anu-publish/generate_publish_package.py .   # GitHub-ready
+python "$ANU_FRAMEWORK"/skills/anu-drive/generate_drive_package.py .       # Drive bundle
+python "$ANU_FRAMEWORK"/skills/anu-archive/generate_archive_package.py .   # Audit archive
 ```
 
 Each writes to `Outputs/`. Audit each before declaring done:
 
 ```bash
-python <framework>/skills/anu-publish/audit.py --project Outputs/<bundle>/ --strict
+python "$ANU_FRAMEWORK"/skills/anu-publish/audit.py --project Outputs/<bundle>/ --strict
 ```
 
 ### Step D.4 — Push to GitHub
@@ -366,7 +375,7 @@ Final pass after distribution.
 ### Step P.1 — Project-mode self-audit
 
 ```bash
-python <framework>/skills/anu-doctor/check_project.py --project . --json
+python "$ANU_FRAMEWORK"/skills/anu-doctor/check_project.py --project . --json
 ```
 
 Resolve any remaining FAILs. WARNs are documented in a `KNOWN_ISSUES.md` if accepted-with-explanation.
