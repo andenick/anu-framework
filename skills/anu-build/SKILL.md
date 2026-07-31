@@ -1,7 +1,7 @@
 ---
 name: anu-build
 version: "1.3"
-description: Master orchestrator that drives every Anu Framework skill through a methodical 9-stage pipeline (Stage 0 Inventory through Stage 8 Distribution) with computed construction order, mandatory gates, and a 4-file documentation cascade. Replaces anu-rebuild and anu-pipeline. Canonical CLI implementation at `skills/anu-build/build.py` (project-agnostic, `--project <path>`). NOTE: the shipped copy raises ModuleNotFoundError — its `lib/` helper package is not in this repository.
+description: Master orchestrator that drives every Anu Framework skill through a methodical 9-stage pipeline (Stage 0 Inventory through Stage 8 Distribution) with computed construction order, mandatory gates, and a 4-file documentation cascade. Replaces anu-rebuild and anu-pipeline. Canonical CLI implementation at `skills/anu-build/build.py` (project-agnostic, `--project <path>`, stdlib-only, helpers in `lib/`). The CLI plans, tracks and gates a build; the stage work itself is done by an agent invoking the individual skills.
 when-to-use: Build, rebuild, or resume any Anu Framework data-construction project
 search-hints: build pipeline orchestrate rebuild resume stage gate cascade
 argument-hint: [command] [options]
@@ -81,7 +81,7 @@ The cascade is four append/regenerate files (STEP_LOG, BUILD_NARRATIVE, ANU_BUIL
 
 ### Reading Order for a Resuming Agent
 
-1. `Projects/<name>/README.md` — orientation
+1. `<project>/README.md` — orientation
 2. `Technical/Build/BUILD_NARRATIVE.md` — last 5 entries (what happened recently)
 3. `Technical/PIPELINE_STATE.json` — where are we
 4. `Technical/Build/ANU_BUILD_MANIFEST.json` — what's the full plan
@@ -238,22 +238,38 @@ Between every pair of adjacent stages:
 ## Commands
 
 The canonical CLI is `python skills/anu-build/build.py --project <path> <subcommand>`.
+It is stdlib-only; its helper modules live in `skills/anu-build/lib/`
+(`construction_graph.py`, `cascade.py`, `stage_runner.py`).
 
-> **Known gap.** The shipped `build.py` imports a `construction_graph` module from a `lib/` package that is not included in this repository, so it raises `ModuleNotFoundError` on any invocation. The subcommand table below documents the intended interface, not a working entry point. Use the individual skills until the helper package ships. Projects may ship a thin local shim (e.g. `Technical/build.py`) that imports `anu_build.main(default_project=...)` so users in the project directory can omit `--project`. The full v1.0 verb set (init / plan / run-stage / run-to-completion / audit / handoff) is reserved for orchestrator extensions; the implemented v1.2 subcommands are:
+**Scope, stated plainly.** `anu-build` is an orchestration *state machine*, not
+a task runner. It computes the construction order, maintains the four-file
+documentation cascade, evaluates each stage's acceptance gate, and names the
+next concrete action. It does not read a source, write a loader, or extend a
+series — an agent does that by invoking the individual skills. No subcommand
+executes another skill.
 
 | Command | CLI | Description |
 |---------|-----|-------------|
-| `/anu-build status` | `python anu_build.py --project <path> status` | Print stage/cohort/series progress |
-| `/anu-build advance` | `python anu_build.py --project <path> advance` | Identify the next pipeline action (no execution) |
-| `/anu-build validate` | `python anu_build.py --project <path> validate` | Read-only conformance check (wraps anu-doctor project mode) |
-| `/anu-build chopped` | `python anu_build.py --project <path> chopped` | Regenerate Anu Chopped CSVs (delegates to `code/O06_output/O01_*`) |
-| `/anu-build extenbooks` | `python anu_build.py --project <path> extenbooks` | Regenerate Anu Extenbook workbooks (delegates to `code/O06_output/O02_*`) |
-| `/anu-build ledger` | `python anu_build.py --project <path> ledger` | Regenerate `ANU_LEDGER.json` (delegates to `code/S00_setup/S02_*` with inline fallback) |
-| `/anu-build viz` | `python anu_build.py --project <path> viz` | Run `viz/check_quality.py` quality checker |
-| `/anu-build review` | `python anu_build.py --project <path> review` | Summarise latest `Technical/Handoffs/ANU_REVIEW_*.md` |
-| `/anu-build help` | `python anu_build.py help` | Print orchestrator help |
+| `/anu-build init` | `build.py --project <path> init --mode {fresh,rebuild,resume}` | Create the cascade, compute the construction graph, write `ANU_BUILD_MANIFEST.json` + `SUBSERIES_PLAN.json`. Idempotent — `--mode resume` never erases existing state. |
+| `/anu-build plan` | `build.py --project <path> plan` | Print the topological layers from `SUBSERIES_PLAN.json` |
+| `/anu-build status` | `build.py --project <path> status` | Print stage progress and per-artifact ledger coverage |
+| `/anu-build advance` | `build.py --project <path> advance` | Name the next concrete action (which series, which skill). No execution. |
+| `/anu-build check-stage N` | `build.py --project <path> check-stage <N>` | Evaluate one stage's acceptance gate; exit 1 on failure |
+| `/anu-build audit` | `build.py --project <path> audit` | Evaluate every gate up to the current stage |
+| `/anu-build handoff` | `build.py --project <path> handoff` | Write a session handoff document and log it to the cascade |
 
-The CLI is also importable: `from anu_build import status, advance, validate, chopped, extenbooks, ledger, viz, review, main, BuildContext, resolve_context`. Each subcommand function takes a `BuildContext` and returns an int exit code.
+**What the gates actually check.** Every gate is an artifact-**presence** check,
+plus a numeric read where the project genuinely records a number (the Stage 2
+adequacy score). A passing gate means the required files exist — not that their
+contents are correct. Content correctness is `anu-doctor` project mode (P01–P39)
+and `anu-review`. The ledger records this in its own `note` field.
+
+The modules are importable if a project wants to build on them:
+`from construction_graph import generate_plan`,
+`from cascade import regenerate_ledger, append_step_log`,
+`from stage_runner import STAGE_MAP, check_gate, next_action`
+(with `skills/anu-build/lib/` on `sys.path`, as `build.py` does). A project may
+also ship a thin local shim that hard-codes its own `--project` value.
 
 ---
 
@@ -342,11 +358,16 @@ Stage 0 (Inventory) walks `inputs/data-repository/` and records every checkout. 
 - [`SERIES_REGISTRY_SCHEMA.md`](../../docs/SERIES_REGISTRY_SCHEMA.md) — registry schema
 - [`SKILL_VERSION_MATRIX.md`](../../docs/SKILL_VERSION_MATRIX.md) — per-skill versions
 
-Referenced by older revisions but **not shipped in this repository**:
-`docs/SKILL_DEPENDENCY_GRAPH.md`, `docs/ANU_BUILD_PROTOCOL.md`, and the four
-`docs/schemas/*.schema.json` files (`anu_build_manifest`, `subseries_plan`,
-`ledger_v12`, `pipeline_state_v12`). The cascade file shapes are specified in
-prose in this SKILL.md; `anu-doctor` D17/D18 fail until the JSON schemas land.
+- [`GATE_DESIGN.md`](../../docs/GATE_DESIGN.md) — what a gate is, and the rules an exemption must satisfy
+- [`schemas/anu_build_manifest.schema.json`](../../docs/schemas/anu_build_manifest.schema.json) — schema for the manifest `init` writes
+- [`schemas/skill_graph.json`](../../docs/schemas/skill_graph.json) — the `requires:` dependency graph, generated by `tools/generate_skill_graph.py`
+
+`SUBSERIES_PLAN.json`, `PIPELINE_STATE.json` and `ANU_LEDGER.json` have **no
+published JSON Schema**. Their shapes are specified in prose above and are
+produced by `lib/cascade.py` and `lib/construction_graph.py`, which are the
+operative definition. Earlier revisions of this file promised schemas for them
+and a `SKILL_DEPENDENCY_GRAPH.md` / `ANU_BUILD_PROTOCOL.md` pair; those were
+never written, and the promises have been removed rather than left dangling.
 
 ---
 

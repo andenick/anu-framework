@@ -1,19 +1,28 @@
 #!/usr/bin/env python3
-"""Anu Build — Master orchestrator CLI for the Anu Framework v12.2.
+"""Anu Build — orchestration state machine for the Anu Framework v12.2.
 
-Drives every Anu Framework skill through a methodical 9-stage pipeline
-with computed construction order, mandatory gates, and a 4-file
-documentation cascade.
+Computes the construction order for a project, maintains the four-file
+documentation cascade, evaluates each stage's acceptance gate, and names
+the next concrete action.
+
+It does not execute stage work. Reading a source, writing a loader,
+extending a series — those are performed by an agent invoking the
+individual skills. This CLI tracks and gates that work; it never
+substitutes for it. Every gate is an artifact-presence check (plus the
+adequacy score, where a project records one): a passing gate means the
+required files exist, not that their contents are correct. Content
+correctness is `anu-doctor` project mode and `anu-review`.
 
 Usage:
-    python build.py init --project <path> --mode {fresh,rebuild,resume}
-    python build.py plan
-    python build.py status
-    python build.py advance
-    python build.py run-stage <N>
-    python build.py run-to-completion
-    python build.py audit
-    python build.py handoff
+    python build.py --project <path> init --mode {fresh,rebuild,resume}
+    python build.py --project <path> plan
+    python build.py --project <path> status
+    python build.py --project <path> advance
+    python build.py --project <path> check-stage <N>
+    python build.py --project <path> audit
+    python build.py --project <path> handoff
+
+Helper modules live in `lib/` beside this file; stdlib only.
 
 Part of the Anu Framework v12.2 — see anu-build/SKILL.md.
 """
@@ -90,8 +99,14 @@ def cmd_init(args: argparse.Namespace) -> int:
         manifest["prefix_scheme"] = prefix_scheme
     manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
 
-    ledger = regenerate_ledger(project, registry_path)
-    advance_stage(project, 0, "INVENTORY")
+    regenerate_ledger(project, registry_path)
+    state = advance_stage(project, 0, "INVENTORY")
+    # Record how many series each stage is accountable for, so `status`
+    # reports N/total rather than an uninformative 0/0.
+    for entry in state.get("stages", {}).values():
+        entry["series_total"] = series_count
+    (project / "PIPELINE_STATE.json").write_text(
+        json.dumps(state, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
     append_step_log(project, {
         "ts": now_iso(), "step_id": "init-0001", "mode": mode,
@@ -120,7 +135,12 @@ def cmd_init(args: argparse.Namespace) -> int:
     print(f"  topo layers: {len(plan.get('layers', []))}")
     print(f"  edges:      {len(plan.get('edges', []))}")
     print(f"  mode:       {mode}")
-    print(f"  cascade:    Technical/Build/")
+    print(f"  cascade:    {plan_path.parent}")
+    if plan.get("cycle_nodes"):
+        print(f"  WARNING: construction graph has a cycle: {plan['cycle_nodes'][:5]}")
+    if plan.get("unresolved_edges"):
+        print(f"  WARNING: {len(plan['unresolved_edges'])} dependency reference(s) "
+              "name an id absent from the registry")
     print("  INIT COMPLETE")
     return 0
 
@@ -188,14 +208,14 @@ def cmd_advance(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_run_stage(args: argparse.Namespace) -> int:
+def cmd_check_stage(args: argparse.Namespace) -> int:
     project = find_project(args.project)
     stage = args.stage_num
     if stage not in STAGE_MAP:
         print(f"ERROR: Unknown stage {stage}. Valid: 0-8", file=sys.stderr)
         return 2
     label, skill = STAGE_MAP[stage]
-    print(f"Running Stage {stage} — {label} (skill: {skill})")
+    print(f"Stage {stage} — {label} (owning skill: {skill})")
     print(describe_stage(stage))
     print()
     gate = check_gate(project, stage)
@@ -242,11 +262,15 @@ def cmd_handoff(args: argparse.Namespace) -> int:
         f"**Date**: {ts}\n"
         f"**Current Stage**: {current} ({label})\n"
         f"**Framework**: Anu Framework v12.2\n\n"
-        f"## Status\n\nSee `Technical/Build/BUILD_NARRATIVE.md` for recent work.\n"
-        f"See `Technical/PIPELINE_STATE.json` for stage progress.\n"
-        f"See `Technical/ANU_LEDGER.json` for per-series state.\n\n"
-        f"## Next Steps\n\nRun `/anu-build status` to see current progress.\n"
-        f"Run `/anu-build advance` to see the next action.\n",
+        f"**Project root**: `{project}`\n\n"
+        f"## Status\n\nAll paths below are relative to the project root above.\n\n"
+        f"- `Build/BUILD_NARRATIVE.md` — what happened recently\n"
+        f"- `PIPELINE_STATE.json` — stage progress\n"
+        f"- `ANU_LEDGER.json` — per-series artifact state\n"
+        f"- `Build/SUBSERIES_PLAN.json` — the next concrete node in topo order\n\n"
+        f"## Next Steps\n\n"
+        f"```\npython skills/anu-build/build.py --project <root> status\n"
+        f"python skills/anu-build/build.py --project <root> advance\n```\n",
         encoding="utf-8",
     )
 
@@ -271,24 +295,25 @@ def cmd_handoff(args: argparse.Namespace) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Anu Build — Master orchestrator for Anu Framework v12.2")
+        description="Anu Build — orchestration state machine for Anu Framework v12.2. "
+                    "Plans, tracks and gates a build; does not execute stage work.")
     parser.add_argument("--project", type=str, default=None,
                         help="Project root (default: cwd)")
     sub = parser.add_subparsers(dest="command")
 
-    p_init = sub.add_parser("init", help="Initialize or resume a build")
+    p_init = sub.add_parser("init", help="Initialize or resume a build (idempotent)")
     p_init.add_argument("--mode", choices=["fresh", "rebuild", "resume"],
                         default="resume")
 
     sub.add_parser("plan", help="Print SUBSERIES_PLAN topo order")
-    sub.add_parser("status", help="Print stage/cohort/series progress")
-    sub.add_parser("advance", help="Show the next action to take")
+    sub.add_parser("status", help="Print stage/series progress")
+    sub.add_parser("advance", help="Name the next concrete action (no execution)")
 
-    p_stage = sub.add_parser("run-stage", help="Run all steps in a stage")
+    p_stage = sub.add_parser(
+        "check-stage", help="Evaluate one stage's acceptance gate")
     p_stage.add_argument("stage_num", type=int)
 
-    sub.add_parser("run-to-completion", help="Run all remaining stages")
-    sub.add_parser("audit", help="Read-only conformance check")
+    sub.add_parser("audit", help="Evaluate every gate up to the current stage")
     sub.add_parser("handoff", help="Close session, write handoff doc")
 
     args = parser.parse_args()
@@ -298,7 +323,7 @@ def main() -> int:
         "plan": cmd_plan,
         "status": cmd_status,
         "advance": cmd_advance,
-        "run-stage": cmd_run_stage,
+        "check-stage": cmd_check_stage,
         "audit": cmd_audit,
         "handoff": cmd_handoff,
     }

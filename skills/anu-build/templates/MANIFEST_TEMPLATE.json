@@ -1,0 +1,23 @@
+{
+  "schema": "anu_build_manifest/1.0",
+  "framework": "Anu Framework v12.2",
+  "project": "",
+  "generated_at": "",
+  "generated_by": "anu-build/build.py init",
+  "mode": "resume",
+  "series_count": 0,
+  "subseries_count": 0,
+  "prefix_scheme": {},
+  "stages": [
+    {"stage": 0, "label": "INVENTORY", "skill": "anu-build"},
+    {"stage": 1, "label": "RESEARCH", "skill": "anu-research"},
+    {"stage": 2, "label": "ADEQUACY", "skill": "anu-adequacy"},
+    {"stage": 3, "label": "INGESTION", "skill": "anu-ingestion"},
+    {"stage": 4, "label": "EXTENSION", "skill": "anu-extension"},
+    {"stage": 5, "label": "REPLICATION", "skill": "anu-scaffold + anu-replicator"},
+    {"stage": 6, "label": "OUTPUT", "skill": "anu-chopped + anu-extenbook"},
+    {"stage": 7, "label": "VISUALIZATION", "skill": "anu-visualize"},
+    {"stage": 8, "label": "DISTRIBUTION", "skill": "anu-publish + anu-drive + anu-archive"}
+  ],
+  "note": "Written once at Stage 0 by build.py init. Stage progress is tracked in PIPELINE_STATE.json, not here. Schema: docs/schemas/anu_build_manifest.schema.json."
+}
