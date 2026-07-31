@@ -974,7 +974,7 @@ def validate_export(export_dir: Path, profile: str, scrub_hits: dict,
 
     # P11 — NO_INTERNAL_REFS (FAIL since v2.1). Reports WARN "not enforced"
     # when no organization deny-list is configured, so an unarmed gate is
-    # visible rather than silently green (GATE_DESIGN §6(c)).
+    # visible rather than silently green (docs/GATE_DESIGN.md §6(c)).
     n_org = len(scrub_hits["org_refs"])
     if not ORG_REF_PATTERNS:
         report.add("P11_NO_INTERNAL_REFS", "WARN", False,

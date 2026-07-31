@@ -79,7 +79,7 @@ Writing an overlay: anchor private tool names so they cannot collide with a surn
 
 Because a scrubber that matches nothing reports CLEAN, an empty effective deny-list is a hard error (exit 2), and `python audit.py --self-test` runs the effective patterns against positive and negative fixtures. Run it in CI beside the audit - a gate that cannot fail is not a gate.
 
-An optional `.publish_ignore` at the project root excludes internal coordination artifacts (one fnmatch glob per line; trailing `/` marks directory subtrees). **This repository ships none**, deliberately: an exemption list is the easiest way to make a leak gate report clean while the leaks are still there. `audit.py` hard-codes exactly one self-exemption — itself and its deny-list — and everything else must actually be fixed. Per GATE_DESIGN §6(a), any exemption you do add should record a reason, an owner and a review-by date.
+An optional `.publish_ignore` at the project root excludes internal coordination artifacts (one fnmatch glob per line; trailing `/` marks directory subtrees). **This repository ships none**, deliberately: an exemption list is the easiest way to make a leak gate report clean while the leaks are still there. `audit.py` hard-codes exactly one self-exemption — itself and its deny-list — and everything else must actually be fixed. Per [`docs/GATE_DESIGN.md`](../../docs/GATE_DESIGN.md) §6(a), any exemption you do add should record a reason, an owner and a review-by date.
 
 **`generate_publish_package.py`** — canonical implementation of `/anu-publish package` and `/anu-publish validate`. Assembles the export, scrubs it, writes the manifest, runs the pre-publication gate in one pass.
 

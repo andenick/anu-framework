@@ -36,15 +36,15 @@ replacing them, so a malformed overlay can never silently disarm the gate.
 Because a scrubber that matches nothing reports CLEAN, the empty deny-list is
 treated as a hard error, and `--self-test` runs the effective patterns against
 built-in positive and negative fixtures. Run it in CI alongside the audit —
-per GATE_DESIGN §6(c), a gate that cannot fail is not a gate.
+per docs/GATE_DESIGN.md §6(c), a gate that cannot fail is not a gate.
 
 An optional `.publish_ignore` at the project root uses fnmatch glob syntax, one
 pattern per line; a trailing '/' marks a directory subtree. THIS REPOSITORY
 SHIPS NONE, deliberately — exempting the files that actually carry leaks turns
-the gate into decoration. Per GATE_DESIGN §6(a), any exemption you do add should
+the gate into decoration. Per docs/GATE_DESIGN.md §6(a), any exemption you do add should
 record a reason, an owner and a review-by date.
 
-Self-exemptions (hard-coded, narrow — GATE_DESIGN §6(b)):
+Self-exemptions (hard-coded, narrow — docs/GATE_DESIGN.md §6(b)):
   - this audit script, which carries the self-test fixtures;
   - the deny-list files, which carry the patterns.
 
@@ -210,7 +210,7 @@ ALWAYS_SKIP = (
 def is_ignored(rel_path: str, patterns: list[str]) -> bool:
     if any(rel_path.startswith(s) for s in ALWAYS_SKIP):
         return True
-    # The ONE narrow self-exemption (GATE_DESIGN §6(b)): the gate itself and the
+    # The ONE narrow self-exemption (docs/GATE_DESIGN.md §6(b)): the gate itself and the
     # deny-list it is defined by necessarily contain matching lines (this script
     # carries the self-test fixtures; the pattern files carry the patterns).
     # Nothing else is exempt — a file that carries a real leak must fail.
