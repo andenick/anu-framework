@@ -6,9 +6,9 @@
 
 > **Changelog 2026-06-10 (v12.2).** Framework v12.1 → v12.2 — the **web-readiness release** (triggered by a downstream website platform overhaul). (1) **Series ID Spec v2.2** (anu-ingestion v5.2): canonical prefixes now `{D: primary, XS: extra}`; legacy `AS`/`ES`/`AD` rejected by anu-doctor P12; XS entries carry `xs_class` (`appendix` | `external_study`) + `xs_attribution`, which drive website sectioning (XS sections render after all primary series, split appendix vs other-study). New mandatory registry fields: `display_name`, `publish`, `triage`; per-subseries `label`+`units`, `mixed_*` units banned. (2) **anu-publish v2.1**: P10/P11 scrub gates promoted WARN→FAIL (workspace paths had shipped to the public web); new `web` packaging profile — the formal Anu→website export contract (publish-filtered registry + chopped CSV + parquet + generated `data_dictionary.csv` + explainers + scrubbed DPRs + `WEB_MANIFEST.json`; downloads contract CSV+parquet only); new gates P13 (dictionary), P14 (units), P15 (no unpublished series). (3) **anu-docs v3.0**: the **Anu Explainer** — web-facing per-series artifact with fixed five-section template and hard Web-Format Rules (no file paths, no wide tables, KB-anchored quotes); DPR repositioned as downloadable full-provenance "agent context"; DOC11/DOC12 gates. (4) New canonical website/data standards (SITE_SPEC_PROTOCOL, SITE_BUILD_ORCHESTRATION, STUDY_PAGE_STANDARD, ANU_NAMING_STANDARD, EDUCATIONAL_DISCLAIMER_STANDARD, UNITS_VALIDATION_STANDARD, PANEL_CONSTRUCTION_RUBRIC) — these govern the downstream website build and are **not** shipped in this repository. (5) Canonical **"Two namespaces"** section added below — series-ID prefixes vs pipeline-stage prefixes are different vocabularies; site explainers must copy from it.
 >
-> **Changelog 2026-05-24 (v12.1).** Framework v12.0 → v12.1. Decision-doc folder reactivated for *new* canonical decisions (the 0001–0006 set remains archived/integrated into specs). Two new decisions added: **Decision 0007** — canonical verbatim-quote schema for research JSONs (records inside `entries[]` with `entry_type == "verbatim_quote"`; top-level `verbatim_quotes[]` and inline-legacy fields deprecated) — migrated across all 64 research JSONs of the reference replication in v1.1 Phase 1; and **Decision 0008** — `validation.reference_values` is year-keyed scalars only, non-year statistics split into a new companion field `validation.derived_statistics` (registry schema v2.3.0+). New framework-level capabilities promoted from the reference replication v1.1 + v1.2: `anu-doctor` standard scripts now ship at `tools/check_framework.py` and `check_project.py` as canonical wrappers (no longer per-project authoring); `extension_year_range` field convention codified (separate from `year_range` so book-period min/max stays stable when extension data is added); `artifacts.derived_no_l01` exemption flag for derived series that legitimately have no L01 loader; stock-form primary support for rate-of-profit series (`DIV-012` pattern — `construction: "stock_form"` allowed where the source measured a stock rather than a flow). check_framework continues to PASS on 21 active skill folders (19 + 2 redirect stubs). No skill-version bumps required — v12.1 is a spec/decisions-layer release.
+> **Changelog 2026-05-24 (v12.1).** Framework v12.0 → v12.1. Decision-doc folder reactivated for *new* canonical decisions (the 0001–0006 set remains archived/integrated into specs). Two new decisions added: **Decision 0007** — canonical verbatim-quote schema for research JSONs (records inside `entries[]` with `entry_type == "verbatim_quote"`; top-level `verbatim_quotes[]` and inline-legacy fields deprecated) — migrated across all 64 research JSONs of the reference replication in v1.1 Phase 1; and **Decision 0008** — `validation.reference_values` is year-keyed scalars only, non-year statistics split into a new companion field `validation.derived_statistics` (registry schema v2.3.0+). New framework-level capabilities promoted from the reference replication v1.1 + v1.2: `anu-doctor` standard scripts now ship at `tools/check_framework.py` and `check_project.py` as canonical wrappers (no longer per-project authoring); `extension_year_range` field convention codified (separate from `year_range` so book-period min/max stays stable when extension data is added); `artifacts.derived_no_l01` exemption flag for derived series that legitimately have no L01 loader; stock-form primary support for rate-of-profit series (`DIV-012` pattern — `construction: "stock_form"` allowed where the source measured a stock rather than a flow). check_framework continues to PASS on 21 active skill folders (19 current + 2 superseded; the v12.1 text called the pair "redirect stubs", which they never were in this repository — see "Superseded skills" below). No skill-version bumps required — v12.1 is a spec/decisions-layer release.
 >
-> **Changelog 2026-05-16 (v12.0).** Framework v11.0 → v12.0. Major consolidation: `anu-rebuild` + `anu-pipeline` merged into **anu-build** — a single master orchestrator with 9 stages (0 INVENTORY through 8 DISTRIBUTION), computed construction order via topological sort, mandatory acceptance gates, and a 4-file documentation cascade (STEP_LOG.jsonl, BUILD_NARRATIVE.md, ANU_BUILD_MANIFEST.json, SUBSERIES_PLAN.json). All 18 active SKILL.md files rewritten to a common 11-section template enforced by new anu-doctor D16 check. Two archived skill folders (`anu-shiny-archived-20260509`, `anu-standard-v2-removed-20260509`) deleted. anu-doctor extended with D16–D19 (framework) and P15–P20 (project) checks. New canonical docs: `ANU_BUILD_PROTOCOL.md`, `SKILL_DEPENDENCY_GRAPH.md`, `ANU_AUDIT_REPORT_20260516.md`, plus 5 JSON schemas. LEDGER and PIPELINE_STATE schemas extended to v12.0. Skill count: 20 → 19 (net: −anu-rebuild −anu-pipeline +anu-build = −1). All 18 active stage/floating/infrastructure skills version-bumped. Deprecated skills retained as redirect stubs.
+> **Changelog 2026-05-16 (v12.0).** Framework v11.0 → v12.0. Major consolidation: `anu-rebuild` + `anu-pipeline` merged into **anu-build** — a single master orchestrator with 9 stages (0 INVENTORY through 8 DISTRIBUTION), computed construction order via topological sort, mandatory acceptance gates, and a 4-file documentation cascade (STEP_LOG.jsonl, BUILD_NARRATIVE.md, ANU_BUILD_MANIFEST.json, SUBSERIES_PLAN.json). All 18 active SKILL.md files rewritten to a common 11-section template enforced by new anu-doctor D16 check. Two archived skill folders (`anu-shiny-archived-20260509`, `anu-standard-v2-removed-20260509`) deleted. anu-doctor extended with D16–D19 (framework) and P15–P20 (project) checks. New canonical docs were planned — `ANU_BUILD_PROTOCOL.md`, `SKILL_DEPENDENCY_GRAPH.md`, `ANU_AUDIT_REPORT_20260516.md`, plus 5 JSON schemas. **None of those were ever written, and this repository ships none of them.** What it does ship, added in July 2026, is `docs/schemas/skill_graph.json` (generated from the `requires:` frontmatter by `tools/generate_skill_graph.py`) and `docs/schemas/anu_build_manifest.schema.json` (describing the manifest `anu-build init` actually writes). LEDGER and PIPELINE_STATE schemas extended to v12.0. Skill count: 20 → 19 (net: −anu-rebuild −anu-pipeline +anu-build = −1). All 18 active stage/floating/infrastructure skills version-bumped. Deprecated skills retained as redirect stubs.
 >
 > **Changelog 2026-05-15 (v11.0).** Framework v10.0 → v11.0. Two new skills: anu-scaffold and anu-rebuild. Ten existing skills version-bumped. `anu-data` renamed to `anu-architecture`.
 >
@@ -43,7 +43,7 @@ The Anu Framework is a **21-skill framework — 19 current pipeline skills plus 
 | 15 | **Anu Variant** | v1.4 | Floating | `anu-variant/SKILL.md` | Methodology variant tracking (VPRs) |
 | 16 | **Anu Ledger** | v2.2 | Infrastructure | `anu-ledger/SKILL.md` | Artifact inventory + per-series stage tracking |
 | 17 | **Anu Architecture** | v2.1 | Infrastructure | `anu-architecture/SKILL.md` | Format standard (BEA/BLS/FRED cache schemas) |
-| 18 | **Anu Doctor** | v2.3 | Infrastructure | `anu-doctor/SKILL.md` | Framework (D01–D15) + project (P01–P36) self-audit |
+| 18 | **Anu Doctor** | v2.4 | Infrastructure | `anu-doctor/SKILL.md` | Framework (D01–D19) + project (P01–P39) self-audit |
 | 19 | **Anu Build** | v1.3 | Orchestrator | `anu-build/SKILL.md` | **NEW** — Master orchestrator: 9-stage pipeline + cascade |
 
 All skills are located under `skills/`. The authoritative per-skill version matrix is [`SKILL_VERSION_MATRIX.md`](SKILL_VERSION_MATRIX.md). `anu-doctor` enforces that the matrix, this table, and every skill's frontmatter stay in agreement.
@@ -53,12 +53,19 @@ All skills are located under `skills/`. The authoritative per-skill version matr
 ### Superseded skills (2) — still shipped in full
 
 `anu-pipeline` and `anu-rebuild` were merged into `anu-build` in v12.0. They are
-**not** redirect stubs in this release: both still ship complete instructions
-(291 and 539 lines, seven templates between them), neither mentions `anu-build`,
-`anu-ledger` still declares `requires: anu-pipeline`, and `anu-doctor` counts
-all 21 skills as active. Prefer `anu-build`. Reducing this pair to real stubs
-would delete working instructions and is an open maintainer decision — recorded
-in `SKILL_VERSION_MATRIX.md` under "Known inconsistency".
+**not** redirect stubs, and this repository does not describe them as such: both
+still ship complete instructions (~300 and ~550 lines, seven templates between
+them), and `anu-doctor` counts all 21 skills as active and holds all 21 to the
+same 11-section template.
+
+**Resolved (July 2026).** The pair is retained in full, because reducing it to
+stubs would delete the framework's most detailed pipeline-stage tables and its
+only end-to-end rebuild runbook, and `anu-build` does not restate either. What
+changed instead is that they now tell the truth about their own status: each
+opens with a superseded banner pointing at `anu-build`, each frontmatter
+`description` leads with the supersession, and `anu-ledger` no longer declares
+`requires: anu-pipeline` (it requires only `anu-ingestion`). The count everywhere
+in this repository is **21 shipped = 19 current + 2 superseded**.
 
 | # | Skill | Version | Status | Location | Notes |
 |---|-------|---------|--------|----------|-------|
@@ -197,7 +204,7 @@ is configured, integration touches every stage:
 **Canonical references**:
 - `<data-repository>/AUTHORITATIVE_COUNTS.json` — the only valid count source
 - `<data-repository>/docs/DATA_CHECKOUT_CONTRACT.md` — checkout contract (PROVENANCE fields)
-- `docs/DATA_REPOSITORY_INTEGRATION.md` — integration governance
+- Integration governance for the data repository lives in that repository, not in this one. This framework specifies only how a project *consumes* a checkout (the rows above); it ships no data-repository governance document.
 
 **Anti-patterns** (anu-doctor flags):
 - Project ingests data via custom API clients that duplicate repository collectors

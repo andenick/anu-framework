@@ -1,18 +1,39 @@
 ---
 name: anu-pipeline
 version: "3.2"
-description: "Master orchestrator for Anu Framework data construction workflows. Sequences 19 skills through 8 stages with floating quality review. v3.2 ships a `templates/run.py.j2` generator that scaffolds a project-level `run.py` with `--validate-only`, `--from <stage>`, `--series <sid>`, and `--health` modes — replacing the ad-hoc orchestrator scripts every project was writing by hand. Tracks pipeline state, manages agent handoffs, enforces prerequisites and data integrity gates."
-when-to-use: "User wants to run the full Anu Framework pipeline, check pipeline status, orchestrate multi-stage data construction, or scaffold a project-level run.py orchestrator."
-search-hints: "pipeline orchestrate stages workflow status progress multi-agent data construction run.py orchestrator template scaffold"
+description: "SUPERSEDED by `anu-build` in Anu Framework v12.0 — use `anu-build` for new work. Retained in full because its 8-stage runbook, stage-dependency tables and data-integrity gates are still usable reference. The former framework orchestrator: sequences the pipeline skills through 8 stages with floating quality review, tracks pipeline state, manages agent handoffs, enforces prerequisites and data integrity gates. It ships one template, `templates/PIPELINE_STATE_TEMPLATE.json`."
+when-to-use: "Reading historical pipeline-stage documentation. For running, checking or orchestrating a build, use `anu-build` instead."
+search-hints: "pipeline orchestrate stages workflow status progress multi-agent data construction superseded legacy orchestrator"
 allowed-tools: Read, Write, Bash, Glob, Grep, Edit
 argument-hint: "[action] [chapter]"
 requires: none
 part-of: Anu Framework v12.2
 ---
 
+> ## ⚠ Superseded — use `anu-build`
+>
+> `anu-pipeline` was replaced by **`anu-build`** in Anu Framework v12.0.
+> `anu-build` covers everything below plus a Stage 0 inventory, a computed
+> topological construction order, and the four-file documentation cascade.
+> **Start new work at [`skills/anu-build/SKILL.md`](../anu-build/SKILL.md).**
+>
+> This file is retained, in full and unabridged, because its stage
+> dependency tables and data-integrity gates are still accurate reference
+> — reducing it to a redirect stub would delete working instructions with
+> no replacement. It is not a stub, and this repository does not pretend
+> it is one: it is a superseded skill that still ships.
+
 # Anu Pipeline Standard v3.2
 
 The master orchestrator for Anu Framework data construction workflows. Sequences 19 skills (was 17; v11.0 adds anu-scaffold and anu-rebuild) through 8 sequential stages plus floating skills, tracks state via `PIPELINE_STATE.json`, and enforces prerequisites and data integrity gates between stages. All packages follow the Anu Architecture format standard.
+
+---
+
+## Stage Position
+
+**Superseded** — formerly the framework orchestrator; replaced by `anu-build` (Orchestrator) in v12.0.
+
+The stage map, gates and state file described below are still accurate as a description of how the framework sequences its skills, but new work should be driven through `anu-build`, which owns the canonical stage numbering, the computed construction order and the documentation cascade.
 
 ---
 
@@ -219,6 +240,29 @@ Before advancing to the next stage, verify:
 
 ---
 
+## Inputs
+
+| Input | Source | Required |
+|-------|--------|----------|
+| `PIPELINE_STATE.json` | Initialized from `templates/PIPELINE_STATE_TEMPLATE.json`; maintained thereafter | Yes — the state this skill reads and advances |
+| Knowledge Base + identified scope | Project inputs | Yes, from Stage 1 |
+| The prerequisites named in the Stage Dependencies table | The preceding stage's skill | Yes, per stage |
+| `series_registry.json` | anu-ingestion | From Stage 3 onward |
+| `ANU_LEDGER.json` | anu-ledger | Yes — its `series_inventory` is how artifact presence is checked before an advance |
+| Each stage skill's `SKILL.md` | This framework | Yes — the progressive-disclosure reading order |
+
+---
+
+## Outputs
+
+| Output | Location | Description |
+|--------|----------|-------------|
+| `PIPELINE_STATE.json` | Project `Technical/` | Per-chapter, per-stage completion status, artifact lists and verification counts |
+
+This is the orchestrator's only artifact. Every data file, document and package listed in the Stage Dependencies and Skill-Stage Mapping tables is created by the stage skill named there — not by this skill. Under Anu Framework v12.2 that orchestration role belongs to `anu-build`, which additionally maintains a four-file documentation cascade.
+
+---
+
 ## Commands
 
 | Command | Description |
@@ -231,9 +275,60 @@ Before advancing to the next stage, verify:
 
 ---
 
+## Acceptance Gates
+
+Gathered from the gates stated throughout this document. Every one of these must hold before a stage is marked complete and the next stage begins:
+
+| Gate | Condition |
+|------|-----------|
+| Prerequisite gate | The Prerequisites column of the Stage Dependencies table is satisfied for the stage being entered |
+| Stage 2 adequacy gate | Ingestion cannot start unless the adequacy score is ADEQUATE (≥ 80) or EXEMPLARY (≥ 95) |
+| Data integrity gate (every stage boundary) | No synthetic, placeholder, approximated or frozen data; no `np.random` or fabricated values; every value traces to a published source or a documented analytical method; series with missing data carry `"status": "data_unavailable"` rather than filled values |
+| Artifact verification | All required artifacts exist, all series in the chapter are processed, and the stage's quality checks (validation scripts, reference-value checks) pass |
+| Documentation-contract gate | The current stage's Documentation Contract artifacts all exist — checked via the Ledger's `series_inventory`. Advancement is blocked when mandatory artifacts are missing; an agent may override only with explicit justification |
+| Ledger regeneration | The Ledger is regenerated on every stage advance |
+| Stage 5 → 6 | V## validation passes before output formats are generated |
+| Stage 8a / 8b | Review score ≥ 85% |
+| Stage 8c | Stages 8a and 8b complete, so the archive can mirror them |
+
+---
+
 ## Integration with Anu Framework
 
-The Pipeline skill references all other 19 skills and enforces their ordering. It is the entry point for agents working on a data construction project. All packages built through the pipeline conform to the Anu Architecture format standard.
+The Pipeline skill references all other 19 skills and enforces their ordering. It was the entry point for agents working on a data construction project. All packages built through the pipeline conform to the Anu Architecture format standard.
+
+Under Anu Framework v12.2 this role is `anu-build`'s: it owns the canonical stage numbering, computes construction order from the registry, and maintains the documentation cascade. Treat the tables in this file as a description of stage ordering, and drive builds with `anu-build`.
+
+---
+
+## Anti-Patterns
+
+- **DO NOT** use this skill to orchestrate new work — `anu-build` is the current orchestrator, and it supersedes both this skill and `anu-rebuild`.
+- **DO NOT** advance a stage whose prerequisites are unmet; the Stage Dependencies table is the contract, not a suggestion.
+- **DO NOT** fill a gap with synthetic, placeholder, approximated or frozen data to get past the integrity gate — mark the series `"status": "data_unavailable"` instead.
+- **DO NOT** ask an agent to understand the whole project at once; follow the progressive-disclosure order (state → the stage's SKILL.md → the assigned series → state update).
+- **DO NOT** advance the state without regenerating the Ledger — the artifact check that guards the next advance depends on it.
+- **DO NOT** defer `anu-review`, `anu-docs` or `anu-variant` to the end; they are floating skills, meant to be invoked throughout.
+- **DO NOT** treat the three Stage-8 channels as a strict chain. They are siblings serving different audiences and a project may ship any subset; only the archive is conventionally cut last, so it can mirror the other two.
+- **DO NOT** parallelize Steps 6–7 of the Chapter Implementation Workflow — loading must complete before processing. Only Steps 1–5 of that workflow parallelize safely across subagents.
+
+---
+
+## Template
+
+- `templates/PIPELINE_STATE_TEMPLATE.json`
+
+---
+
+## Documentation Contract
+
+| Aspect | Detail |
+|--------|--------|
+| **Creates** | `PIPELINE_STATE.json` |
+| **Expects** | All stage artifacts as defined by each skill's Documentation Contract |
+| **Must Update on Completion** | Update `PIPELINE_STATE.json` stage status. Regenerate Ledger (`/anu-ledger generate`) on every stage advance |
+
+Before advancing to the next stage, validate that the current stage's Documentation Contract artifacts all exist. The Ledger's `series_inventory` provides this check automatically. Block advancement if mandatory artifacts are missing (agents may override with explicit justification).
 
 ---
 
@@ -257,34 +352,16 @@ The Pipeline skill references all other 19 skills and enforces their ordering. I
   - anu-review referenced as 14 dimensions (D14 Outward-Facing Intelligibility added)
 - **v3.2** (May 2026) — Anu Framework v11.0 integration:
   - Updated to 19 skills (added `anu-scaffold` for L01/P02/V03 stub generation from registry entries; added `anu-rebuild` as the 6-wave salvage-and-port meta-workflow for predecessor projects)
-  - Ships `templates/run.py.j2` — a project-level `run.py` orchestrator template with `--validate-only`, `--from <stage>`, `--series <sid>`, and `--health` modes. Replaces the ad-hoc per-project orchestrator scripts.
+  - Specified a project-level `run.py` orchestrator with `--validate-only`, `--from <stage>`, `--series <sid>` and `--health` modes. **The `templates/run.py.j2` generator this entry announced was never shipped in this repository** — the only template under `skills/anu-pipeline/templates/` is `PIPELINE_STATE_TEMPLATE.json`. The orchestrator role passed to `anu-build` in v12.0.
   - `anu-architecture` renamed from the legacy "anu&#8209;data" skill (folder renamed; project-level default `Technical/AnuData/` → `Technical/AnuArchitecture/`; legacy folders remain recognized)
 
 ---
 
-## Template
-
-- `templates/PIPELINE_STATE_TEMPLATE.json`
-
----
-
-## Documentation Contract
-
-| Aspect | Detail |
-|--------|--------|
-| **Creates** | `PIPELINE_STATE.json` |
-| **Expects** | All stage artifacts as defined by each skill's Documentation Contract |
-| **Must Update on Completion** | Update `PIPELINE_STATE.json` stage status. Regenerate Ledger (`/anu-ledger generate`) on every stage advance |
-
-Before advancing to the next stage, validate that the current stage's Documentation Contract artifacts all exist. The Ledger's `series_inventory` provides this check automatically. Block advancement if mandatory artifacts are missing (agents may override with explicit justification).
-
----
-
-## Canonical references
+## Canonical References
 
 - [`ANU_FRAMEWORK_GLOSSARY.md`](../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary for all framework terms.
 - [`SERIES_REGISTRY_SCHEMA.md`](../../docs/SERIES_REGISTRY_SCHEMA.md) — the formal `series_registry.json` schema.
 
 ---
 
-*Part of the Anu Framework v11.0 — Multi-Agent Workflow Orchestrator*
+*Part of the Anu Framework v12.2 — Multi-Agent Workflow Orchestrator*

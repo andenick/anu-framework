@@ -22,7 +22,7 @@ The framework covers the full lifecycle, orchestrated by `anu-build`:
 
 The framework is self-auditing: `anu-doctor` checks framework invariants across
 all skills, and CI runs those checks on every push and pull request.
-**They do not currently pass** — see [Current self-audit state](#current-self-audit-state).
+**They pass, with no exemptions** — see [Current self-audit state](#current-self-audit-state).
 
 ---
 
@@ -52,17 +52,18 @@ for the full architecture write-up.
 | Infra | [`anu-ledger`](skills/anu-ledger/) | Artifact inventory |
 | Infra | [`anu-architecture`](skills/anu-architecture/) | 8-phase econometric research scaffold (also available [standalone on GitHub](https://github.com/andenick/anu-architecture)) |
 | Infra | [`anu-doctor`](skills/anu-doctor/) | Framework + project self-audit |
-| Orch | [`anu-build`](skills/anu-build/) | **Master orchestrator** — 9-stage pipeline + documentation cascade |
+| Orch | [`anu-build`](skills/anu-build/) | **Orchestrator** — plans, tracks and gates a 9-stage build + documentation cascade (it does not execute stage work; agents do) |
 
 **Superseded (2, still shipped in full):**
 [`anu-pipeline`](skills/anu-pipeline/) and [`anu-rebuild`](skills/anu-rebuild/)
-were merged into `anu-build` in v12.0. They are **not** redirect stubs in this
-release — both still ship complete instructions (291 and 539 lines, seven
-templates between them), neither mentions `anu-build`, `anu-ledger` still
-declares `requires: anu-pipeline`, and `anu-doctor` counts all 21 skills as
-active. Prefer `anu-build`; the pair is retained because removing it would
-delete working instructions. Tracked as an open decision in
-[`docs/SKILL_VERSION_MATRIX.md`](docs/SKILL_VERSION_MATRIX.md).
+were merged into `anu-build` in v12.0. They are **not** redirect stubs — both
+still ship complete instructions, seven templates between them, and `anu-doctor`
+holds all 21 skills to the same 11-section template. They are kept because
+reducing them to stubs would delete the most detailed pipeline-stage tables and
+the only end-to-end rebuild runbook the framework has, and `anu-build` restates
+neither. Each now opens with a superseded banner pointing at `anu-build`, and
+`anu-ledger` no longer declares `requires: anu-pipeline`. Prefer `anu-build`.
+Recorded in [`docs/SKILL_VERSION_MATRIX.md`](docs/SKILL_VERSION_MATRIX.md).
 
 ---
 
@@ -158,6 +159,7 @@ For human use:
 python tools/check_framework.py      # framework invariants (D01-D19)
 python tools/audit_publish.py --strict   # pre-publication scrub audit
 python skills/anu-publish/audit.py --self-test   # prove the scrub gate is armed
+python tools/generate_skill_graph.py --check     # prove the skill graph matches frontmatter
 ```
 
 The D##-checks verify version consistency across the matrix/overview/frontmatter
@@ -167,27 +169,37 @@ detection. CI runs the first two on every push and pull request.
 
 ### Current self-audit state
 
-`tools/check_framework.py` **exits non-zero on `main`.** The version triangle
-(D03/D04/D05/D06) is green; what is not:
+`tools/check_framework.py` **exits 0 on `main`: 0 failures, 0 warnings, across
+all 19 checks and all 21 skills.** There are **no exemptions** — nothing is
+skipped, ignored or excluded to reach that result. What closed the last of it,
+in July 2026:
 
-| Check | Status | Why |
+| Check | Was | Now |
 |---|---|---|
-| D16 | 15 skills fail | Those `SKILL.md` files predate the v12.0 11-section template and are missing sections (`Stage Position`, `Inputs`, `Outputs`, `Acceptance Gates`, `Anti-Patterns`). Real documentation work, not a stamp. |
-| D17 | fails | `docs/schemas/skill_graph.json` is not in this repository. |
-| D18 | fails | `docs/schemas/anu_build_manifest.schema.json` is not in this repository. |
-| D19 | warns | Same missing `Stage Position` sections as D16. |
+| D16 | 15 skills missing v12.0 template sections | Sections written for all 15 — real documentation work, summarizing what each `SKILL.md` already specified. Where a section genuinely did not apply, it says so and why, rather than being padded. |
+| D17 | `docs/schemas/skill_graph.json` not in this repository | Shipped, and **generated** from the `requires:` frontmatter by `tools/generate_skill_graph.py` (`--check` fails if it drifts). Nothing in it is authored by hand. |
+| D18 | `docs/schemas/anu_build_manifest.schema.json` not in this repository | Shipped. It describes the manifest `anu-build init` actually writes, and a generated manifest validates against it. |
+| D19 | Same missing `Stage Position` sections as D16 | Every skill carries a stage tag agreeing with `anu-build`'s canonical stage table. |
+| D10 | (false negative) | The check resolved script claims against the skill root only, so scripts shipped under `scripts/` read as missing. Fixed in `anu-doctor` v2.4. |
 
-`tools/audit_publish.py --strict` reports **clean**. It previously reported clean
-for the wrong reason — `.publish_ignore` exempted eleven files, including every
-file that carried a leak. That exemption list has been deleted and the two
-internal documents that carried the remaining findings (an engineering RFC and a
-build post-mortem, both of which quoted absolute workspace paths verbatim) have
-been withdrawn from the package, so the result you see now is the real one.
+`tools/audit_publish.py --strict` reports **clean**, and it is clean because
+there is nothing left to find, not because anything is exempted:
 
-These are listed rather than suppressed. A green badge earned by exempting the
-failing files would be worse than a red one.
+- This repository ships **no `.publish_ignore`**. It previously shipped one that
+  exempted eleven files — including every file that carried a leak. It was
+  deleted, not shortened.
+- The only exemption in force is the structural one `audit.py` hard-codes for
+  itself and its own deny-list, which necessarily contain matching patterns
+  (see [`docs/GATE_DESIGN.md`](docs/GATE_DESIGN.md) §6(b)).
+- `python skills/anu-publish/audit.py --self-test` proves the deny-list is still
+  armed: 5 patterns, 5 positive and 4 negative fixtures. A gate that cannot fail
+  is not a gate (§6(c)).
 
----
+If a future change makes a check fail and the finding will not be fixed, the
+rule is an exemption recorded per [`docs/GATE_DESIGN.md`](docs/GATE_DESIGN.md)
+§6(a) — a committed line carrying a reason, an owner and a review-by date,
+arguable in the diff. Never a silent skip. A gate carrying standing failures
+teaches people to ignore it; so does a green one that was bought by exclusion.
 
 ## Standalone components
 

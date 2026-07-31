@@ -12,8 +12,9 @@ that agreement automatically (checks D03, D04, D05).
 The repository ships **21** `anu-*` skill directories. **19** are the current
 pipeline set. **2** - `anu-pipeline` and `anu-rebuild` - were superseded by
 `anu-build` in v12.0 but are **still shipped in full**: they are not redirect
-stubs, they contain complete instructions, and `anu-ledger` still declares
-`requires: anu-pipeline`. Prefer `anu-build`. See "Known inconsistency" below.
+stubs and they contain complete instructions. Both now open with a superseded
+banner pointing at `anu-build`. Prefer `anu-build`. See "The superseded pair"
+below.
 
 | # | Skill | Version | Status | Stage | `requires:` | Notes |
 |---|---|---|---|---|---|---|
@@ -32,27 +33,38 @@ stubs, they contain complete instructions, and `anu-ledger` still declares
 | 13 | anu-review | 4.1 | Current | Floating | none | Quality audit (14 dimensions + D13/D14 gates) |
 | 14 | anu-docs | 3.0 | Current | Floating | anu-research, anu-ingestion | Per-series documentation (T1/T2/T3 tiers) + the Anu Explainer |
 | 15 | anu-variant | 1.4 | Current | Floating | none | Methodology variant tracking (VPRs) |
-| 16 | anu-ledger | 2.2 | Current | Infrastructure | anu-pipeline, anu-ingestion | Artifact inventory + per-series stage tracking |
+| 16 | anu-ledger | 2.2 | Current | Infrastructure | anu-ingestion | Artifact inventory + per-series stage tracking |
 | 17 | anu-architecture | 2.1 | Current | Infrastructure | anu-ingestion, anu-replicator | Format standard; BEA/BLS/FRED cache schemas |
-| 18 | anu-doctor | 2.3 | Current | Infrastructure | none | Framework (D01-D19) + project (P01-P39) self-audit |
+| 18 | anu-doctor | 2.4 | Current | Infrastructure | none | Framework (D01-D19) + project (P01-P39) self-audit |
 | 19 | anu-build | 1.3 | Current | Orchestrator | anu-research, anu-adequacy, anu-ingestion, anu-extension, anu-replicator, anu-chopped, anu-extenbook, anu-visualize, anu-review, anu-docs, anu-variant, anu-ledger, anu-architecture, anu-publish, anu-drive, anu-archive, anu-doctor, anu-scaffold | Master orchestrator: 9-stage pipeline + 4-file cascade |
 | 20 | anu-pipeline | 3.2 | Superseded | (was Orchestrator) | none | Superseded by anu-build; still ships full instructions |
 | 21 | anu-rebuild | 1.1 | Superseded | (was Rebuild meta-skill) | anu-doctor, anu-ingestion, anu-publish, anu-pipeline, anu-scaffold | Superseded by anu-build (mode=rebuild); still ships full instructions |
 
 All 21 declare `part-of: Anu Framework v12.2`.
 
-## Known inconsistency - the superseded pair
+## The superseded pair - resolved July 2026
 
 Earlier revisions of this matrix and of `ANU_FRAMEWORK_OVERVIEW.md` described
-`anu-pipeline` and `anu-rebuild` as "deprecated redirect stubs". They are not.
-Measured on the shipped tree: `anu-pipeline/SKILL.md` is 291 lines with a
-template and still calls itself the entry point for agents working on a data
-construction project; `anu-rebuild/SKILL.md` is 539 lines with six templates;
-neither mentions `anu-build`; and `anu-doctor` counts all 21 as active. The
-framework therefore ships two competing orchestrators. This matrix now states
-the shipped reality rather than the intent. Resolving it - either by reducing
-the pair to real stubs or by re-admitting them as first-class skills - deletes
-or promotes working instructions and is an open maintainer decision.
+`anu-pipeline` and `anu-rebuild` as "deprecated redirect stubs". They never were:
+measured on the shipped tree, `anu-pipeline/SKILL.md` and `anu-rebuild/SKILL.md`
+are full skills with seven templates between them.
+
+**The decision taken was to keep the content and fix the description.** Reducing
+the pair to stubs would delete the framework's most detailed pipeline-stage
+dependency tables and its only end-to-end rebuild runbook, neither of which
+`anu-build` restates. So both files are retained unabridged, and instead:
+
+- each opens with a **superseded banner** naming `anu-build` as the replacement;
+- each frontmatter `description` and `when-to-use` leads with the supersession;
+- `anu-ledger` no longer declares `requires: anu-pipeline` - it requires only
+  `anu-ingestion`, which is what it actually consumes;
+- `anu-pipeline`'s frontmatter no longer claims a `templates/run.py.j2` generator
+  that was never shipped;
+- both are held to the same 11-section template as every current skill
+  (`anu-doctor` D16), rather than being skipped as stubs.
+
+The count is therefore **21 shipped = 19 current + 2 superseded**, stated
+identically in this matrix, `ANU_FRAMEWORK_OVERVIEW.md` and `README.md`.
 
 ## Retired skill folders (deleted in v12.0)
 
@@ -81,8 +93,10 @@ Skills 10, 11, 12 are siblings - same upstream inputs, three audiences:
 3. The framework version lives in the repo-root `VERSION` file. Generated
    packages stamp that value; documentation footers must match it.
 4. Run `python tools/check_framework.py` locally before pushing a version bump.
-   **It does not currently exit 0** - see "Current self-audit state" in
-   `README.md` for the failures that are known and open.
+   It exits 0 with zero failures and zero warnings; keep it that way. If a change
+   makes a check fail and the finding will not be fixed, record an exemption in
+   the form required by [`GATE_DESIGN.md`](GATE_DESIGN.md) §6(a) - never a silent
+   skip.
 5. **Patch-version bumps (e.g. v2.2 -> v2.3) still require this propagation.**
 
 ---

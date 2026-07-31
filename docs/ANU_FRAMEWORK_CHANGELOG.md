@@ -8,7 +8,7 @@ The authoritative current state is always [`ANU_FRAMEWORK_OVERVIEW.md`](ANU_FRAM
 
 ## 2026-05-15 — v11.0: reference-replication rebuild absorption
 
-The 21-commit Shaikh & Tonak reference-replication rebuild — a public-facing replication package taken from blank scaffold to 64/64 PASS with `git push` to GitHub — surfaced 12 friction points the framework had no answer for. v11.0 absorbs them., [`ANU_REBUILD_META_SKILL.md`](ANU_REBUILD_META_SKILL.md).
+The 21-commit Shaikh & Tonak reference-replication rebuild — a public-facing replication package taken from blank scaffold to 64/64 PASS with `git push` to GitHub — surfaced 12 friction points the framework had no answer for. v11.0 absorbs them.
 
 ### Skill renamed
 
@@ -37,7 +37,7 @@ The 21-commit Shaikh & Tonak reference-replication rebuild — a public-facing r
 
 ### Canonical docs added
 
-- `ANU_REBUILD_META_SKILL.md` — full SKILL.md spec for the new anu-rebuild skill (~2500 words).
+- A full SKILL.md specification for the new `anu-rebuild` skill was drafted as an RFC. It was implemented as [`skills/anu-rebuild/SKILL.md`](../skills/anu-rebuild/SKILL.md), and the RFC draft — superseded by the skill it specified — is no longer carried in this repository.
 
 ---
 

@@ -1,8 +1,8 @@
 ---
 name: anu-rebuild
 version: "1.1"
-description: "Agent-executable runbook for taking a predecessor data construction project and producing a fresh, Anu-Framework-native rebuild. Six waves: Foundation → per-cohort Construction → Distribution → Polish. The agent does the work, guided by this spec; the framework provides templates and validators, not automation. Derived from the Shaikh-Tonak reference replication rebuild (May 2026, 64 series, 100% PASS, 21 commits)."
-when-to-use: "Agent has been asked to refactor or rebuild an existing data project under the Anu Framework. Open this file and execute Waves 0..N+2 sequentially."
+description: "SUPERSEDED by `anu-build --mode rebuild` in Anu Framework v12.0 — use `anu-build` for new work. Retained in full as a still-usable six-wave runbook. Agent-executable runbook for taking a predecessor data construction project and producing a fresh, Anu-Framework-native rebuild. Six waves: Foundation → per-cohort Construction → Distribution → Polish. The agent does the work, guided by this spec; the framework provides templates and validators, not automation. Derived from the Shaikh-Tonak reference replication rebuild (May 2026, 64 series, 100% PASS, 21 commits)."
+when-to-use: "Reading the historical six-wave rebuild runbook. For actually rebuilding a project, use `anu-build --mode rebuild` instead; the waves below remain valid as the detailed procedure it orchestrates."
 search-hints: "rebuild refactor port salvage predecessor migration crosswalk ground-up regenerate workflow waves"
 allowed-tools: Read, Write, Bash, Glob, Grep, Edit
 argument-hint: "<predecessor_root> <target_root>"
@@ -19,6 +19,19 @@ part-of: Anu Framework v12.2
 > export ANU_FRAMEWORK=/path/to/anu-framework    # Windows: $env:ANU_FRAMEWORK="..."
 > ```
 
+> ## ⚠ Superseded — use `anu-build --mode rebuild`
+>
+> `anu-rebuild` was replaced by **`anu-build`** in Anu Framework v12.0;
+> its rebuild workflow is `anu-build --mode rebuild`.
+> **Start new work at [`skills/anu-build/SKILL.md`](../anu-build/SKILL.md).**
+>
+> This file is retained, in full and unabridged, because the six-wave
+> runbook below is the most detailed rebuild procedure the framework has
+> and `anu-build` does not restate it — reducing it to a redirect stub
+> would delete working instructions with no replacement. It is not a stub,
+> and this repository does not pretend it is one: it is a superseded skill
+> that still ships.
+
 # Anu Rebuild Standard v1.1
 
 ## Overview
@@ -32,6 +45,14 @@ part-of: Anu Framework v12.2
 | Updated | 2026-05-15 |
 | Purpose | Agent-executable runbook for predecessor-to-rebuild |
 | Derived from | Shaikh-Tonak reference replication rebuild (May 2026, 64 series, 100% PASS) |
+
+---
+
+## Stage Position
+
+**Superseded** — formerly the rebuild meta-skill; replaced by `anu-build` (mode=rebuild) in v12.0.
+
+The six-wave runbook below still describes how a predecessor-to-rebuild migration is executed, and its templates are still shipped. New rebuilds should be driven by `anu-build`, which absorbs salvage, creates the crosswalk and generates the registry skeleton as its Stage 0.
 
 ---
 
@@ -529,6 +550,23 @@ The rebuild is correctly executed when:
 
 ---
 
+## Acceptance Gates
+
+Every wave states its acceptance criteria in full at the end of that wave's section. Consolidated here so a wave cannot be declared complete by accident:
+
+| Wave | Gate |
+|------|------|
+| **Wave 0 — Foundation** | `MIGRATION/PREFIX_SCHEME.md` exists and documents the scheme; the project tree exists; `Inputs/Salvaged/` is populated with the `.read_only` sentinel and the predecessor is untouched; `MIGRATION/SALVAGE_LOG.md` accounts for every copy/skip decision; `MIGRATION/crosswalk.csv` carries at least `proposed` status for every predecessor series; the registry skeleton has top-level metadata, `prefix_scheme`, `drive_config` and series stubs; `anu-doctor` framework mode 0 FAIL / 0 WARN; `anu-doctor` project mode P06, P09, P10, P12 all PASS (P01/P02 are expected to FAIL until the per-cohort waves); initial commit made |
+| **Waves 1..N — per cohort** | Cohort adequacy ≥ 80 (ADEQUATE) before ingestion; every series in the cohort has a research JSON, DPR, decomposition (if composite), EPR (if extendable), a registry entry with `validated_book_and_extension` or `book_period_validated` status, L01/P02/V03 scripts, and V03 PASS against its benchmarks; `anu-review` ≥ 85% with D13 and D14 GREEN; `anu-doctor` project mode CLEAN for the cohort's series; a closeout commit with a descriptive message |
+| **Wave N+1 — Distribution** | `anu-publish` audit `--strict` CLEAN at the project root *and* on each output bundle; the three `Outputs/` directories plus the archive zip exist; GitHub repo live, tagged v1.0.0, CI green; Drive folder copied to the cloud share under a descriptive slug; `anu-doctor` project mode CLEAN at whole-project level |
+| **Wave N+2 — Polish** | `anu-doctor` project mode 0 FAIL (WARNs allowed if documented in `KNOWN_ISSUES.md`); `MIGRATION/FRAMEWORK_FRICTIONS.md` populated with concrete friction points; final commit pushed |
+
+Two gates recur inside every wave rather than at its boundary: the crosswalk must be shown to the user before construction proceeds (Step 0.4 — the first pass is a *proposal*), and every divergence from the predecessor must be logged in `DIVERGENCE_REGISTER.json` before the wave closes.
+
+The whole-rebuild gate is the Verification list above: project-mode CLEAN, publish audit CLEAN, all divergences logged, the predecessor's empirical findings reproduced, the public release passing external review without manual scrubbing, and a git log from which the next agent can reconstruct the build wave by wave.
+
+---
+
 ## Version History
 
 - **v1.1** (May 2026) — Reframed as agent-executable runbook. Removed all fictional script commands (`anu-rebuild salvage|crosswalk|scaffold|wave-execute|closeout`). The agent makes decisions; the framework provides templates and validators. Added concrete acceptance criteria per step. Added explicit cross-cutting policy on folder naming (descriptive slugs, not codenames). Documented `D`/`AD` as canonical prefix scheme — Data Series (primary) and Additional Data Series — chosen to avoid collision with anu-architecture's eight phase prefixes (S/L/P/V/M/A/O/E). Project may extend with a third prefix if genuinely needed.
@@ -536,10 +574,10 @@ The rebuild is correctly executed when:
 
 ---
 
-## Canonical references
+## Canonical References
 
 - [`ANU_FRAMEWORK_GLOSSARY.md`](../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary
 
 ---
 
-*Part of the Anu Framework v11.0 — Agent-Executable Rebuild Runbook.*
+*Part of the Anu Framework v12.2 — Agent-Executable Rebuild Runbook.*
