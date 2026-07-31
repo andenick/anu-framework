@@ -13,5 +13,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: Prove the generated skill graph matches the SKILL.md frontmatter
+        run: python tools/generate_skill_graph.py --check
       - name: Run anu-doctor (framework self-audit)
         run: python tools/check_framework.py

@@ -31,6 +31,10 @@ CANONICAL_DOCS = [
     "DATA_PROVENANCE_STANDARDS.md",
     "SKILL_VERSION_MATRIX.md",
     "ANU_FRAMEWORK_OVERVIEW.md",
+    # Cited by section number from shipped code (anu-publish/audit.py and
+    # generate_publish_package.py reference GATE_DESIGN.md 6(a)/(b)/(c)),
+    # so its absence would leave live code pointing at nothing.
+    "GATE_DESIGN.md",
 ]
 
 ARCHIVED_MARKERS = ("archived", "removed", "superseded", "deprecated", "legacy",
@@ -41,6 +45,19 @@ STALE_VERSION_RE = re.compile(r"Anu Framework v(?:[1-9]|1[01])\.\d+")  # v1.x-v1
 # --------------------------------------------------------------------------
 # Parsing
 # --------------------------------------------------------------------------
+
+def ships_script(skill_dir: Path, script: str) -> bool:
+    """Does this skill ship `script` anywhere under its own directory?
+
+    Skills place executables either at the skill root (anu-archive,
+    anu-drive) or under `scripts/` (anu-review, anu-variant). Both count
+    as shipped; only the skill directory is searched, so a script that
+    lives in another skill never satisfies this skill's claim.
+    """
+    if (skill_dir / script).exists():
+        return True
+    return any(skill_dir.rglob(script))
+
 
 def is_deprecated_stub(skill_md: Path) -> bool:
     """Check if a SKILL.md is a deprecated redirect stub."""
@@ -292,12 +309,12 @@ def run_checks() -> Report:
                     continue  # project-provided, JSON example, cross-skill ref, or qualified
                 soft_mentions.add(script)
         for script in sorted(hard_claims):
-            ok = (d / script).exists()
+            ok = ships_script(d, script)
             rep.add("D10", "FAIL", ok,
                     f"{d.name}: SKILL.md hard-claims {script} but it is missing" if not ok
                     else f"{d.name}: {script} exists (hard claim)")
         for script in sorted(soft_mentions):
-            ok = (d / script).exists()
+            ok = ships_script(d, script)
             rep.add("D10", "WARN", ok,
                     f"{d.name}: SKILL.md presents {script} as a command but it is not in the skill dir" if not ok
                     else f"{d.name}: {script} exists (mentioned)")

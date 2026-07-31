@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "anu_build_manifest.schema.json",
+  "title": "ANU_BUILD_MANIFEST.json",
+  "description": "Schema for the master execution plan written once at Stage 0 by `python skills/anu-build/build.py init`. This schema documents the artifact that shipped code actually emits; the template it is populated from is skills/anu-build/templates/MANIFEST_TEMPLATE.json. Stage progress is NOT recorded here - it lives in PIPELINE_STATE.json.",
+  "type": "object",
+  "required": [
+    "schema",
+    "framework",
+    "project",
+    "generated_at",
+    "generated_by",
+    "mode",
+    "series_count",
+    "subseries_count",
+    "stages"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "anu_build_manifest/1.0",
+      "description": "Identifies the manifest shape this file conforms to."
+    },
+    "framework": {
+      "type": "string",
+      "pattern": "^Anu Framework v[0-9]+\\.[0-9]+$",
+      "description": "Framework version stamp, e.g. \"Anu Framework v12.2\"."
+    },
+    "project": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Project name, copied from the registry's `project` field."
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC ISO-8601 timestamp of the Stage 0 run that wrote this file."
+    },
+    "generated_by": {
+      "type": "string",
+      "description": "The producing command, e.g. \"anu-build/build.py init\"."
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["fresh", "rebuild", "resume"],
+      "description": "Execution mode the build was initialized in."
+    },
+    "series_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of entries in the registry's `series` map."
+    },
+    "subseries_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total subseries across all series. Zero for projects whose series declare no subseries."
+    },
+    "prefix_scheme": {
+      "type": "object",
+      "description": "Copied verbatim from the registry's `prefix_scheme` when present; omitted or empty otherwise.",
+      "additionalProperties": { "type": "string" }
+    },
+    "stages": {
+      "type": "array",
+      "description": "The canonical 9-stage sequence, Stage 0 through Stage 8. Fixed content: this mirrors skills/anu-build/SKILL.md's Canonical Stage Sequence and is not project-specific.",
+      "minItems": 9,
+      "maxItems": 9,
+      "items": {
+        "type": "object",
+        "required": ["stage", "label", "skill"],
+        "additionalProperties": false,
+        "properties": {
+          "stage": { "type": "integer", "minimum": 0, "maximum": 8 },
+          "label": {
+            "type": "string",
+            "enum": [
+              "INVENTORY",
+              "RESEARCH",
+              "ADEQUACY",
+              "INGESTION",
+              "EXTENSION",
+              "REPLICATION",
+              "OUTPUT",
+              "VISUALIZATION",
+              "DISTRIBUTION"
+            ]
+          },
+          "skill": {
+            "type": "string",
+            "description": "The skill (or `+`-joined skills) that owns the stage."
+          }
+        }
+      }
+    },
+    "note": {
+      "type": "string",
+      "description": "Free-text provenance note carried from the template."
+    }
+  }
+}

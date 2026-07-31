@@ -1,6 +1,6 @@
 ---
 name: anu-doctor
-version: "2.3"
+version: "2.4"
 description: "Two-mode self-audit. **Framework mode** (`check_framework.py`): verifies the Anu Framework is internally consistent — skill versions match the matrix/overview, `requires:` resolves, `part-of:` matches current version, canonical docs exist, no archived skill references, generator scripts present. **Project mode** (`check_project.py`): verifies an individual data project is internally consistent — DPR coverage, L01/P02/V03 triad, registry alignment, chopped match, synthetic-data detection."
 when-to-use: "After editing any SKILL.md, the framework overview, or the version matrix; before a framework release; OR after editing series_registry.json, code/ scripts, or research JSONs in a project; or when an agent reports a cross-reference that does not resolve"
 search-hints: "doctor audit framework consistency version matrix requires cross-reference integrity self-check lint project registry triad coverage"
@@ -10,7 +10,7 @@ requires: none
 part-of: Anu Framework v12.2
 ---
 
-# Anu Doctor v2.3
+# Anu Doctor v2.4
 
 Two-mode self-audit for framework and project consistency. "Entirely integrated across all skills" is not a state you reach once — it is a property you have to *keep*. Anu Doctor turns integration from a recurring manual cleanup into an invariant the framework enforces on itself.
 
@@ -86,7 +86,7 @@ The skill ships an executable checker at `check_framework.py` (alongside this SK
 | D07 | Every `requires:` entry names a skill directory that exists and is not archived/removed | FAIL |
 | D08 | No active skill body references an archived/removed skill by name without an "archived"/"superseded" qualifier | WARN |
 | D09 | Every canonical doc cross-referenced from a SKILL.md exists on disk | FAIL |
-| D10 | Generator-script claims resolve: hard-claims FAIL if missing; command-style WARN if absent; project-provided mentions not flagged | FAIL / WARN |
+| D10 | Generator-script claims resolve *anywhere under the skill directory* (root or `scripts/`): hard-claims FAIL if missing; command-style WARN if absent; project-provided mentions not flagged | FAIL / WARN |
 | D11 | The `anu-pipeline` stage map names only skills that exist | FAIL |
 | D12 | No stale framework-version string (`Anu Framework v1.x` … `v11.x`) appears outside a Version History / changelog block | WARN |
 | D13 | The body headline `# Anu <Name> ... vN.N` matches the frontmatter `version:` | FAIL |
@@ -271,6 +271,7 @@ $ python check_framework.py --json
 - **v2.0** (May 2026) — Rewritten to v12.0 common template. Added stage position, cascade writes, acceptance gates, anti-patterns sections. Updated `part-of` to Anu Framework v12.0. `requires:` remains `none`.
 - **v2.1** (May 2026) — P04 now pipeline-stage-aware (extension subseries exempt when Stage 4 incomplete). P02 excludes `shared_*_loader.py` from triad matching. P06/P13 support `study_complete` and `extension_methodology_documented` statuses. New P21 (minimum required fields), P22 (subseries suffix convention), P23 (series-to-downstream correspondence matrix). P23 writes `SERIES_CORRESPONDENCE_MATRIX.json`.
 - **v2.2** (May 2026) — Six project-mode checks P24–P29 (ledger freshness, ledger inventory completeness, STEP_LOG/PIPELINE_STATE consistency, anu-doctor-mandatory-before-advance, decision-log numbering, year-range integrity) from a parallel-build review.
+- **v2.4** (July 2026) — D10 now resolves a claimed script anywhere under the skill directory, not only at its root. Skills legitimately ship executables under `scripts/` (`anu-review`, `anu-variant`); the root-only lookup reported those as missing, which is a false negative that trained readers to ignore a WARN. No other check changed.
 - **v2.3** (May 2026) — Seven project-mode checks P30–P36 (rollup freshness, DPR↔registry status sync, V03↔registry reference values, no nested .git, orphan figures, PROJECT_INDEX presence, extension binary invariant) + three data-repository checks P37–P39, plus framework checks D16–D19 (v12.0 11-section template, skill-graph JSON, build-manifest schema, stage-tag agreement). P04 made format-aware; P02 triad requires compact naming.
 
 ---
@@ -292,7 +293,7 @@ $ python check_framework.py --json
 
 Outputs a data-repository compliance subscore in the project health report. Failures block `anu-build` Stage 8 (distribution).
 
-Canonical reference: `docs/DATA_REPOSITORY_INTEGRATION.md`.
+The rules checked here are stated in full above. Governance of the data repository itself belongs to that repository; this framework ships no data-repository governance document.
 
 ---
 
