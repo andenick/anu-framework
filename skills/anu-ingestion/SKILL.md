@@ -474,7 +474,7 @@ Anu projects ingest data from **the canonical data repository** via the static-c
 2. Verify the checkout's `PROVENANCE.md` exists and validates (use the shared helper in `anu-replicator/lib/data/data_loader.py` once it lands; see the data-repository revamp Phase 5).
 3. Record the `data_source_id`, `data_repo_version`, and PROVENANCE hash in the DPR (Data Provenance Record) for that series.
 
-If the source you need is NOT in the data repository yet, the answer is to **add it to the data repository** (see `docs/DATA_REPOSITORY_INTEGRATION.md` §6 "Adding a new data-repository source"), not to ingest it project-locally.
+If the source you need is NOT in the data repository yet, the answer is to **add it to the data repository** (follow whatever procedure that repository documents for adding a source — this framework ships no data-repository governance document), not to ingest it project-locally.
 
 **Anti-patterns** (anu-doctor will flag):
 - Custom API client in the project that duplicates a data-repository collector

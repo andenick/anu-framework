@@ -16,6 +16,14 @@ A **versioned, self-contained replication package** with a four-phase architectu
 
 ---
 
+## Stage Position
+
+**Stage 5 — REPLICATION.** Runs after extension (Stage 4) and before the output formats (Stage 6). `anu-scaffold` is the Stage 5 sub-skill that renders the L01/P02/V03 stubs this skill's scripts grow from.
+
+This follows the canonical stage sequence in `anu-build/SKILL.md`. The "Anu Framework Context" block further down this file still carries the older stage numbering that predates that sequence; where the two disagree, the canonical sequence governs.
+
+---
+
 ## Design Philosophy
 
 1. **Self-contained**: All inputs, code, and configuration in one package
@@ -69,7 +77,7 @@ Project README must include:
 
 Must exclude: `api_keys.env`, `data/raw-data/api/`, `__pycache__/`
 
-See `docs/GIT_PROTOCOL.md` for the full standard.
+The exclusion list above is the standard in full. (Earlier revisions pointed at a `docs/GIT_PROTOCOL.md`; that document was never written, and the pointer has been removed rather than left dangling.)
 
 ---
 
@@ -247,6 +255,48 @@ The registry supports a `viz_column` field (also called `shiny_column` in existi
 - **Subseries level** (for multi-column figure series): `series.S026.subseries.S026-A.viz_column = "rcorp"`
 
 The visualization export writer reads `data_dict`, looks up each subseries's `viz_column` alias, and writes the chapter CSV with those aliases as column headers. Only aliased columns are included — raw subseries IDs are omitted from the chapter CSV.
+
+---
+
+## Inputs
+
+Everything a replication run reads. Paths are relative to the replicator package root (see Folder Structure below).
+
+| Input | Path | Required |
+|-------|------|----------|
+| Series registry | `Technical/series_registry.json` (canonical) with `config/series_registry.json` as the package mirror | Yes — the single source of truth |
+| Chopped input CSVs | `data/user-inputs/chopped/` | Yes — read-only during replication |
+| Research JSONs | `data/user-inputs/research/S###_research.json` | Yes — P## scripts load them for context |
+| Provenance material | `data/user-inputs/provenance/` (DPRs, citations, methodology) | Yes |
+| API configuration | `config/api_config.json` (endpoints, rate limits) | Yes for API-extended series |
+| API keys | `config/api_keys.env`, copied from `config/api_keys.env.example` | Conditional — a missing key skips the affected series (PARTIAL), it never crashes the run |
+| Validation tolerances | `config/validation_config.json`, `validation/tolerance_config.json` | Yes |
+| Reference values | `validation/reference_values/S###_reference.json` | Yes for any series with published benchmarks |
+| Expected checksums | `validation/expected_checksums.json` | Yes — consumed by `V08_hash_integrity.py` |
+| Pinned dependencies | `requirements.txt` | Yes |
+
+---
+
+## Outputs
+
+| Output | Path | Written by |
+|--------|------|-----------|
+| Parsed input CSVs | `data/raw-data/parsed/S###_parsed.csv` | L## |
+| Raw API responses (vintage-dated) | `data/raw-data/api/{API}_{SERIES_ID}_{YYYYMMDD}.json` | L## |
+| Load log | `data/raw-data/LOAD_LOG.json` | L00 |
+| Final per-series CSVs | `data/final-data/series/S###_final.csv` | P## |
+| Anu Chopped CSVs | `data/final-data/chopped/` | P## via `chopped_writer.py` |
+| Anu Extenbook workbooks | `data/final-data/extenbooks/` | P## via `extenbook_writer.py` |
+| Chapter-level databases | `data/final-data/combined/` | P## |
+| Visualization export | `data/final-data/shiny/` — `chapter_NN.csv`, `series_catalog.json`, `SUBSOURCE_METADATA.json` | Phase 6 writers |
+| Per-figure CSVs | `data/final-data/figures/FigN.M.csv` | `figure_writer.py` |
+| Process log (SHA-256 hashes + timing) | `data/final-data/PROCESS_LOG.json` | P00 |
+| Replication report | `data/final-data/reports/REPLICATION_REPORT.md` | P00 |
+| Validation report | `data/final-data/VALIDATION_REPORT.json` | V00 |
+| Adjustment manifest | `config/ADJUSTMENT_MANIFEST.json` | Authored alongside each M## script |
+| Provenance index | `provenance/provenance_index.json` | `replicate.py --provenance` |
+| Decision and assumption records | `docs/DECISION_LOG.md`, `docs/ASSUMPTIONS.md` | Agent, during construction |
+| The scripts themselves | `scripts/loading/`, `scripts/processing/`, `scripts/validation/`, `scripts/manual/`, `scripts/exploration/` | Agent (from `anu-scaffold` stubs) |
 
 ---
 
@@ -491,10 +541,16 @@ Script names include the series name (not just the number) for human readability
 
 ## Templates
 
+Two templates ship with this skill:
+
 - `templates/L_SCRIPT_TEMPLATE.py` — Loading script template
 - `templates/P_SCRIPT_TEMPLATE.py` — Processing script template
-- `templates/ORCHESTRATOR_TEMPLATE.py` — Orchestrator script template
-- `templates/REPLICATOR_README_TEMPLATE.md` — Package README template
+
+The orchestrator (`replicate.py`) and the package README have **no shipped
+template**; write them per the "Orchestrator" and "Public Distribution
+Requirements" sections above, which specify what each must contain.
+`anu-scaffold` ships the Jinja2 stub generators for L01/P02/V03 —
+see `skills/anu-scaffold/templates/`.
 
 ---
 
@@ -514,6 +570,46 @@ Script names include the series name (not just the number) for human readability
 
 ---
 
+## Acceptance Gates
+
+A replicator package is accepted when:
+
+- [ ] `python replicate.py` completes end to end (L00 → P00 → V00 → M00) on a clean checkout
+- [ ] Every L## returns SUCCESS, or a PARTIAL with the reason recorded in `LOAD_LOG.json`
+- [ ] Every P## sets `result["data_dict"]` before returning
+- [ ] For every extended series, `data_dict` and the chopped CSV contain both `S###-EXT` and `S###-F`
+- [ ] Every subseries in the registry has non-null `period`, `units`, and `name` before the viz export runs
+- [ ] `VALIDATION_REPORT.json` exists and records the V01–V08 results
+- [ ] `V08_hash_integrity.py` passes against `validation/expected_checksums.json`, and `PROCESS_LOG.json` carries a SHA-256 per output
+- [ ] Every manual adjustment has an entry in `config/ADJUSTMENT_MANIFEST.json` with a justification and a `decision_ref`
+- [ ] No synthetic, estimated, interpolated, or placeholder values anywhere — unavailable series are marked `data_unavailable`
+- [ ] All paths resolve through `lib/paths.py` (`pathlib`); no absolute paths
+- [ ] Canonical registry and the `config/` mirror agree
+- [ ] For public release: README covers prerequisites, API keys with free registration links, quick start, data-sources table and license; `.gitignore` excludes `api_keys.env`, `data/raw-data/api/`, `__pycache__/`
+
+`anu-review` dimension D8 (Replicator Scripts) scores script existence and correctness against these.
+
+---
+
+## Anti-Patterns
+
+| # | DO NOT | Consequence |
+|---|--------|-------------|
+| 1 | Hand-edit anything under `data/raw-data/` | It is L## output; the edit is destroyed on the next run and the hash audit trail becomes a lie |
+| 2 | Write into `data/user-inputs/` during a run | Those are the human-provided originals; replication must be read-only against them |
+| 3 | Hardcode an absolute path | The package stops being self-contained; resolve through `lib/paths.py` |
+| 4 | Fill a data gap with an estimated trend, an interpolation, or random noise | Fabricated data. Mark the series `data_unavailable` and leave the CSV empty |
+| 5 | Apply a manual adjustment without an `ADJUSTMENT_MANIFEST.json` entry | An undocumented, unreproducible change to published numbers |
+| 6 | Delete E## exploration scripts during cleanup | They are preserved indefinitely as part of the research record |
+| 7 | Return from a P## script without `data_dict` | The visualization export has nothing to write for that series |
+| 8 | Emit only the composite column for an extended series | The extension is invisible downstream; the app cannot draw a separate trace |
+| 9 | Print Unicode symbols (minus sign, Greek letters) to the console | `UnicodeEncodeError` on Windows cp1252; use `'-'` and `'lambda'` |
+| 10 | Commit `api_keys.env` or the raw API cache | Secret leak and repository bloat; ship `api_keys.env.example` only |
+| 11 | Edit `config/series_registry.json` instead of the canonical registry | The two copies drift and the run silently uses stale config |
+| 12 | Abort the whole run because one API key is missing | Graceful degradation is the contract: skip the affected series, mark PARTIAL, continue |
+
+---
+
 ## Anu Framework Context
 
 - **Pipeline Stage**: 4 (REPLICATION)
@@ -521,6 +617,16 @@ Script names include the series name (not just the number) for human readability
 - **Downstream**: Stage 5 Output (Chopped, Extenbook), Stage 5b Viz Export
 - **Adequacy Relevance**: L4 (Construction Logic) — replicator implements the logic L4 validated
 - **Key Handoff**: Produces all data outputs consumed by Chopped (validation), Extenbook (generation), Shiny (visualization)
+
+## Documentation Contract
+
+| Aspect | Detail |
+|--------|--------|
+| **Creates** | L##, P##, V##, M## scripts, E## exploration scripts, all data outputs (Chopped CSVs, Extenbooks, final CSVs, chapter CSVs, figure CSVs, series catalog, SUBSOURCE_METADATA.json), VALIDATION_REPORT.json, ADJUSTMENT_MANIFEST.json, provenance_index.json, DECISION_LOG.md, ASSUMPTIONS.md |
+| **Expects** | `series_registry.json`, `S###_research.json`, Chopped input CSVs in `data/user-inputs/chopped/` |
+| **Must Update on Completion** | `LOAD_LOG.json` and `PROCESS_LOG.json` are auto-generated. Regenerate Ledger via `python replicate.py --ledger` or `/anu-ledger generate` |
+
+---
 
 ## Version History
 
@@ -537,21 +643,11 @@ Script names include the series name (not just the number) for human readability
 
 ---
 
-## Documentation Contract
-
-| Aspect | Detail |
-|--------|--------|
-| **Creates** | L##, P##, V##, M## scripts, E## exploration scripts, all data outputs (Chopped CSVs, Extenbooks, final CSVs, chapter CSVs, figure CSVs, series catalog, SUBSOURCE_METADATA.json), VALIDATION_REPORT.json, ADJUSTMENT_MANIFEST.json, provenance_index.json, DECISION_LOG.md, ASSUMPTIONS.md |
-| **Expects** | `series_registry.json`, `S###_research.json`, Chopped input CSVs in `data/user-inputs/chopped/` |
-| **Must Update on Completion** | `LOAD_LOG.json` and `PROCESS_LOG.json` are auto-generated. Regenerate Ledger via `python replicate.py --ledger` or `/anu-ledger generate` |
-
----
-
-## Canonical references
+## Canonical References
 
 - [`ANU_FRAMEWORK_GLOSSARY.md`](../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary for all framework terms.
 - [`SERIES_REGISTRY_SCHEMA.md`](../../docs/SERIES_REGISTRY_SCHEMA.md) — the formal `series_registry.json` schema.
 
 ---
 
-*Part of the Anu Framework v11.0 — Self-Contained Replication Package*
+*Part of the Anu Framework v12.2 — Self-Contained Replication Package*

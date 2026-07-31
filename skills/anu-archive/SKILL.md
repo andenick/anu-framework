@@ -24,6 +24,12 @@ part-of: Anu Framework v12.2
 
 ---
 
+## Stage Position
+
+**Stage 8c — DISTRIBUTION.** The third of three sibling Stage-8 channels (8a `anu-publish` → GitHub, 8b `anu-drive` → Google Drive, 8c `anu-archive` → audit-grade archive). All three consume the same upstream outputs, serve different audiences, and are individually optional; a project may ship any subset. This channel is terminal — nothing downstream consumes its output.
+
+---
+
 ## Purpose
 
 Anu Archive is the **third external distribution channel** of the Anu Framework, and the one that carries the framework's mandate of *foolproof replication with unbelievable context and detail*.
@@ -237,6 +243,51 @@ All three Stage-8 channels are siblings — they consume the same upstream outpu
 
 ---
 
+## Outputs
+
+Everything is written under `{project}/Outputs/{ProjectName}_Archive_v{VERSION}/`, and (unless `--no-zip`) also packaged as `{ProjectName}_Archive_v{VERSION}.zip` alongside it.
+
+| Output | Description |
+|--------|-------------|
+| `README.md` | Archive entry point — what this is, how to navigate it, how to cite it; rendered from the registry's `drive_config` |
+| `MANIFEST.json` | Machine-readable inventory: one entry per file with `path`, `size`, `sha256`, `category`, and the `source` path it was copied from, plus citation metadata, category counts, file count and total bytes |
+| `CHECKSUMS.txt` | SHA-256 of every file, `sha256sum -c` compatible |
+| `code/` | Mirror of the `anu-publish` repo, excluding `.git/`, `__pycache__/`, `data/cache/` |
+| `data/` | Mirror of the `anu-drive` consumer package: `master/`, `series/`, `methodology.pdf` |
+| `provenance/` | `series/` (DPR + EPR + decomposition per series), `figures/` (FPR), `knowledge_base/` (the source-text trail), `registry.json` |
+| `validation/` | Full validation logs and per-run validation reports |
+| `decisions/` | `DECISION_LOG` and `ASSUMPTIONS` |
+| `reviews/` | The project's `anu-review` audit history |
+| `reference/` | `ledger.json`, `glossary.md`, `pipeline_state.json` |
+
+The generator also prints the A01–A13 validation result for the archive it just built. Regenerating the Anu Ledger to record the archive as a shipped artifact is the caller's follow-up, per the Documentation Contract.
+
+---
+
+## Acceptance Gates
+
+An archive is acceptable when `/anu-archive validate {archive_path}` reports no FAIL-severity rule. The rules are specified in full under Validation rules; by severity:
+
+| Severity | Rules | What they establish |
+|----------|-------|---------------------|
+| FAIL | A01, A02, A03, A04 | The archive is complete and self-describing: root files present, manifest and disk agree in both directions, and every checksum recomputes |
+| FAIL | A05, A06 | Provenance coverage: every registry series has a DPR, and every series with an `extension` block has an EPR |
+| FAIL | A09 | No secrets — no API keys, tokens, or passwords in any text file |
+| FAIL | A11, A12 | The archive is runnable and usable: `code/` has an entry point, `data/` has the master workbook and at least one per-series workbook |
+| WARN | A07, A08, A10, A13 | Decomposition and FPR coverage, absolute machine paths, and a non-empty glossary |
+
+Two gates that are *deliberately absent*: internal vocabulary inside provenance records is **not** scrubbed (A09 and A10 are the only scrubbing rules — an auditor needs the unvarnished trail), and no artifact is re-derived to satisfy a rule (the archive must reflect the project as-built).
+
+Upstream, the skill expects a completed project: `series_registry.json`, an `anu-publish` repo, an `anu-drive` package, per-series provenance docs, validation logs, decision log, review history, ledger, and glossary.
+
+---
+
+## Data Repository Integration
+
+This skill does not read or write data-repository checkouts. It packages artifacts that upstream skills already produced; any data-repository provenance rides along inside the DPRs, EPRs, and `provenance/registry.json` it copies, unchanged.
+
+---
+
 ## Version History
 
 - **v1.0** (May 2026) — Initial release. Defines the audit-grade transparency channel: bundles code, data, per-series and per-figure provenance records, knowledge-base extractions, validation logs, decision log, ledger, review history, methodology, and glossary into one versioned archive with a machine-readable `MANIFEST.json` and SHA-256 checksums. Ships `generate_archive_package.py`. Sibling to `anu-publish` (GitHub) and `anu-drive` (Drive).
@@ -251,4 +302,4 @@ All three Stage-8 channels are siblings — they consume the same upstream outpu
 
 ---
 
-*Part of the Anu Framework v11.0 — Comprehensive Audit Archive.*
+*Part of the Anu Framework v12.2 — Comprehensive Audit Archive.*

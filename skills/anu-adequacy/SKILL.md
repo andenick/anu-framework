@@ -16,6 +16,14 @@ A pre-pipeline readiness check that validates whether the Knowledge Base, series
 
 ---
 
+## Stage Position
+
+**Stage 2 — ADEQUACY** in the canonical stage sequence maintained by `anu-build`: it runs after Stage 1 (Research) and gates entry to Stage 3 (Ingestion).
+
+> **Legacy numbering note.** Sections further down this file (When to Use, Anu Framework Context, Integration with Anu Framework) were written before the framework-wide stage renumbering and still label this skill "Pipeline Stage 0 / before Research", with the state key `stage_0_adequacy`. Those labels are preserved verbatim because the state key they name is still what projects write. The canonical stage number is the one above.
+
+---
+
 ## Purpose
 
 Before constructing any data series, an agent must verify that sufficient information exists to:
@@ -342,6 +350,73 @@ Anu Review (v3.7+) includes D0 as an unweighted gate check:
 
 ---
 
+## Inputs
+
+Every input below is one this SKILL.md's layer checks already read. Nothing is required to exist at a fixed path — a layer scores what it can find and records the rest as a gap.
+
+| Input | Where it is read from | Used by |
+|-------|----------------------|---------|
+| Knowledge Base page extractions | `Technical/Knowledge_Base/text/page_NNN_*.md` | Layer 1 |
+| Knowledge Base tables + equations | `Technical/Knowledge_Base/tables/`, `Technical/Knowledge_Base/equations/` | Layer 1, Layer 6 |
+| Chapter scope (page range, expected series, figures) | Chapter investigation or equivalent scoping document | Layers 1, 2, 5 |
+| `series_registry.json` | `Technical/series_registry.json` (may not exist yet — see the Layer 2 note) | Layers 2, 6 |
+| Source data and cached API pulls | `Inputs/` | Layer 3 |
+| `data_coverage_matrix.csv` | `Inputs/` (when the project maintains one) | Layer 3 |
+| External benchmark datasets | `Inputs/ExternalSources/` | Layers 3, 5 |
+| Decomposition documents | `Technical/docs/series/*_DECOMPOSITION.md` | Layer 4 |
+| Figure-to-series mapping | `FIGURE_SERIES_CATALOG.json` | Layer 5 |
+| GAP_REGISTER | The project's gap register | Layer 6 |
+| P## processing scripts | The project's replicator code tree (grepped for `np.random`) | Layer 6 |
+
+---
+
+## Outputs
+
+| Output | Location | Description |
+|--------|----------|-------------|
+| `CH{N}_ADEQUACY_REPORT.json` | `Technical/docs/chapters/` | The layer-by-layer assessment: per-layer scores, per-check counts, gaps, `overall_score`, `overall_adequacy`, `blocking_gaps`, `non_blocking_gaps`, `recommendation` |
+| `remediation_checklist` | Inside the same report | Populated from the Remediation Guidance table when gaps are found; also what `/anu-adequacy remediate` re-derives |
+| `stage_0_adequacy` block | `PIPELINE_STATE.json` | Status, completion date, score, rating, and the path to the report — written on completion per the Documentation Contract |
+
+This skill writes no data files, no code, and no series artifacts. Its only product is the assessment and the pipeline-state update it triggers.
+
+---
+
+## Acceptance Gates
+
+The report itself is the gate. Its verdict is computed, not asserted:
+
+| Rating | Score | Pipeline gate |
+|--------|-------|---------------|
+| EXEMPLARY | >=95 | PROCEED |
+| ADEQUATE | 80–94 | PROCEED (gaps documented) |
+| INSUFFICIENT | 60–79 | REMEDIATE FIRST |
+| BLOCKED | <60 | CANNOT PROCEED |
+
+Three overrides sit on top of the weighted average:
+
+1. **Any layer below 60 → BLOCKED**, regardless of the weighted average.
+2. **Any layer below 70 → capped at INSUFFICIENT**, regardless of the weighted average.
+3. **Layer 6 is binary.** If any series would require synthetic data, the outcome is BLOCKED and real data must be acquired before proceeding — there is no partial credit.
+
+Downstream consumers enforce the verdict: Anu Research proceeds on ADEQUATE or better, warns on INSUFFICIENT, and refuses to start on BLOCKED. Anu Review reads the report as its unweighted D0 gate check.
+
+---
+
+## Anti-Patterns
+
+| Anti-pattern | Why it's wrong | Do this instead |
+|---|---|---|
+| Averaging past a failing layer | A weighted mean can hide a layer at 40 | Apply the layer floors: <60 is BLOCKED, <70 caps at INSUFFICIENT |
+| Proceeding to Research on a BLOCKED report | The gate exists precisely to stop this | Remediate first; Anu Research refuses to start on BLOCKED |
+| Planning to fill a gap with synthetic or estimated values | Layer 6 exists to catch this before it enters the pipeline | Give every gap an acquisition plan (API, digitize, request) |
+| Scoring a layer from impression rather than evidence | Every layer specifies a concrete "How to assess" procedure | Glob the KB, read the registry, check `Inputs/` — then score |
+| Treating a missing `series_registry.json` as an automatic Layer 2 zero | The registry is created at Ingestion, downstream of this gate | Score Layer 2 from the chapter investigation or scoping document, per the Layer 2 note |
+| Treating missing decompositions as an automatic Layer 4 zero | Decompositions are also written downstream | Ask the Layer 4 question: could an agent write the decomposition from what exists today? |
+| Writing the report and stopping | The gate is only observable to the pipeline through state | Update `PIPELINE_STATE.json` `stage_0_adequacy` on completion |
+
+---
+
 ## Version History
 
 - **v1.0** (March 2026) - Initial release. 5-layer assessment framework. Learned from predecessor-project and reference-implementation gap analysis.
@@ -356,4 +431,4 @@ Anu Review (v3.7+) includes D0 as an unweighted gate check:
 
 ---
 
-*Part of the Anu Framework v11.0 - Pre-Pipeline Readiness Gate*
+*Part of the Anu Framework v12.2 - Pre-Pipeline Readiness Gate*

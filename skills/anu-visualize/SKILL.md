@@ -18,6 +18,16 @@ Interactive visualization for data construction projects. The app is registry-dr
 
 ---
 
+## Stage Position
+
+**Stage 7 (VISUALIZATION)** — the interactive app and figure export, run after the Stage 6 output formats and before Stage 8 distribution. (Older framework revisions numbered this work "5b VIZ EXPORT + 6 VIZ".)
+
+- **Upstream**: the output-format artifacts — chopped CSVs, catalogs, `SUBSOURCE_METADATA.json`
+- **Downstream**: `anu-review` D10 Viz Integration & Quality
+- **Adequacy Relevance**: L5 (Validation Data) — the app enables visual validation against the author's published figures
+
+---
+
 ## Supported Frameworks
 
 | Framework | Language | Use Case | Example |
@@ -216,6 +226,51 @@ Colors are loaded from `config/app_config.json`:
 
 ---
 
+## Inputs
+
+| Input | Source | Required |
+|-------|--------|----------|
+| `DEFINITIVE_SERIES_CATALOG.json` | Project catalogs | Yes — master series metadata |
+| `SUBSOURCE_METADATA.json` | Project catalogs | Yes — per-subsource metadata; drives trace labels, view-mode filters and the components view |
+| `FIGURE_SERIES_LINKAGE.json` | Project catalogs | Yes — figure-to-series-to-data mapping |
+| `config/app_config.json` | Project config | Yes — color palettes, `figure_column_map`, figure registries |
+| Chopped CSVs | anu-chopped | Yes — multi-source subseries data behind the chopped charts |
+| Chapter extended CSVs (`chapter_XX_extended.csv`) | anu-replicator (`data/final-data/`) | Yes — wide-format time-series data |
+| `DATA_MANIFEST.json` | anu-replicator | Yes — SHA-256 manifest verified at startup |
+| `[PROJECT]_QUOTES_MASTER.json` | Project inputs | Optional — populates the Author Quotes panel |
+| `figure_column_map.json` | Project catalogs or replicator output | Optional — dual-path resolution; wrapped or flat format |
+
+---
+
+## Outputs
+
+| Output | Location | Description |
+|--------|----------|-------------|
+| The visualization app | `Technical/ShinyApp/` (R Shiny variant) or the project's Dash equivalent | `app.R` / `global.R` + `R/` modules, or `app.py` + Python modules; scaffolded by `/anu-visualize init` |
+| Loaded / processed app data | `data/` under the app tree | Produced by `python L00.py` and `python P00.py` from the per-chapter `L##`/`P##` scripts |
+| Run logs | `data/logs/LOAD_LOG.json`, `data/logs/PROCESS_LOG.json` | Per-script results of the L00/P00 runs |
+| Startup validation result | App logs | Output of `validate_app_data()` — structural, cross-reference, sanity, chart-readiness and manifest checks |
+| User CSV downloads | Browser download | The Data Table tab exports the full dataset for the selected figure/series |
+
+This SKILL.md specifies the app and its data pipeline. It does not define a figure-export script; where a project exports per-figure CSVs for `anu-review` D10a, those are produced by the project's own `P##` scripts.
+
+---
+
+## Acceptance Gates
+
+| Gate | Condition |
+|------|-----------|
+| Quality checklist | All 12 items (Q1–Q12) in the Pre-Launch checklist pass |
+| Startup validation | `validate_app_data()` reports 0 errors |
+| Metadata completeness | `validate_metadata_completeness.py` exits with code 0 |
+| Manifest integrity | The SHA-256 comparison against `DATA_MANIFEST.json` succeeds |
+| Cross-reference integrity | Every subsource `parent_series` resolves in the series catalog |
+| Extension traceability | Every extension subsource has a `source_url`, and the subsource details panel renders it as a clickable link |
+
+Downstream, `anu-build` gates the Stage 7 → 8 transition on the app launching with all series visible and `anu-review` D10 ≥ 80.
+
+---
+
 ## Commands
 
 | Command | Description |
@@ -239,19 +294,10 @@ Colors are loaded from `config/app_config.json`:
 
 ## Anu Framework Context
 
-- **Pipeline Stage**: 5b (VIZ EXPORT) + 6 (VIZ)
-- **Upstream**: Stage 5 Output (Chopped CSVs, catalogs, SUBSOURCE_METADATA.json)
-- **Downstream**: Stage 6 Review (D10 Viz Integration)
+- **Pipeline Stage**: Stage 7 VISUALIZATION (see Stage Position above)
+- **Upstream**: Output formats (Chopped CSVs, catalogs, SUBSOURCE_METADATA.json)
+- **Downstream**: Review (D10 Viz Integration)
 - **Adequacy Relevance**: L5 (Validation Data) — viz enables visual validation against published figures
-
-## Version History
-
-- **v1.0** (January 2026) — Initial R Shiny implementation (as "Anu Shiny")
-- **v2.0** (March 2026) — Registry-driven design, multi-source charts
-- **v3.0** (March 2026) — Quality checklist, safe field access, chart-readiness validation
-- **v4.0** (March 2026) — Generalized: removed project-specific hardcoding, added Components view mode
-- **v4.3** (April 2026) — Anu Framework v6.0 compatibility
-- **v5.0** (May 2026) — Renamed from Anu Shiny to Anu Visualize. Added Plotly Dash as supported framework. Anu Framework v7.0 integration.
 
 ---
 
@@ -276,12 +322,23 @@ Colors are loaded from `config/app_config.json`:
 
 ---
 
-## Canonical references
+## Version History
+
+- **v1.0** (January 2026) — Initial R Shiny implementation (as "Anu Shiny")
+- **v2.0** (March 2026) — Registry-driven design, multi-source charts
+- **v3.0** (March 2026) — Quality checklist, safe field access, chart-readiness validation
+- **v4.0** (March 2026) — Generalized: removed project-specific hardcoding, added Components view mode
+- **v4.3** (April 2026) — Anu Framework v6.0 compatibility
+- **v5.0** (May 2026) — Renamed from Anu Shiny to Anu Visualize. Added Plotly Dash as supported framework. Anu Framework v7.0 integration.
+
+---
+
+## Canonical References
 
 - [`ANU_FRAMEWORK_GLOSSARY.md`](../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary for all framework terms.
 - [`SERIES_REGISTRY_SCHEMA.md`](../../docs/SERIES_REGISTRY_SCHEMA.md) — the formal `series_registry.json` schema.
 
 ---
 
-*Part of the Anu Framework v11.0 — Interactive Visualization*
+*Part of the Anu Framework v12.2 — Interactive Visualization*
 *Lineage: Anu Shiny v1.0-v4.3 -> Anu Visualize v5.0*

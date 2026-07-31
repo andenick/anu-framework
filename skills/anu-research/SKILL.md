@@ -16,6 +16,14 @@ Systematically find **every possible quote, reference, footnote, methodology des
 
 ---
 
+## Stage Position
+
+**Stage 1 — RESEARCH.** The first working stage: it runs after the Stage 0 inventory and before adequacy (Stage 2) and ingestion (Stage 3).
+
+This follows the canonical stage sequence in `anu-build/SKILL.md`. The "Anu Framework Context" block further down this file still carries the older stage numbering that predates that sequence; where the two disagree, the canonical sequence governs.
+
+---
+
 ## Purpose
 
 Before constructing or extending any data series, an agent must deeply understand what the original author did. The Anu Research skill produces a structured `S###_research.json` file that captures:
@@ -126,6 +134,17 @@ Synthesize all findings into a concise `methodology_summary` paragraph that expl
 ### Step 7: Write S###_research.json
 
 Save the compiled research to `Technical/research/S###_research.json` using the output format below.
+
+---
+
+## Outputs
+
+| Output | Path | Format | When |
+|--------|------|--------|------|
+| Research dossier | `Technical/research/S###_research.json` | JSON — schema in Output Format below | Every mining run (Step 7) |
+| Porting log | `MIGRATION/PORTING_LOG.md` | Markdown table, one row per predecessor series | Only when running the port procedure |
+
+The research JSON is the deliverable — this skill writes no report, index, or state file of its own, and the Documentation Contract below records no follow-up updates. Any data tables found in the KB during mining are extracted into the dossier rather than deferred (see Data Extraction Obligation above). Ported dossiers additionally carry `ported_from`, `ported_at`, and `port_mode` in their top-level metadata.
 
 ---
 
@@ -384,14 +403,22 @@ For each predecessor research JSON in the cohort's scope:
 - `MIGRATION/PORTING_LOG.md` accounts for every predecessor research file
 - `anu-doctor project` P03 (research-JSON ↔ registry alignment) PASSes after the port + registry update
 
-## Version History
+---
 
-- **v1.0** (March 2026) - Initial release
-- **v1.1** (March 2026) - Added compact entry format as valid alternative; updated quality checklist for both formats; updated template to use compact format
-- **v1.2** (March 2026) - Generalized: replaced project-specific methodology text with generic terms; labeled the reference-implementation examples
-- **v1.3** (March 2026) - Added adequacy_refs field for traceability to adequacy-verified sources
-- **v2.0** (April 2026) - research.json v2.0 schema: added entry_id, subseries_affected, confidence as required fields in full format; added source_refs (links to SourceReference system in series_registry.json) and kb_reference fields; v2.0 entry fields table
-- **v2.1** (May 2026) - Documented the **port procedure** (agent-executed, not a script): given a predecessor project's research JSONs and a crosswalk CSV, the agent copies each predecessor research JSON to its new SID, find-and-replaces old SID references inside, adds `ported_from` + `ported_at` metadata, and logs the decision in `MIGRATION/PORTING_LOG.md`. No script automates this — the agent decides per-file whether the port is verbatim, requires rewriting, or should be re-mined fresh. Used by `anu-rebuild` Wave W.1 to salvage prior research effort.
+## Anti-Patterns
+
+| # | DO NOT | Consequence |
+|---|--------|-------------|
+| 1 | Read only the narrative summary when the KB chunk also contains an annual data table | The documented failure mode: a complete annual table is ignored and values are later manufactured from "mean = X, range Y–Z" |
+| 2 | Defer extraction of a table you found to a later stage | Nobody comes back for it; the table is lost to the pipeline |
+| 3 | Approximate a value that could be extracted directly | An avoidable error enters the construction chain with no flag on it |
+| 4 | Mine a chapter whose adequacy report is INSUFFICIENT or BLOCKED without remediating first | Research is built on sources that were already known to be inadequate |
+| 5 | Record an entry without `source_location` (and `kb_reference` in full format) | The quote cannot be traced back or verified by review |
+| 6 | Label a paraphrase or an inference as `exact_quote` | Downstream EPRs and DPRs quote it as verbatim source text |
+| 7 | Leave `kb_sources_searched` empty | No record of what was searched, so coverage gaps are invisible |
+| 8 | Write a citation that was not found in the Knowledge Base | An invented bibliographic reference propagates into the DPR and the published methodology |
+| 9 | Port a predecessor dossier verbatim when it is sparse, wrong, or built against a different KB | Re-mine instead; a verbatim port launders stale research into the new project |
+| 10 | Port or drop a predecessor dossier without a row in `MIGRATION/PORTING_LOG.md` | The predecessor file is unaccounted for and the port cannot be audited |
 
 ---
 
@@ -405,10 +432,21 @@ For each predecessor research JSON in the cohort's scope:
 
 ---
 
-## Canonical references
+## Version History
+
+- **v1.0** (March 2026) - Initial release
+- **v1.1** (March 2026) - Added compact entry format as valid alternative; updated quality checklist for both formats; updated template to use compact format
+- **v1.2** (March 2026) - Generalized: replaced project-specific methodology text with generic terms; labeled the reference-implementation examples
+- **v1.3** (March 2026) - Added adequacy_refs field for traceability to adequacy-verified sources
+- **v2.0** (April 2026) - research.json v2.0 schema: added entry_id, subseries_affected, confidence as required fields in full format; added source_refs (links to SourceReference system in series_registry.json) and kb_reference fields; v2.0 entry fields table
+- **v2.1** (May 2026) - Documented the **port procedure** (agent-executed, not a script): given a predecessor project's research JSONs and a crosswalk CSV, the agent copies each predecessor research JSON to its new SID, find-and-replaces old SID references inside, adds `ported_from` + `ported_at` metadata, and logs the decision in `MIGRATION/PORTING_LOG.md`. No script automates this — the agent decides per-file whether the port is verbatim, requires rewriting, or should be re-mined fresh. Used by `anu-rebuild` Wave W.1 to salvage prior research effort.
+
+---
+
+## Canonical References
 
 - [`ANU_FRAMEWORK_GLOSSARY.md`](../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary for all framework terms.
 
 ---
 
-*Part of the Anu Framework v11.0 — Comprehensive Data Construction Framework*
+*Part of the Anu Framework v12.2 — Comprehensive Data Construction Framework*

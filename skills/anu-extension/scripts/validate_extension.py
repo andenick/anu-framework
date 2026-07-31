@@ -328,8 +328,8 @@ class ExtensionValidator:
         """Check methodology documentation and comparison."""
         result = {"status": "UNKNOWN", "issues": [], "warnings": []}
         
-        # Check for HDARP references
-        has_hdarp_refs = bool(re.search(r'hdarp|knowledge_base', content, re.IGNORECASE))
+        # Check that the methodology is anchored in Knowledge Base extractions
+        has_kb_refs = bool(re.search(r'knowledge[ _-]?base|\bKB\b', content, re.IGNORECASE))
         
         # Check for methodology comparison
         has_comparison = bool(re.search(r'methodology.*comparison|comparison.*methodology', content, re.IGNORECASE))
@@ -337,10 +337,11 @@ class ExtensionValidator:
         # Check for impact assessment
         has_impact = bool(re.search(r'impact\s*:\s*(high|medium|low|none)', content, re.IGNORECASE))
         
-        if not has_hdarp_refs:
+        if not has_kb_refs:
             result["issues"].append({
-                "code": "EXT_NO_HDARP_REFS",
-                "message": "No HDARP extraction references found; methodology should reference HDARP files",
+                "code": "EXT_NO_KB_REFS",
+                "message": ("No Knowledge Base references found; the methodology section must "
+                            "cite the KB extractions it is derived from"),
                 "severity": "ERROR"
             })
         

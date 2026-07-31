@@ -6,13 +6,21 @@ when-to-use: User wants to check project health, generate artifact inventory, au
 search-hints: ledger manifest inventory artifacts health documentation audit orient project
 argument-hint: [action] [chapter]
 allowed-tools: Read, Write, Grep, Glob, LS, Shell
-requires: anu-pipeline, anu-ingestion
+requires: anu-ingestion
 part-of: Anu Framework v12.2
 ---
 
 # Anu Ledger Standard v2.2
 
 A living, auto-generated project manifest that tells agents exactly what exists, what is missing, and what needs attention. The Ledger is *not* prose documentation — it is a structured JSON file produced by a generator script that scans the project filesystem.
+
+---
+
+## Stage Position
+
+**Infrastructure** — not a pipeline stage. The Ledger is regenerated after every stage advance and before every handoff, and is read by agents on entry to a project.
+
+This follows the canonical stage sequence in `anu-build/SKILL.md`. The "Anu Framework Context" block further down this file describes the same role in the older wording ("Cross-cutting").
 
 ---
 
@@ -40,10 +48,27 @@ The Ledger answers:
 
 ---
 
-## ANU_LEDGER.json Location
+## Inputs
 
-- **Canonical**: `Technical/ANU_LEDGER.json`
-- **Mirror** (auto-generated during pipeline runs): `Technical/ANU_REPLICATOR/data/final-data/reports/ANU_LEDGER.json`
+The Ledger is derived entirely from state that already exists in the project — it asks for nothing new.
+
+| Input | Path / source | Required |
+|-------|---------------|----------|
+| Series registry | `Technical/series_registry.json` | Yes — supplies the series list, chapter, and `tier` |
+| Pipeline state | `Technical/PIPELINE_STATE.json` | Yes — supplies stage progress |
+| Project filesystem | Every path pattern in the Artifact Types Tracked tables below (research JSONs, decompositions, DPRs/EPRs, L/P/V/M/E scripts, reference values, chopped CSVs, extenbooks, figure CSVs, project-level records) | Yes — the generator scans these directly |
+| Chapter scope | `--chapter N` argument | No — omit to scan the whole project |
+
+---
+
+## Outputs
+
+| Output | Location | Format |
+|--------|----------|--------|
+| Artifact inventory | `Technical/ANU_LEDGER.json` — **canonical** | JSON, schema below |
+| Mirror copy | `Technical/ANU_REPLICATOR/data/final-data/reports/ANU_LEDGER.json` — auto-generated during pipeline runs | JSON, identical schema |
+
+The Ledger JSON is the skill's only artifact. `/anu-ledger status`, `gaps`, and `--report` print views of it; they do not write separate files. Within the JSON, the sections that downstream consumers depend on are `series_inventory`, `figures_inventory`, `coverage`, `stale_files`, `action_items`, and — after any Stage-8 channel ships — `distribution`.
 
 ---
 
@@ -260,7 +285,7 @@ When entering a project that uses the Anu Framework:
 
 | Skill | Relationship |
 |-------|-------------|
-| **Anu Pipeline** | Ledger regenerated on `anu-pipeline advance`; pipeline state feeds into Ledger |
+| **Anu Build** | The orchestrator regenerates the Ledger after every stage advance (`anu-build ledger`); `PIPELINE_STATE.json` feeds into the Ledger |
 | **Anu Ingestion** | Registry feeds Ledger's series list; Ledger validates ingestion artifacts |
 | **Anu Review** | D12 Documentation dimension uses Ledger coverage percentages |
 | **Anu Research** | Ledger tracks research.json existence per series |
@@ -285,6 +310,43 @@ This gives any agent entering the project an immediate view of what has been shi
 
 ---
 
+## Acceptance Gates
+
+A regenerated Ledger is accepted when:
+
+- [ ] It was regenerated from the current filesystem — not carried over from a prior session
+- [ ] `/anu-ledger validate` exits 0 (it exits 1 when a mandatory artifact is missing)
+- [ ] Every series in `series_registry.json` appears in `series_inventory`, with its `tier` recorded
+- [ ] Tier 2 series are scored only on loading script + registry entry, and are excluded from the denominator for the artifact types they are exempt from
+- [ ] `coverage` percentages and `documentation_health` are recomputed, not stale
+- [ ] `action_items` is populated for every gap the scan found
+- [ ] After any Stage-8 channel ships, the `distribution` block records the package name, version, channel, and timestamp
+
+The Ledger is a reporting artifact: apart from `validate`'s exit code, it does not itself block the pipeline. The gate that *uses* it is `anu-review` D12, which reads its coverage percentages.
+
+---
+
+## Anti-Patterns
+
+| # | DO NOT | Consequence |
+|---|--------|-------------|
+| 1 | Hand-edit `ANU_LEDGER.json` | It is generated from a filesystem scan; the next run overwrites the edit, and until then the file misreports what exists |
+| 2 | Treat the Ledger as prose documentation | It is a structured inventory, not an explanation — the "how" lives in each skill's SKILL.md |
+| 3 | Advance a pipeline stage without regenerating it | The next agent orients on stale state and re-does or skips work |
+| 4 | Hand off without regenerating it | Session work becomes invisible to the next session |
+| 5 | Penalize a Tier 2 series for a missing DPR, decomposition, processing script, or extenbook | Tier-aware scoring exempts them; counting them deflates the health score and manufactures false gaps |
+| 6 | Read the Replicator mirror as the source of truth | `Technical/ANU_LEDGER.json` is canonical; the mirror is a copy written during pipeline runs |
+| 7 | Ship a distribution package without regenerating afterwards | The `distribution` block misses the event, and agents must scan `Outputs/` to find out what shipped |
+| 8 | Reconstruct project state by listing directories instead of reading the Ledger | Defeats the purpose of the manifest and misses the `stale_files` / `action_items` analysis |
+
+---
+
+## Data Repository Integration
+
+**Not applicable.** The Ledger inventories artifacts the project itself produces — research JSONs, decompositions, DPRs/EPRs, L/P/V/M/E scripts, reference values, chopped CSVs, extenbooks, figure CSVs, and the project-level records listed above. It does not read, validate, or record `inputs/data-repository/` checkouts. Data-repository provenance is recorded by `anu-ingestion` at load time (in the DPR) and audited by `anu-doctor`'s project-mode compliance check.
+
+---
+
 ## Anu Framework Context
 
 - **Pipeline Stage**: Cross-cutting (regenerated after every stage advance)
@@ -292,16 +354,6 @@ This gives any agent entering the project an immediate view of what has been shi
 - **Downstream**: Anu Review (D12 uses Ledger for coverage data)
 - **Adequacy Relevance**: Should track ADEQUACY_REPORT.json as a project artifact in the artifact inventory
 - **Key Handoff**: ANU_LEDGER.json is the master artifact inventory consumed by Review
-
-## Version History
-
-- **v1.0** (March 2026) - Initial release
-- **v1.1** (March 2026) - Documented tier-aware scoring for Tier 2 series; split artifact types table into Tier 1 and Tier 2; added tier-aware health score adjustment
-- **v2.0** (March 2026) - Generalized: replaced the project-specific schema example with generic placeholders; removed stale project-specific notes
-- **v2.1** (March 2026) - Minor refinements
-- **v2.2** (April 2026) - Added tracking for v6.0 artifacts: V## validation scripts, M## manual adjustment scripts, E## exploration scripts, DECISION_LOG.md, ASSUMPTIONS.md, provenance_index.json, VALIDATION_REPORT.json, ADJUSTMENT_MANIFEST.json
-
----
 
 ## Documentation Contract
 
@@ -313,11 +365,21 @@ This gives any agent entering the project an immediate view of what has been shi
 
 ---
 
-## Canonical references
+## Version History
+
+- **v1.0** (March 2026) - Initial release
+- **v1.1** (March 2026) - Documented tier-aware scoring for Tier 2 series; split artifact types table into Tier 1 and Tier 2; added tier-aware health score adjustment
+- **v2.0** (March 2026) - Generalized: replaced the project-specific schema example with generic placeholders; removed stale project-specific notes
+- **v2.1** (March 2026) - Minor refinements
+- **v2.2** (April 2026) - Added tracking for v6.0 artifacts: V## validation scripts, M## manual adjustment scripts, E## exploration scripts, DECISION_LOG.md, ASSUMPTIONS.md, provenance_index.json, VALIDATION_REPORT.json, ADJUSTMENT_MANIFEST.json
+
+---
+
+## Canonical References
 
 - [`ANU_FRAMEWORK_GLOSSARY.md`](../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary for all framework terms.
 - [`SERIES_REGISTRY_SCHEMA.md`](../../docs/SERIES_REGISTRY_SCHEMA.md) — the formal `series_registry.json` schema.
 
 ---
 
-*Part of the Anu Framework v11.0 — Project Documentation Manifest*
+*Part of the Anu Framework v12.2 — Project Documentation Manifest*

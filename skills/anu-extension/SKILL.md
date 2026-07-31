@@ -16,6 +16,14 @@ A rigorous framework for extending economic data series with complete fidelity t
 
 ---
 
+## Stage Position
+
+**Stage 4 — EXTENSION.** Runs after ingestion (Stage 3) and before replication (Stage 5).
+
+This follows the canonical stage sequence in `anu-build/SKILL.md`. The "Anu Framework Context" block further down this file still carries the older stage numbering that predates that sequence; where the two disagree, the canonical sequence governs.
+
+---
+
 ## Core Philosophy
 
 The Anu Extension Standard ensures that extended data is **EXACTLY** what would have been produced if the original methodology were applied to new data. This requires:
@@ -25,6 +33,25 @@ The Anu Extension Standard ensures that extended data is **EXACTLY** what would 
 3. **Source Verification** - Confirm data sources match
 4. **Transition Validation** - Verify seamless connection at splice points
 5. **External Replicability** - All data MUST come from public APIs (FRED, BEA, etc.) that any researcher can access. NEVER reference internal databases, proprietary tools, or non-public data sources. Every data point must be traceable to a public URL.
+
+---
+
+## Inputs
+
+Everything an extension session reads. These restate the Prerequisites and API sections below in one table; the prose there is authoritative on detail.
+
+| Input | Path / source | Required |
+|-------|---------------|----------|
+| DPR | `{Project}/Technical/docs/series/S###_DPR.md` | Yes — `EXT_NO_DPR` if absent |
+| Series registry entry | `{Project}/Technical/series_registry.json` (canonical) + `{Project}/Technical/ANU_REPLICATOR/config/series_registry.json` (mirror) | Yes |
+| Research JSON | `{Project}/Technical/research/S###_research.json` | Yes — supplies methodology context and quotes |
+| Knowledge Base extractions | `knowledge_base/` — book chapters, appendices, original-vintage and current methodology documents | Yes — all quotes come from the KB; **no direct PDF reading** (`EXT_NO_KB` if absent) |
+| Adequacy report | `ADEQUACY_REPORT.json`, Layer 3 (Data Availability) | Recommended — if L3 flagged missing API sources, extension may be blocked for those series |
+| API keys | `{Project}/Technical/ANU_REPLICATOR/config/api_keys.env`, loaded via `api_config.py` | Yes for API-extended series (never hardcoded) |
+| Cached API responses | `{Project}/Inputs/API/FRED/`, `{Project}/Inputs/API/BEA/` | Yes — public APIs only; never an internal or proprietary intermediary |
+| Transition analysis capability | `transition_analysis.py` or equivalent, plus historical baseline data | Yes — Step 8 cannot run without it |
+| Divergence register | `{Project}/Technical/docs/DIVERGENCE_REGISTER.json` | Read/append whenever Step 5.5 finds a divergence |
+| Web methodology research | Public agency methodology pages (Step 5) | Yes when the source agency has revised its methodology |
 
 ---
 
@@ -552,7 +579,7 @@ The Anu Extension Standard supports live API data pulls for extending series wit
 
 ### Extension Implementation
 
-Since Anu Framework v11.0, extension logic is implemented inside **Anu Replicator P## processing scripts**, not in standalone extension scripts. The `series_registry.json` `extension` field defines the API source, splice method, and target end year. The P## script reads this config and executes the extension as part of the processing phase.
+Extension logic is implemented inside **Anu Replicator P## processing scripts**, not in standalone extension scripts (the design adopted in v11.0 and unchanged since). The `series_registry.json` `extension` field defines the API source, splice method, and target end year. The P## script reads this config and executes the extension as part of the processing phase.
 
 ### Year-Source Attribution
 
@@ -733,7 +760,7 @@ Use the project's own reference chapter (typically the first fully completed cha
 
 ## v2.0 Changes: Replicator Integration
 
-Since Anu Framework v11.0, extension logic is **implemented inside Anu Replicator P## processing scripts**. This skill defines the *methodology* for faithful extension; the Replicator implements it in code.
+Extension logic is **implemented inside Anu Replicator P## processing scripts** (the design adopted in v11.0 and unchanged since). This skill defines the *methodology* for faithful extension; the Replicator implements it in code.
 
 Key changes:
 - Extension config now lives in `series_registry.json` under each series' `extension` field
@@ -777,6 +804,47 @@ These requirements are validated by the Anu Review D10b quality checklist item Q
 | **Anu Visualize** | Extension traces must be visible as separate chart traces (see Visualization Requirements) |
 | **Anu Review** | D6 EPR Completeness dimension; D10b Q5 validates extension visibility |
 
+## Acceptance Gates
+
+An extension is accepted when all of the following hold. Every threshold below is restated from the workflow sections above — this table is the checklist, not a new standard.
+
+| Gate | Criterion | Source |
+|------|-----------|--------|
+| Prerequisites | DPR exists, KB extractions exist, registry entry exists | Step 1 |
+| Source match | Extension source is the same series from the same agency as the original, or a documented proxy with a Concept Match Justification in the EPR | Core Philosophy 3; EPR spec |
+| Connection ratio | `Extension(overlap_start) / Original(overlap_start)` in 0.95–1.05 | Step 8 |
+| Growth-rate continuity | Growth difference at the transition < 5% | Step 8 |
+| Trend alignment | Overlap-period correlation > 0.95 | Step 8 |
+| Level difference | Percent difference at the transition point < 3% | Step 8 |
+| Transition classification | SEAMLESS or ACCEPTABLE (documented). PROBLEMATIC requires review; FAILED blocks the extension | Step 8 |
+| Faithfulness score | >= 90 for CERTIFIED, >= 75 for CERTIFIED WITH NOTES; < 75 is NOT CERTIFIED | Step 10 |
+| Documentation completeness | All EPR sections filled, all quotes present, all transformations logged | Step 9 |
+| EPR present | Every series with `extension` != `null` has an EPR before `anu-publish` ships; `anu-ledger` raises `missing_epr` otherwise | Outputs section |
+| Registry sync | Canonical registry and the Replicator mirror are identical at end of session | Outputs section |
+| Extension visibility | `-EXT` and `-F` columns exist in the chopped CSV and appear as separate, labelled traces with `source_url` | Visualization Requirements; `anu-review` D10b Q5 / D10c |
+
+Divergences do **not** block acceptance: a logged divergence proceeds as CERTIFIED WITH NOTES (Step 5.5).
+
+---
+
+## Anti-Patterns
+
+| # | DO NOT | Consequence |
+|---|--------|-------------|
+| 1 | Guess when the original methodology is unclear | Violates Principle 10 (FAIL ON UNCERTAINTY); produces an unverifiable series. Stop and seek clarification (`EXT_UNCERTAINTY`) |
+| 2 | Manufacture annual values from a paper's summary statistics, or use `np.random` | Violates Principle 11; fabricated data. Mark the series `data_unavailable` instead |
+| 3 | Substitute a different concept as a proxy without a Concept Match Justification | The extension silently measures something other than the original series |
+| 4 | Read source PDFs directly instead of the Knowledge Base extractions | Breaks the KB-as-ground-truth rule; quotes become unverifiable |
+| 5 | Route API data through an internal database, proprietary tool, or non-public path | Breaks external replicability (Core Philosophy 5); no other researcher can reproduce the fetch |
+| 6 | Hardcode an API key anywhere | Secret leak; keys belong in `api_keys.env`, loaded via `api_config.py` |
+| 7 | Extend the numerator and denominator CS columns of a ratio independently | The extended ratio no longer equals the ratio the original methodology defines |
+| 8 | Update the canonical registry without syncing the Replicator mirror | The two copies diverge and the Replicator silently processes stale extension config |
+| 9 | Merge extension values into the composite series without emitting separate `-EXT` and `-F` columns | The extension becomes invisible in the app and in the Extenbook; D10b Q5 fails |
+| 10 | Treat a discovered divergence as a blocker and abandon the extension | Divergences are logged (ADR-###), not fatal — the extension proceeds with notes |
+| 11 | Ship an extended series without its EPR | `anu-ledger` raises `missing_epr` and `anu-publish` is gated |
+
+---
+
 ## Anu Framework Context
 
 - **Pipeline Stage**: 3 (EXTENSION)
@@ -784,6 +852,18 @@ These requirements are validated by the Anu Review D10b quality checklist item Q
 - **Downstream**: Stage 4 Replication
 - **Adequacy Relevance**: L3 (Data Availability) — extension requires the API/data sources L3 verified
 - **Key Handoff**: Creates EPRs consumed by Extenbook, Review; updates series_registry.json extension config
+
+## Documentation Contract
+
+| Aspect | Detail |
+|--------|--------|
+| **Creates** | `S###_EPR.md`, `EXTENSION_LOG.json`, `DIVERGENCE_REGISTER.json` entries |
+| **Expects** | `S###_DPR.md` (from anu-ingestion), `series_registry.json` with extension config, `S###_research.json` |
+| **Must Update on Completion** | Update `series_registry.json` extension config if methodology changed. Regenerate Ledger (`/anu-ledger generate`) |
+
+**Note**: The canonical source for all series metadata is `series_registry.json`. Extension config, subsource mapping, and splice methodology all live in the registry.
+
+---
 
 ## Version History
 
@@ -805,19 +885,7 @@ These requirements are validated by the Anu Review D10b quality checklist item Q
 
 ---
 
-## Documentation Contract
-
-| Aspect | Detail |
-|--------|--------|
-| **Creates** | `S###_EPR.md`, `EXTENSION_LOG.json`, `DIVERGENCE_REGISTER.json` entries |
-| **Expects** | `S###_DPR.md` (from anu-ingestion), `series_registry.json` with extension config, `S###_research.json` |
-| **Must Update on Completion** | Update `series_registry.json` extension config if methodology changed. Regenerate Ledger (`/anu-ledger generate`) |
-
-**Note**: The canonical source for all series metadata is `series_registry.json`. Extension config, subsource mapping, and splice methodology all live in the registry.
-
----
-
-## Canonical references
+## Canonical References
 
 - [`ANU_FRAMEWORK_GLOSSARY.md`](../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary for all framework terms.
 - [`SERIES_REGISTRY_SCHEMA.md`](../../docs/SERIES_REGISTRY_SCHEMA.md) — the formal `series_registry.json` schema.
@@ -825,4 +893,4 @@ These requirements are validated by the Anu Review D10b quality checklist item Q
 
 ---
 
-*Part of the Anu Framework v11.0 — Maximum Faithfulness Data Extension*
+*Part of the Anu Framework v12.2 — Maximum Faithfulness Data Extension*

@@ -23,7 +23,7 @@ class DPRValidationResult:
     subsources: bool
     transformation_chain: bool
     validation_record: bool
-    hdarp_linkage: bool
+    extraction_linkage: bool
     score: float
     issues: List[str]
 
@@ -61,7 +61,7 @@ def validate_dpr_file(dpr_path: Path) -> DPRValidationResult:
             subsources=False,
             transformation_chain=False,
             validation_record=False,
-            hdarp_linkage=False,
+            extraction_linkage=False,
             score=0.0,
             issues=["DPR file does not exist"]
         )
@@ -78,7 +78,7 @@ def validate_dpr_file(dpr_path: Path) -> DPRValidationResult:
             subsources=False,
             transformation_chain=False,
             validation_record=False,
-            hdarp_linkage=False,
+            extraction_linkage=False,
             score=0.0,
             issues=[f"Error reading file: {e}"]
         )
@@ -104,9 +104,9 @@ def validate_dpr_file(dpr_path: Path) -> DPRValidationResult:
     if not validation_record:
         issues.append("Missing validation record")
     
-    hdarp_linkage = bool(re.search(r"HDARP|hdarp|extraction", content, re.IGNORECASE))
-    if not hdarp_linkage:
-        issues.append("No HDARP linkage documented (may be acceptable)")
+    extraction_linkage = bool(re.search(r"knowledge[ _-]?base|\bKB\b|extraction", content, re.IGNORECASE))
+    if not extraction_linkage:
+        issues.append("No Knowledge Base extraction linkage documented (may be acceptable)")
     
     # Calculate score (weighted)
     score_items = [
@@ -115,7 +115,7 @@ def validate_dpr_file(dpr_path: Path) -> DPRValidationResult:
         (subsources, 0.20),
         (transformation_chain, 0.20),
         (validation_record, 0.10),
-        (hdarp_linkage, 0.05),
+        (extraction_linkage, 0.05),
     ]
     score = sum(weight for present, weight in score_items if present)
     
@@ -127,7 +127,7 @@ def validate_dpr_file(dpr_path: Path) -> DPRValidationResult:
         subsources=subsources,
         transformation_chain=transformation_chain,
         validation_record=validation_record,
-        hdarp_linkage=hdarp_linkage,
+        extraction_linkage=extraction_linkage,
         score=score,
         issues=issues
     )

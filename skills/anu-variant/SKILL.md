@@ -24,6 +24,17 @@ part-of: Anu Framework v12.2
 
 ---
 
+## Stage Position
+
+**Floating** — `anu-variant` is not a numbered pipeline stage; it is invoked at any point in a build. In practice it runs alongside or after construction, because it operates on series that already have provenance records and computed outputs. (Earlier framework revisions described it as "post-pipeline".)
+
+- **Upstream**: Complete pipeline (DPR/EPR, calculator scripts, Knowledge Base extractions)
+- **Downstream**: Review (variant quality), research (methodology comparisons)
+- **Adequacy Relevance**: Variants require the same L1/L3 sources as the base series plus additional methodology papers
+- **Key Handoff**: `VARIANT_REGISTRY.json`; variant VPRs; comparison CSVs
+
+---
+
 ## Purpose
 
 Define a protocol for **tracking multiple methodological variants** of the same economic aggregate. Each variant receives a unique, machine-parseable ID and a complete Variant Provenance Record (VPR) documenting its methodology, parameters, data sources, and benchmarks.
@@ -53,24 +64,36 @@ Use the Anu Variant Standard when:
 
 ---
 
-## Prerequisites
+## Inputs
 
-Before creating a variant:
+Prerequisites — everything that must already exist before a variant can be created:
 
 1. **Anu Standard DPR/EPR Exists**: Underlying series documented via Anu Standard or Anu Extension
 2. **Calculator Script**: Python script with a `VariantConfig` pattern (or equivalent parameterization)
 3. **KB Extractions**: Methodology sources extracted for each variant author
 4. **Output Data**: At least one computed CSV for the variant
 
+Further inputs are consumed once tracking is under way:
+
+| Input | Source | Required |
+|-------|--------|----------|
+| `Technical/VARIANT_REGISTRY.json` | Created by Step 1, read by every later step | After init |
+| Published benchmark values | The variant author's own publication | Yes, for Step 6 validation |
+| Vintage data (ALFRED / BEA NIPA Archives / Philadelphia Fed RTDSM) | External archives | Optional (Step 8) |
+
 ---
 
 ## Workflow
 
-> The `python …` invocations in the steps below (`validate_variant.py`,
-> `generate_comparison.py`, `vintage_downloader.py`) are the **contract**
-> this skill defines. The scripts themselves are project-provided — like
-> the L##/P## scripts an `anu-replicator` package supplies. This skill
-> specifies what they must do; it does not ship generator binaries.
+> This skill **does ship** the scripts the steps below invoke, under
+> `skills/anu-variant/scripts/`: `variant_registry.py`,
+> `validate_variant.py`, `generate_comparison.py`, and
+> `vintage_downloader.py`. Invoke them by their real path, e.g.
+> `python $ANU_FRAMEWORK/skills/anu-variant/scripts/validate_variant.py`.
+> Only `vintage_downloader.py` needs a third-party package (`requests`) and
+> a `FRED_API_KEY`; the other three are stdlib-only. What each script must
+> do is the contract this SKILL.md defines — a project may substitute its
+> own implementation, but the shipped ones are the reference.
 
 ### Step 1: Initialize Variant Tracking
 
@@ -329,7 +352,20 @@ Template: `templates/VINTAGE_REPORT_TEMPLATE.md`
 
 ---
 
-## Output Structure
+## Outputs
+
+| Output | Location | Description |
+|--------|----------|-------------|
+| `VARIANT_REGISTRY.json` | `Technical/` | Master catalog of every variant, its config parameters, source series, output paths, benchmarks and vintage |
+| `V-{DOMAIN}{NUM}-{METHOD}_VPR.md` | `Technical/docs/variants/` | Variant Provenance Record — the 10 sections listed above, from `templates/VPR_TEMPLATE.md` |
+| `{metric}_variant_comparison.csv` | `Technical/ANU_REPLICATOR/data/final-data/` | Cross-variant comparison in the standard year-indexed column format |
+| Comparison report | Project-chosen path | Correlation matrix, sign-change analysis, summary statistics, level divergence, trend comparison — from `templates/VARIANT_COMPARISON_TEMPLATE.md` |
+| `VINTAGE_DOWNLOAD_LOG.json` | `Technical/data/vintages/` | Catalog of downloaded data vintages |
+| Vintage report | Project-chosen path | From `templates/VINTAGE_REPORT_TEMPLATE.md` |
+
+This skill does not write `series_registry.json` or any series data file; variant outputs live in their own registry and directories.
+
+### Output Structure
 
 ```
 Project/Technical/
@@ -376,13 +412,52 @@ For each registered variant:
 
 ---
 
+## Acceptance Gates
+
+A variant is accepted — i.e. may be cited, compared, or chosen as baseline — only when every item of the Validation Checklist above passes. Restated as gates:
+
+| Gate | Condition |
+|------|-----------|
+| Identity | The ID matches `V-{DOMAIN}{METRIC}-{METHOD}` and parses under `VARIANT_ID_PATTERN`; a registry entry exists in `VARIANT_REGISTRY.json` |
+| Documentation | The VPR file exists and all ten of its sections are complete |
+| Code linkage | Config parameters match the calculator script; the calculator script and class linkage resolve |
+| Data | Output CSV files exist at the registered paths, and the recorded data vintage is present |
+| Validation | Benchmark values are documented with their sources, and the variant has been validated against them |
+| Comparison | The cross-variant comparison for this metric includes this variant |
+| Baseline discipline | Exactly one variant per metric is marked as baseline |
+
+`anu-variant` publishes no pass/fail score of its own; the gate is the checklist, and `anu-review`'s audit command checks that every registered variant has a complete VPR.
+
+---
+
+## Anti-Patterns
+
+- **DO NOT** name variants ad hoc ("the Tonak version", "the other approach"). Every variant gets a canonical, machine-parseable ID.
+- **DO NOT** leave methodological parameters only in code comments — they belong in the VPR parameter table, with a justification per parameter.
+- **DO NOT** mark more than one variant per metric as baseline, and do not leave a metric with no baseline.
+- **DO NOT** compare or splice variants computed from different data vintages without recording the vintage on each — vintage is a metadata qualifier, never part of the canonical ID.
+- **DO NOT** register a variant with no benchmark values or no output data; an unvalidated entry in the registry misrepresents the variant's status.
+- **DO NOT** scatter validation results in print statements — benchmark tables with per-variant pass/fail status are the record.
+
+---
+
 ## Anu Framework Context
 
-- **Pipeline Stage**: Post-pipeline (operates on completed series)
+- **Pipeline Stage**: Floating (see Stage Position above); operates on completed series
 - **Upstream**: Complete pipeline (DPR/EPR, calculator scripts, Knowledge Base extractions)
 - **Downstream**: Review (variant quality), research (methodology comparisons)
 - **Adequacy Relevance**: Variants require the same L1/L3 sources as the base series plus additional methodology papers
 - **Key Handoff**: VARIANT_REGISTRY.json; variant VPRs; comparison CSVs
+
+## Documentation Contract
+
+| Aspect | Detail |
+|--------|--------|
+| **Creates** | `VARIANT_REGISTRY.json`, `V-{DOM}{NN}-{MTH}_VPR.md`, variant comparison CSVs, `VINTAGE_DOWNLOAD_LOG.json` |
+| **Expects** | `S###_DPR.md` or `S###_EPR.md`, calculator scripts, Knowledge Base extractions |
+| **Must Update on Completion** | Update `VARIANT_REGISTRY.json` with new variant entries |
+
+---
 
 ## Version History
 
@@ -395,20 +470,10 @@ For each registered variant:
 
 ---
 
-## Documentation Contract
-
-| Aspect | Detail |
-|--------|--------|
-| **Creates** | `VARIANT_REGISTRY.json`, `V-{DOM}{NN}-{MTH}_VPR.md`, variant comparison CSVs, `VINTAGE_DOWNLOAD_LOG.json` |
-| **Expects** | `S###_DPR.md` or `S###_EPR.md`, calculator scripts, Knowledge Base extractions |
-| **Must Update on Completion** | Update `VARIANT_REGISTRY.json` with new variant entries |
-
----
-
-## Canonical references
+## Canonical References
 
 - [`ANU_FRAMEWORK_GLOSSARY.md`](../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary for all framework terms.
 
 ---
 
-*Part of the Anu Framework v11.0 - Multi-Methodology Tracking Framework*
+*Part of the Anu Framework v12.2 - Multi-Methodology Tracking Framework*

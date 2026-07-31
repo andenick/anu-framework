@@ -16,6 +16,14 @@ The machine-readable CSV format for the Anu Framework. Formalizes the 3-row stru
 
 ---
 
+## Stage Position
+
+**Stage 6a — OUTPUT**, the machine-readable half of Stage 6; `anu-extenbook` is Stage 6b, the human-readable half. Upstream is Stage 5 (Replication), which writes the Chopped CSVs this skill validates; downstream are Stage 7 (Visualization) and the Stage 8 distribution channels.
+
+> **Legacy numbering note.** The Anu Framework Context block near the end of this file predates the framework-wide stage renumbering and still reads "Pipeline Stage: 5 (OUTPUT — validation)" with the old upstream/downstream labels. The canonical stage number is the one above.
+
+---
+
 ## Format Specification
 
 ### Row Structure
@@ -265,6 +273,64 @@ python validate_chopped.py --catalog path/to/ANU_CHOPPED_CATALOG.json
 
 ---
 
+## Inputs
+
+| Input | Source | Used for |
+|-------|--------|----------|
+| `series_registry.json` | anu-ingestion | The only source of Row 1 metadata, Row 2 column IDs, the `concurrent_series` block, construction steps, and extension config. Everything generated here is derived from it |
+| Chopped CSVs | P## scripts (anu-replicator), written to `data/final-data/chopped/` | The files being validated, cataloged, and read |
+| Processed series data | anu-replicator | The data rows the writer library emits |
+| `SUBSOURCE_METADATA.json` | Generated from the registry by a project-provided generator script | V10 cross-check that every column has per-column metadata |
+| `ANU_CHOPPED_CATALOG.json` | A previous `/anu-chopped catalog` run | Input to `validate_chopped.py --catalog` |
+| `templates/ANU_CHOPPED_CATALOG_TEMPLATE.json` | Ships with this skill | Starting shape for a new catalog |
+
+---
+
+## Outputs
+
+| Output | Location | Description |
+|--------|----------|-------------|
+| Chopped CSVs | `data/final-data/chopped/` | The 3-row format: Row 1 registry-derived metadata, Row 2 column IDs, Row 3+ data with Year first. Written by the writer library on behalf of P## scripts |
+| `ANU_CHOPPED_CATALOG.json` | Alongside the chopped files | Machine-readable catalog of every Chopped file: filename, chapter, series and subseries IDs, year range, figures, format, research entry count, extension source |
+| `SUBSOURCE_METADATA.json` | The project's visualization data directory | Per-column metadata (the 15 required column fields) plus per-series construction metadata (the 8 required series fields) and the derived `construction_text` narrative |
+| Validation result | Console | Pass/fail per rule V1–V13 from `scripts/validate_chopped.py`, exit code 0 when all pass |
+
+`SUBSOURCE_METADATA.json` is programmatically generated from `series_registry.json` — never hand-written. Some projects name their generator and its output differently (a Shiny-specific variant is described above); `SUBSOURCE_METADATA.json` is the standard name.
+
+---
+
+## Acceptance Gates
+
+A Chopped CSV is acceptable when `scripts/validate_chopped.py` exits 0 — that is, when every blocking rule passes:
+
+| Severity | Rules | What they establish |
+|----------|-------|---------------------|
+| Blocking | V1, V2, V3, V7 | The 3-row structure is intact: metadata row, column-ID row, Year in the first column, Row 1 and Row 2 the same width |
+| Blocking | V4, V6, V12 | Column IDs are well-formed and unique, and CS columns match `CS\d{3}-(N\d?\|D\d?)` |
+| Blocking | V5 | Every data cell in Row 3+ is numeric or empty |
+| Blocking | V10, V13 | Every column ID — including every CS column, with `is_component: true` — has a `SUBSOURCE_METADATA.json` entry |
+| Blocking | V11 | Every extended series carries **both** `-EXT` (raw) and `-F` (re-indexed) columns |
+| Warning only | V8, V9 | Filename convention; presence of a bare `S###` final-series column (warning for `wide_table` format) |
+
+Two further conditions sit outside the rule list, in the Documentation Contract: the catalog is regenerated after new Chopped CSVs are written, and `SUBSOURCE_METADATA.json` is regenerated after any registry or chopped change — a stale metadata file is what produces unlabeled traces downstream.
+
+---
+
+## Anti-Patterns
+
+| Anti-pattern | Why it's wrong | Do this instead |
+|---|---|---|
+| Hand-writing Row 1 metadata | Row 1 is a projection of the registry; typing it by hand makes the CSV and the registry disagree | Let the writer generate Row 1 from registry fields |
+| Hand-writing `SUBSOURCE_METADATA.json` | Same failure, one layer out: it drifts from the registry and the visualization mislabels traces | Generate it from `series_registry.json` |
+| Shipping an extended series with `-EXT` but no `-F` | V11 fails, and the re-indexed overlap that lets a reader verify the splice is missing | Emit both columns; `-F` must overlap the previous subsource at the splice year |
+| Putting Concurrent Series columns in a separate file | CS columns are the level-data components of the rate series and belong beside it | Keep them in the same chopped CSV, with their own units |
+| Adding a column without a metadata entry | V10 catches it, but the underlying cause is a registry gap | Fix the registry, then regenerate |
+| Duplicate column IDs in Row 2 | Ambiguous joins downstream; V6 fails | One ID per column |
+| Writing Chopped CSVs that bypass the registry | The registry is the single source of truth for every output format | Add the series to the registry first |
+| Leaving the catalog stale after adding files | Consumers discover files through the catalog | Run `/anu-chopped catalog`, then regenerate the Ledger |
+
+---
+
 ## Anu Framework Context
 
 - **Pipeline Stage**: 5 (OUTPUT — validation)
@@ -302,4 +368,4 @@ python validate_chopped.py --catalog path/to/ANU_CHOPPED_CATALOG.json
 
 ---
 
-*Part of the Anu Framework v11.0 — Machine-Readable Data Format*
+*Part of the Anu Framework v12.2 — Machine-Readable Data Format*

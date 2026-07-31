@@ -16,6 +16,17 @@ A systematic audit tool for reviewing how well data chapters/modules are integra
 
 ---
 
+## Stage Position
+
+**Floating** — `anu-review` is not a numbered pipeline stage. It is invoked at any point in a build, and is meant to be run early and often. (Earlier framework revisions listed it as "Stage 6 (AUDIT)".)
+
+- **Upstream**: All prior stages must be complete for a whole-project review; a single-chapter review audits whatever exists at the time.
+- **Downstream**: None (terminal stage) — outputs inform the remediation cycle.
+- **Adequacy Relevance**: The D0 gate validates that the setup-stage artifacts were produced; D1–D12 audit what was actually built.
+- **Key Handoff**: Review reports, certification levels, and the gap analysis that drives remediation.
+
+---
+
 ## Quick Reference
 
 ### Purpose
@@ -34,6 +45,34 @@ Apply the Anu Review when:
 - Comparing implementation quality across chapters
 - Identifying gaps in documentation or code
 - Preparing for project milestones or handoffs
+
+---
+
+## Inputs
+
+Everything the review reads. Nothing here is written by this skill.
+
+| Input | Source | Required |
+|-------|--------|----------|
+| `series_registry.json` | anu-ingestion | Yes — identifies the series, tiers and figures in scope |
+| Knowledge Base extractions (`knowledge_base/`) | Project inputs | Yes — mandatory source-material reading before any dimension is scored |
+| Artifacts of the stages under review | Stages 1–8 | Yes — research JSONs, decompositions, DPRs/EPRs/FPRs, L##/P##/V## scripts, chopped CSVs, extenbooks, viz catalogs, distribution bundles |
+| `ANU_LEDGER.json` | anu-ledger | Optional — supplies the `coverage` percentages used for D12 |
+| `PIPELINE_STATE.json` | anu-build | Optional — prior review score, for the score-delta comparison in Step 4 |
+| The author's published figures and tables | Original source material | Yes — cross-checked by hand against the constructed data |
+
+---
+
+## Outputs
+
+| Output | Rendered from | Description |
+|--------|---------------|-------------|
+| Review report | `templates/REVIEW_REPORT_TEMPLATE.md` | Dimension scores D1–D12, D13/D14 gate scores, Integration Score, certification level |
+| Gap analysis | `templates/GAP_ANALYSIS_TEMPLATE.md` | Gaps sorted by priority, with HIGH / MEDIUM / LOW action items |
+| Checklist | `templates/CHECKLIST_TEMPLATE.md` | Per-item pass/fail for every dimension checklist |
+| `PIPELINE_STATE.json` → `anu_review` section | Project `Technical/` | Review score and certification level recorded on completion |
+
+The report/gap/checklist artifacts are markdown; this skill does not write to `series_registry.json`, the Ledger, or any data file.
 
 ---
 
@@ -496,13 +535,40 @@ The D12 Documentation dimension should reference the Ledger's `coverage` percent
 
 ---
 
-## Anu Framework Context
+## Acceptance Gates
 
-- **Pipeline Stage**: 6 (AUDIT)
-- **Upstream**: All prior stages must be complete
-- **Downstream**: None (terminal stage) — outputs inform remediation cycle
-- **Adequacy Relevance**: D0 gate validates that Stage 0 was run; D1-D12 audit built artifacts
-- **Key Handoff**: Review reports, certification levels, gap analysis inform remediation
+A review pass is complete, and its verdict binding, when all of the following hold:
+
+| Gate | Condition |
+|------|-----------|
+| Source material read | The chapter's KB extractions have been read, and data values hand-checked against the author's published figures, **before** any dimension is scored |
+| All dimensions scored | D1–D12 each carry a score and a recorded gap list; any dimension reported N/A is justified (e.g. a series with no extension scores full marks on D6) |
+| Certification assigned | Integration Score mapped to EXEMPLARY (≥95) / COMPLETE (≥85) / ADEQUATE (≥70) / INCOMPLETE (<70) |
+| D13 Data Authenticity | No synthetic, placeholder, approximated or frozen data. Any synthetic series forces INCOMPLETE certification regardless of the weighted score |
+| D14 Outward-Facing Intelligibility | Score ≥ 90. Below 90 blocks external distribution until remediated; it does not change the Integration Score |
+| State recorded | `PIPELINE_STATE.json` updated with the score and certification level |
+
+Downstream consumers set their own thresholds on this score: `anu-build` gates Stage 8 distribution on `anu-review` ≥ 85 with D13/D14 ≥ 90.
+
+---
+
+## Anti-Patterns
+
+- **DO NOT** score any dimension before reading the original source material. In the reference implementation automated validation reported 383/383 PASS while an 88x unit mismatch (S069) and a 5340x scale mismatch (S087) went undetected — both were found only by reading the data against the book.
+- **DO NOT** treat a green V01 run as proof of correctness — reference-value checks cover a sample of points, not every value.
+- **DO NOT** score a dimension from file existence alone. The checklists ask whether the content is complete and accurate ("comprehensive", "all sections complete"), not merely whether a path resolves.
+- **DO NOT** fold D13 or D14 into the weighted Integration Score — they are gates scored separately so that scores stay comparable across framework versions.
+- **DO NOT** hand-count artifacts when `ANU_LEDGER.json` exists; use its `coverage` percentages for D12.
+- **DO NOT** certify a project COMPLETE while any series is synthetic — D13 forces INCOMPLETE.
+- **DO NOT** accept an extension that swaps in a different source without a documented proxy justification; D6 scores the EPR, and a silent source substitution is a D6 gap, not a pass.
+
+---
+
+## Data Repository Integration
+
+Not applicable. `anu-review` reads a project's own artifacts and writes markdown report files; it does not check out, refresh, modify, or validate content in a shared data repository. Where a project's underlying data came from is audited only indirectly, through the provenance records that D5 (DPR) and D6 (EPR) score.
+
+---
 
 ## Version History
 
@@ -522,7 +588,7 @@ The D12 Documentation dimension should reference the Ledger's `coverage` percent
 
 ---
 
-## Canonical references
+## Canonical References
 
 - [`ANU_FRAMEWORK_GLOSSARY.md`](../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary for all framework terms.
 - [`SERIES_REGISTRY_SCHEMA.md`](../../docs/SERIES_REGISTRY_SCHEMA.md) — the formal `series_registry.json` schema.
@@ -530,4 +596,4 @@ The D12 Documentation dimension should reference the Ledger's `coverage` percent
 
 ---
 
-*Part of the Anu Framework v11.0 — Integration Quality Audit Framework*
+*Part of the Anu Framework v12.2 — Integration Quality Audit Framework*

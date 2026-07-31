@@ -25,6 +25,14 @@ part-of: Anu Framework v12.2
 
 ---
 
+## Stage Position
+
+**Stage 6b — OUTPUT** (human-readable workbook format; `anu-chopped` is Stage 6a, the machine-readable format).
+
+This follows the canonical stage sequence in `anu-build/SKILL.md`. The "Anu Framework Context" block further down this file still carries the older stage numbering that predates that sequence; where the two disagree, the canonical sequence governs.
+
+---
+
 ## Purpose
 
 Generate **series-level Excel workbooks** that expose every subcomponent, transformation, and provenance detail of a data series. Each workbook is a complete, self-contained visualization of data construction.
@@ -61,6 +69,46 @@ Before generating an Anu Extenbook:
 2. **EPR Exists** (if extended): Extension Provenance Record (`S###_EPR.md`)
 3. **Subsource Data**: Absorbed data available
 4. **Series Registry**: Entry in `series_registry.json`
+
+---
+
+## Inputs
+
+Everything the Extenbook writer reads. All paths are relative to the project's `Technical/` root unless stated otherwise.
+
+| Input | Path / pattern | Required |
+|-------|----------------|----------|
+| Series registry | `series_registry.json` (subseries, `color`, construction array, units/period/name) | Yes — canonical source for the Provenance and Construction sheets |
+| Research JSON | `research/S###_research.json` | Yes — populates the Research sheet |
+| DPR | `docs/series/S###_DPR.md` | Yes (prerequisite 1) |
+| EPR | `docs/series/S###_EPR.md` | Only for extended series (prerequisite 2) |
+| Subsource data | Absorbed / parsed subsource values for the series | Yes (prerequisite 3) |
+| Chopped source CSV | `Inputs/[ChoppedSource]/ch##/` | Yes — the Data sheet mirrors it, and Workflow Step 4 validates against it |
+
+---
+
+## Outputs
+
+| Output | Location | Format |
+|--------|----------|--------|
+| Extenbook workbook | `Technical/ANU_REPLICATOR/data/final-data/extenbooks/` | 4-sheet `.xlsx` (Data, Provenance, Research, Construction) |
+
+The workbook is the skill's only artifact — there is no log, index, or state file. Note that this SKILL.md records two file-name forms for it: the File Naming Convention section specifies `Anu_Extenbook_S###.xlsx`, while the Output Location listing shows `S###_extenbook.xlsx`. Both forms appear in framework documentation; treat the directory, not the exact stem, as the contract, and match whichever form the project's Replicator already writes.
+
+---
+
+## Commands
+
+This skill ships **no executable**. It is a format standard: the workbook itself is written by the Replicator's `extenbook_writer.py` during P## processing. What this SKILL.md prescribes are agent-invoked actions, which are the four Workflow steps below.
+
+| Action | What it does |
+|--------|--------------|
+| Verify prerequisites | Workflow Step 1 — confirm DPR/EPR and the registry entry exist |
+| Generate | Workflow Step 2 — regenerate via the project's Replicator: `cd Technical/ANU_REPLICATOR` then `python replicate.py --series S###` |
+| Review output | Workflow Step 3 — open the workbook and check subsource columns, splice highlighting, and the Provenance sheet |
+| Validate against original | Workflow Step 4 — compare against the Chopped source CSV |
+
+The only other command this skill names is the absorption re-run in Troubleshooting (`python scripts/utils/absorb.py --chapter ##`), which also belongs to the project's Replicator package, not to this skill.
 
 ---
 
@@ -294,6 +342,36 @@ Templates location: `skills/anu-extenbook/templates/`
 
 ---
 
+## Acceptance Gates
+
+A generated Extenbook is accepted when:
+
+- [ ] All four prerequisites hold (DPR, EPR-if-extended, subsource data, registry entry)
+- [ ] The workbook contains all four sheets: Data, Provenance, Research, Construction
+- [ ] Every item in the Validation Checklist above passes
+- [ ] The Year column is formatted as integers (`2013`, not `2,013.00`)
+- [ ] Reindexed subseries headers carry the `[R:YYYY]` marker; non-reindexed headers are plain
+- [ ] Cell background colors match the `color` field in `series_registry.json` and the Color Coding Standard above
+- [ ] Workflow Step 4 comparison against the Chopped source CSV shows no value mismatch
+
+There is no gate script; these are checked by the agent on generation and re-scored by `anu-review` dimension D9 (Extenbook Quality).
+
+---
+
+## Anti-Patterns
+
+| # | DO NOT | Consequence |
+|---|--------|-------------|
+| 1 | Hand-edit a generated workbook to fix values or formatting | Generation is registry-driven; the next run silently overwrites the edit, and the workbook stops matching the registry |
+| 2 | Fix a wrong value in the workbook instead of in `series_registry.json` | The registry is the canonical source; the Chopped CSV and the visualization app keep the wrong value |
+| 3 | Generate an Extenbook before the DPR exists | The Provenance sheet has nothing to document; produces a shell that looks complete |
+| 4 | Leave the Year column as decimals (`2,013.00`) | Years stop reading as years and break comparison against the Chopped source |
+| 5 | Drop the `[R:YYYY]` marker from a reindexed subseries header | A reindexed column is indistinguishable from a raw one; readers mis-compare levels |
+| 6 | Invent colors instead of using the registry `color` field and the Color Coding Standard | Breaks visual consistency between the Extenbook and the visualization app |
+| 7 | Merge subsources into one column instead of showing each separately | Defeats the skill's whole purpose: every subcomponent must be visible |
+
+---
+
 ## Anu Framework Context
 
 - **Pipeline Stage**: 5 (OUTPUT — generation)
@@ -301,18 +379,6 @@ Templates location: `skills/anu-extenbook/templates/`
 - **Downstream**: Stage 6 Review (D9 Extenbook Quality)
 - **Adequacy Relevance**: L1 (Source Text) — Extenbook Research sheet draws from KB sources validated by L1
 - **Key Handoff**: Standalone deliverable; reviewed by Anu Review D9
-
-## Version History
-
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0 | 2026-01-30 | Initial release (2-sheet structure) |
-| 2.0 | 2026-03-07 | 4-sheet structure (Research, Construction), year formatting fix, [R:YYYY] headers, registry-driven generation |
-| 2.1 | 2026-03-08 | Removed legacy paths (DEFINITIVE_SERIES_CATALOG.json, create_anu_extenbooks.py, Outputs/Anu_Extenbooks/); updated to Replicator output paths; fixed troubleshooting references |
-| 3.0 | 2026-03-15 | Generalized: removed project-specific hardcoding (Shaikh Absorbed, Shaikh Chopped, Shaikh quotes); replaced with generic terms |
-| 3.2 | 2026-04-07 | Version bump for Anu Framework v6.0 compatibility (format unchanged) |
-
----
 
 ## Documentation Contract
 
@@ -326,11 +392,23 @@ Templates location: `skills/anu-extenbook/templates/`
 
 ---
 
-## Canonical references
+## Version History
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 1.0 | 2026-01-30 | Initial release (2-sheet structure) |
+| 2.0 | 2026-03-07 | 4-sheet structure (Research, Construction), year formatting fix, [R:YYYY] headers, registry-driven generation |
+| 2.1 | 2026-03-08 | Removed legacy paths (DEFINITIVE_SERIES_CATALOG.json, create_anu_extenbooks.py, Outputs/Anu_Extenbooks/); updated to Replicator output paths; fixed troubleshooting references |
+| 3.0 | 2026-03-15 | Generalized: removed project-specific hardcoding (Shaikh Absorbed, Shaikh Chopped, Shaikh quotes); replaced with generic terms |
+| 3.2 | 2026-04-07 | Version bump for Anu Framework v6.0 compatibility (format unchanged) |
+
+---
+
+## Canonical References
 
 - [`ANU_FRAMEWORK_GLOSSARY.md`](../../docs/ANU_FRAMEWORK_GLOSSARY.md) — shared vocabulary for all framework terms.
 - [`SERIES_REGISTRY_SCHEMA.md`](../../docs/SERIES_REGISTRY_SCHEMA.md) — the formal `series_registry.json` schema.
 
 ---
 
-*Part of the Anu Framework v11.0 — Human-Readable Data Workbook*
+*Part of the Anu Framework v12.2 — Human-Readable Data Workbook*

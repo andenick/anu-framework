@@ -25,6 +25,12 @@ part-of: Anu Framework v12.2
 
 ---
 
+## Stage Position
+
+**Stage 8b — DISTRIBUTION.** The consumer-facing channel, sibling to Stage 8a (`anu-publish` → GitHub) and Stage 8c (`anu-archive` → audit-grade archive). Upstream are Stage 5 (Replicator) and Stage 6 (Chopped + Extenbook), both of which must be complete. Downstream is nothing — this channel is terminal: the folder leaves the workspace and goes to the recipient.
+
+---
+
 ## Generator script
 
 This skill ships an executable generator at `generate_drive_package.py`
@@ -1049,6 +1055,66 @@ Before any Drive package is shared externally, the following must be verified:
 
 ---
 
+## Inputs
+
+| Input | Read from | Required |
+|-------|-----------|----------|
+| `series_registry.json` | `{project}/Technical/` | Yes — the source of every name, unit, subsource, construction step, extension block, and the `drive_config` metadata used by README and CITATION |
+| Final per-series CSVs | `{project}/Technical/ANU_REPLICATOR/data/final-data/series/*_final.csv`, with the fallbacks listed in the v1.1.1 history entry | Yes |
+| Extenbook workbooks | `.../data/final-data/extenbooks/*_extenbook.xlsx` | Yes |
+| Chopped CSVs | `.../data/final-data/chopped/` | Yes (prerequisite 4) |
+| Validation results | The V## pass | Yes (prerequisite 5) |
+| `tectonic` | `tools/tectonic.exe` | Yes for LaTeX compilation; `--draft` skips it |
+| `templates/DRIVE_METHODOLOGY_TEMPLATE.tex`, `DRIVE_SERIES_SECTION_TEMPLATE.tex`, `DRIVE_README_TEMPLATE.txt`, `DRIVE_CITATION_TEMPLATE.txt` | Ship with this skill | Yes |
+| Prior Drive package | `{project}/Outputs/` | Optional — supplies the newest methodology PDF and the two carried-forward explainer files when the project has one |
+| `research.json` entries | anu-research output | Optional — populate the methodology PDF's theoretical context |
+| Package version | `--version X.Y`, else registry `drive_version`, else date | Yes (resolved by that priority) |
+
+---
+
+## Outputs
+
+Everything is written to `{project}/Outputs/{ProjectName}_Drive_v{VERSION}/`. Generation is idempotent: re-running against an unchanged registry produces an identical package.
+
+| Output | Description |
+|--------|-------------|
+| `README.txt` | Plain ASCII guide (never markdown), rendered from `drive_config`, listing every file in the package |
+| `CITATION.txt` | Formatted citation block plus a BibTeX `@misc{` entry, with `citation_key` = `{author_last}{year}_{project_slug}` |
+| `{ProjectName}_All_Series_v{VERSION}.xlsx` | Master workbook. Sheet 1 "All Time Series" holds time-series and derived series only, with name / ID / unit header rows |
+| `{ProjectName}_All_Series_v{VERSION}.csv` | Machine-readable duplicate of Sheet 1, UTF-8 BOM, CRLF |
+| `{ProjectName}_Codebook_v{VERSION}.csv` | 16-column data dictionary, one row per shipped series, sorted by series ID |
+| `{ProjectName}_Methodology_v{VERSION}.pdf` | LaTeX-compiled methodology: TOC, one section per series, and Appendices A–D |
+| `Series/S{NNN}_{snake_case_name}.xlsx` | One Extenbook per series, renamed descriptively per the snake-case conversion rule |
+| `Supplementary/` | Optional non-time-series workbooks (cross-sectional, theoretical, panel-indexed series excluded from the master sheet) |
+| Carried-forward explainers | `README_codebook_columns.md` and `README_per_series_excel_format.md`, copied from the prior package when one exists |
+| `DRIVE_VALIDATION_REPORT.md` | PASS/WARN/FAIL per rule, produced by `/anu-drive validate` |
+| Currency note | Printed by the generator: which registry series lacked a final CSV and were therefore not shipped |
+
+`.tex` sources and LaTeX intermediates (`.aux`, `.log`, `.toc`, `.out`) are removed in the cleanup step and never ship. An empty `Supplementary/` folder is removed.
+
+---
+
+## Acceptance Gates
+
+**Before generating** — the six prerequisites under Generation Process: a populated `series_registry.json`; a successful `replicate.py` run (all L## and P## complete); Extenbooks present; Chopped CSVs present; V## validation passed; `tectonic` available. Recommended, not enforced: an Anu Review score >= 85% before any external sharing.
+
+**After generating** — `/anu-drive validate {drive_folder}` writes `DRIVE_VALIDATION_REPORT.md` against rules D01–D17. By severity:
+
+| Severity | Rules | What they establish |
+|----------|-------|---------------------|
+| FAIL | D01, D16, D17 | The package is complete: required root files present; CITATION.txt has both a formatted block and a BibTeX entry; the codebook has exactly 16 columns and one row per shipped series |
+| FAIL | D02, D03 | Coverage: every shippable time-series is in the master file, and every master-file series has an Extenbook |
+| FAIL | D05 | The methodology PDF opens and has a TOC, one section per series, and all four appendices |
+| FAIL | D07, D08, D09 | Nothing internal leaks: no secrets, no absolute machine paths, no internal references |
+| FAIL | D10, D11 | Data fidelity: CSV and XLSX Sheet 1 match value-for-value, and Year is integer-formatted |
+| WARN | D04, D06, D12, D13, D14, D15 | Naming, README accuracy, empty series columns, Extenbook sheet count, PDF page-count sanity, empty `Supplementary/` cleanup |
+
+> **Enforcement status.** As recorded in the v1.1 Version History entry, these rules are **advisory in v1.1**; FAIL/WARN enforcement is on the v1.2 roadmap. Treat the table above as the standard the package is judged against, not as a gate a shipped tool currently blocks on.
+
+The Manual Review Checklist under Scrubbing Protocol is a human gate and has no automated equivalent. On completion, regenerate the Ledger so the Drive package is recorded as a shipped artifact.
+
+---
+
 ## Anu Framework Context
 
 - **Pipeline Stage**: 8b (Distribution — Google Drive)
@@ -1101,5 +1167,5 @@ Before any Drive package is shared externally, the following must be verified:
 
 ---
 
-*Part of the Anu Framework v11.0 — Consumer Distribution Package*
+*Part of the Anu Framework v12.2 — Consumer Distribution Package*
 *v1.0 — May 2026*
