@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+title: "Anu Framework: agent-driven data construction and reproducible publication"
+message: "If you use this framework, please cite it using the metadata from this file."
+type: software
+authors:
+  - family-names: Anderson
+    given-names: Nicholas
+    email: nickawebbox@gmail.com
+    affiliation: "The New School for Social Research"
+    # orcid: "https://orcid.org/0000-0000-0000-0000"  # Nick to fill
+repository-code: "https://github.com/andenick/anu-framework"
+abstract: >-
+  A 21-skill framework (19 current pipeline skills plus 2 superseded-but-still-
+  shipped ones) for agent-driven data construction, empirical research, and
+  reproducible publication, designed so outputs reproduce without agents. It
+  covers the full lifecycle - research, ingestion, faithful extension,
+  machine-readable and human-readable production, replication packaging,
+  visualization, a 14-dimension quality audit with two hard gates, and
+  three-channel distribution - orchestrated by anu-build. It enforces
+  no-synthetic-data, no-unjustified-proxy, and full-provenance discipline, and is
+  self-auditing via anu-doctor with CI on every push.
+keywords:
+  - data-construction
+  - reproducible-research
+  - ai-agents
+  - claude
+version: "12.2.0"
+# date-released:  # no git tag; Nick to fill
+license: MIT
